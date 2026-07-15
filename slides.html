@@ -129,7 +129,7 @@
   </header>
 
   <div class="stage">
-    <span class="counter" id="counter">1 / 12</span>
+    <span class="counter" id="counter">1 / 13</span>
     <button class="nav prev" id="prev" type="button" aria-label="이전 화면">‹</button>
     <button class="nav next" id="next" type="button" aria-label="다음 화면">›</button>
     <div class="frame"><img id="shot" src="images/slides/01-home.png" alt="" /></div>
@@ -170,8 +170,10 @@ const SLIDES = [
    body:'계좌별 마감잔액(은행 실측 입력) + 미수·어음·고정비에서 <b>파생한 입출금 예정</b>. 시스템은 후보를 제시하고, 실제 지급/입금은 사람이 확정하는 통제 구조.'},
   {img:'08-analytics-console.png', tag:'ANALYTICS', title:'경영분석 콘솔 · 매출·원가·채권',
    body:'발주서를 기준으로 <b>매출·원가율·세무자료·미수/미지급</b>을 한 콘솔에서. 12개월 추이(매출 막대 + 원가율 선)를 실시간 집계 — 파생 회계가 이벤트소싱 백본에서 자동으로 굴러갑니다.'},
-  {img:'09-ontology.png', tag:'ONTOLOGY', title:'자기보정 온톨로지 · 아는 시스템',
+  {img:'09-ontology.png', tag:'ONTOLOGY', title:'온톨로지 · 아는 시스템',
    body:'도메인 개념그래프 + DB가 쌓일수록 정확해지는 경험계수를 한 곳에서. <b>팔란티어식 개념 탐색</b>(노드 클릭=재중심)으로 용어사전을 살아있는 지식그래프로 승격시켰습니다.'},
+  {img:'13-doc-hub.png', tag:'DOC HUB', title:'문서허브 · 사내 문서 자연어 검색',
+   body:'비정형 사내 문서(지원사업·공문·인증·발주)를 <b>의미(임베딩) 공간에서 검색</b>. 자연어 질문 → <b>Gemini RAG 답변 + 출처 인용</b> + 관련도순 결과. 파일명으로 못 찾던 자료를 의미로 착지합니다.'},
   {img:'10-admin-console.png', tag:'OVERVIEW', title:'통합 관리 콘솔 · 한 눈에',
    body:'시스템 전체를 한 장으로: 스택(FastAPI·React·PostgreSQL·Cloud Run·Cloudflare Access), 규모(설계문서·마이그레이션·화면·RBAC), <b>다층 보안</b>(SSO·RBAC·감사·폭발반경 차단)까지.'},
   {img:'11-mts.png', tag:'ADVISORY', title:'재고생산 추천 · 선제 생산 제안',
