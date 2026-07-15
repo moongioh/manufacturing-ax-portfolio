@@ -1,0 +1,992 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>워크스루 — 재고 이벤트 소싱 코어</title>
+<meta name="description" content="제조 ERP의 재고는 &quot;현재값&quot;을 저장하지 않습니다. 입고·생산·출고·샘플·실사 — 모든 변화를 사건(이동)으로 한 곳에 쌓고, 현재 재고는 그 사건들의 합으로 파생합니다. 0097에서 그림으로 본 허브의 실제 엔진이 바로 이 구조예요. (stock/movements.py · st…" />
+<link rel="canonical" href="https://moongioh.github.io/manufacturing-ax-portfolio/walkthroughs/%EC%9B%8C%ED%81%AC%EC%8A%A4%EB%A3%A8-%EC%9E%AC%EA%B3%A0%EC%9D%B4%EB%B2%A4%ED%8A%B8%EC%86%8C%EC%8B%B1.html" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="워크스루 — 재고 이벤트 소싱 코어" />
+<meta property="og:description" content="제조 ERP의 재고는 &quot;현재값&quot;을 저장하지 않습니다. 입고·생산·출고·샘플·실사 — 모든 변화를 사건(이동)으로 한 곳에 쌓고, 현재 재고는 그 사건들의 합으로 파생합니다. 0097에서 그림으로 본 허브의 실제 엔진이 바로 이 구조예요. (stock/movements.py · st…" />
+<meta property="og:url" content="https://moongioh.github.io/manufacturing-ax-portfolio/walkthroughs/%EC%9B%8C%ED%81%AC%EC%8A%A4%EB%A3%A8-%EC%9E%AC%EA%B3%A0%EC%9D%B4%EB%B2%A4%ED%8A%B8%EC%86%8C%EC%8B%B1.html" />
+<meta property="og:site_name" content="Manufacturing AX Portfolio" />
+<meta property="og:locale" content="ko_KR" />
+<meta name="twitter:card" content="summary" />
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "TechArticle", "headline": "워크스루 — 재고 이벤트 소싱 코어", "url": "https://moongioh.github.io/manufacturing-ax-portfolio/walkthroughs/%EC%9B%8C%ED%81%AC%EC%8A%A4%EB%A3%A8-%EC%9E%AC%EA%B3%A0%EC%9D%B4%EB%B2%A4%ED%8A%B8%EC%86%8C%EC%8B%B1.html", "description": "제조 ERP의 재고는 \"현재값\"을 저장하지 않습니다. 입고·생산·출고·샘플·실사 — 모든 변화를 사건(이동)으로 한 곳에 쌓고, 현재 재고는 그 사건들의 합으로 파생합니다. 0097에서 그림으로 본 허브의 실제 엔진이 바로 이 구조예요. (stock/movements.py · st…", "inLanguage": "ko", "dateModified": "2026-07-10", "author": {"@type": "Person", "name": "moongioh", "email": "awsgioh@gmail.com", "url": "https://moongioh.github.io/manufacturing-ax-portfolio/", "sameAs": ["https://github.com/moongioh", "https://github.com/moongioh/harness-scope"], "jobTitle": "Forward Deployed Engineer / AX Engineer"}, "isPartOf": {"@type": "WebSite", "name": "Manufacturing AX Portfolio", "url": "https://moongioh.github.io/manufacturing-ax-portfolio/"}}</script>
+<style>/* inlined from ../tech-specs/techspec.css */
+/* =============================================================
+   기술명세서 전용 시각 양식 (techspec) — 관리부 전용.
+   매뉴얼(manual.css)과 분리된 별도 계열: 글 최소 · 도식 최대.
+   전체화면 폭. Material 3 seed #1A5FBA(DESIGN.md) 색 토큰 공유.
+   Mermaid.js 다이어그램 + 커스텀 비주얼(이벤트 카드·계산식·권한 매트릭스).
+   ============================================================= */
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&display=swap');
+
+:root {
+  --primary:#145cb7;            --on-primary:#ffffff;
+  --primary-container:#d7e2ff;  --on-primary-container:#001b40;
+  --secondary-container:#dae2f9;--on-secondary-container:#131c2c;
+  --tertiary:#705574;          --tertiary-container:#fad7fc; --on-tertiary-container:#29132e;
+  --surface:#faf9fd;           --on-surface:#1a1b1f;
+  --surface-lowest:#ffffff;    --surface-low:#f4f3f7;
+  --surface-container:#efedf1; --surface-high:#e9e7ec;
+  --on-surface-variant:#44474e;
+  --outline:#74777f;           --outline-variant:#c4c6d0;
+  --ok:#2E7D32; --ok-bg:#e6f4e6;
+  --warn:#9a6700; --warn-bg:#fdf0d5;
+  --alert:#ba1a1a; --alert-bg:#ffdad6;
+  --plus:#1565c0; --plus-bg:#e3f0fd;
+  --minus:#c62828; --minus-bg:#fdeaea;
+  --radius:16px;
+}
+
+* { box-sizing:border-box; margin:0; padding:0; }
+
+body {
+  background:
+    radial-gradient(1200px 480px at 90% -10%, rgba(20,92,183,.06), transparent),
+    var(--surface);
+  color:var(--on-surface);
+  font-family:'Pretendard','Pretendard Variable',-apple-system,system-ui,sans-serif;
+  font-size:14px; line-height:1.65;
+  padding:40px 28px 80px;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap { width:min(100%, 1280px); margin:0 auto; }
+
+.mi { font-family:'Material Symbols Outlined'; font-weight:400; font-style:normal;
+  line-height:1; vertical-align:-4px; -webkit-font-feature-settings:'liga'; display:inline-block; }
+
+/* ── Hero ─────────────────────────────────────────────── */
+.hero { display:flex; align-items:flex-start; gap:18px; padding-bottom:24px; margin-bottom:8px;
+  border-bottom:2px solid var(--outline-variant); }
+.hero .crest { flex:none; width:60px; height:60px; border-radius:18px; display:grid; place-items:center;
+  background:linear-gradient(135deg, var(--primary), #0c3d80); color:#fff; box-shadow:0 6px 18px rgba(20,92,183,.28); }
+.hero .crest .mi { font-size:34px; }
+.hero h1 { font-size:27px; font-weight:800; letter-spacing:-.4px; }
+.hero .tag { display:inline-flex; align-items:center; gap:6px; margin-top:7px; font-size:11px; font-weight:800;
+  letter-spacing:.1em; text-transform:uppercase; color:var(--alert); background:var(--alert-bg);
+  border-radius:999px; padding:4px 12px; }
+.hero .tag .mi { font-size:15px; }
+.hero .lead { margin-top:9px; font-size:13.5px; color:var(--on-surface-variant); max-width:680px; }
+
+/* ── Section ──────────────────────────────────────────── */
+section { margin-top:40px; }
+.sec-head { display:flex; align-items:center; gap:13px; margin-bottom:16px; }
+.sec-head .no { flex:none; width:30px; height:30px; border-radius:9px; display:grid; place-items:center;
+  background:var(--primary); color:#fff; font-weight:800; font-size:14px; font-family:'JetBrains Mono',monospace; }
+.sec-head h2 { font-size:18px; font-weight:800; letter-spacing:-.2px; }
+.sec-head .sub { font-size:12.5px; color:var(--on-surface-variant); margin-left:auto; }
+
+/* ── Diagram card (holds Mermaid) ─────────────────────── */
+.diagram { background:var(--surface-lowest); border:1px solid var(--outline-variant);
+  border-radius:var(--radius); padding:24px; box-shadow:0 1px 2px rgba(26,27,31,.05), 0 8px 24px rgba(26,27,31,.06);
+  overflow-x:auto; }
+.diagram .mermaid { display:flex; justify-content:center; min-width:min-content; }
+.cap { margin-top:12px; font-size:12px; color:var(--on-surface-variant); text-align:center; }
+.cap b { color:var(--on-surface); }
+
+/* ── Event-sourcing flow (custom pipeline diagram) ────── */
+.esflow {
+  display:flex; align-items:stretch; gap:0;
+  background:
+    radial-gradient(620px 220px at 28% 18%, rgba(20,92,183,.05), transparent),
+    linear-gradient(180deg, var(--surface-lowest), var(--surface-low));
+  border:1px solid var(--outline-variant); border-radius:var(--radius);
+  padding:26px 22px; overflow-x:auto;
+  box-shadow:0 1px 2px rgba(26,27,31,.05), 0 10px 28px rgba(26,27,31,.06);
+}
+.es-stage { display:flex; flex-direction:column; align-items:center; gap:10px; flex:none; }
+.es-stage > .lbl { font-size:9.5px; font-weight:800; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--on-surface-variant); opacity:.7; }
+
+/* source column — stacked chips */
+.es-src { display:flex; flex-direction:column; gap:8px; }
+.es-chip { display:flex; align-items:center; gap:9px; background:var(--surface-lowest);
+  border:1px solid var(--outline-variant); border-radius:11px; padding:9px 13px 9px 10px;
+  box-shadow:0 1px 2px rgba(26,27,31,.05); min-width:128px; }
+.es-chip .ic { flex:none; width:28px; height:28px; border-radius:8px; display:grid; place-items:center;
+  background:var(--secondary-container); color:var(--on-secondary-container); }
+.es-chip .ic .mi { font-size:17px; }
+.es-chip span { font-size:12px; font-weight:700; color:var(--on-surface); }
+
+/* node card (store / view / ui) */
+.es-card { background:var(--surface-lowest); border:1px solid var(--outline-variant); border-radius:15px;
+  padding:15px 16px; width:150px; box-shadow:0 2px 6px rgba(26,27,31,.07); position:relative; }
+.es-card .ic { width:34px; height:34px; border-radius:10px; display:grid; place-items:center; margin-bottom:9px; }
+.es-card .ic .mi { font-size:20px; }
+.es-card h4 { font-size:13px; font-weight:800; line-height:1.3; }
+.es-card p { font-size:10.5px; color:var(--on-surface-variant); margin-top:3px; line-height:1.45; }
+.es-card .pill { display:inline-flex; align-items:center; gap:4px; margin-top:9px; font-size:9.5px; font-weight:800;
+  letter-spacing:.04em; padding:3px 8px; border-radius:999px; }
+.es-card .pill .mi { font-size:12px; }
+/* variants */
+.es-card.store { border-color:var(--primary); box-shadow:0 4px 16px rgba(20,92,183,.16); }
+.es-card.store .ic { background:var(--primary-container); color:var(--primary); }
+.es-card.store .pill { background:var(--primary); color:#fff; }
+.es-card.view .ic { background:var(--tertiary-container); color:var(--on-tertiary-container); }
+.es-card.view .pill { background:var(--tertiary-container); color:var(--on-tertiary-container); }
+.es-card.ui .ic { background:var(--ok-bg); color:var(--ok); }
+.es-card.ui .pill { background:var(--ok-bg); color:var(--ok); }
+
+/* central write gate */
+.es-gate { display:flex; flex-direction:column; align-items:center; justify-content:center;
+  min-width:120px; max-width:180px; padding:16px 12px; border-radius:16px; text-align:center;
+  background:linear-gradient(150deg, var(--primary), #0c3d80); color:#fff;
+  box-shadow:0 8px 22px rgba(20,92,183,.30); }
+.es-gate .ic .mi { font-size:24px; }
+.es-gate code { display:block; font-family:'JetBrains Mono',monospace; font-size:11.5px; font-weight:700;
+  margin-top:6px; line-height:1.3; word-break:break-all; }
+.es-gate small { font-size:9.5px; opacity:.85; margin-top:4px; }
+
+/* connectors */
+.es-conn { flex:none; align-self:center; display:flex; flex-direction:column; align-items:center; gap:3px;
+  padding:0 8px; }
+.es-conn .line { width:34px; height:2px; border-radius:2px;
+  background:linear-gradient(90deg, var(--outline-variant), var(--primary)); position:relative; }
+.es-conn .line::after { content:''; position:absolute; right:-1px; top:-3px;
+  border-left:7px solid var(--primary); border-top:4px solid transparent; border-bottom:4px solid transparent; }
+.es-conn .tag { font-size:9px; font-weight:800; letter-spacing:.03em; color:var(--primary); white-space:nowrap; }
+@media (max-width:900px){ .esflow{ gap:4px; } }
+
+/* multi-lane variant (분기 흐름 — 자재/운임 등) */
+.esflow.lanes { flex-direction:column; gap:14px; align-items:stretch; }
+.es-lane { display:flex; align-items:stretch; gap:0; min-width:min-content; }
+.es-lane + .es-lane { padding-top:14px; border-top:1px dashed var(--outline-variant); }
+.lane-tag { flex:none; align-self:center; margin-right:12px; writing-mode:vertical-rl; text-orientation:mixed;
+  font-size:10px; font-weight:800; letter-spacing:.12em; padding:8px 5px; border-radius:9px;
+  background:var(--primary-container); color:var(--on-primary-container); }
+.es-card.file { border-color:var(--tertiary); }
+.es-card.file .ic { background:var(--tertiary-container); color:var(--on-tertiary-container); }
+.es-card.file .pill { background:var(--tertiary-container); color:var(--on-tertiary-container); }
+
+/* ── Event cards grid ─────────────────────────────────── */
+.events { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+@media (max-width:820px){ .events{ grid-template-columns:repeat(2,1fr);} }
+.evt { background:var(--surface-lowest); border:1px solid var(--outline-variant); border-radius:14px;
+  padding:16px; position:relative; box-shadow:0 1px 2px rgba(26,27,31,.04); }
+.evt .sign { position:absolute; top:14px; right:14px; width:30px; height:30px; border-radius:9px;
+  display:grid; place-items:center; font-weight:800; font-size:18px; }
+.evt .sign.p { background:var(--plus-bg); color:var(--plus); }
+.evt .sign.m { background:var(--minus-bg); color:var(--minus); }
+.evt .sign.z { background:var(--surface-container); color:var(--on-surface-variant); }
+.evt code { font-family:'JetBrains Mono',monospace; font-weight:700; font-size:13px; color:var(--primary); }
+.evt h3 { font-size:14.5px; font-weight:800; margin:3px 0 6px; }
+.evt p { font-size:12px; color:var(--on-surface-variant); }
+.evt .src { display:inline-block; margin-top:9px; font-size:10.5px; font-weight:700; color:var(--on-surface-variant);
+  background:var(--surface-low); border:1px solid var(--outline-variant); border-radius:7px; padding:3px 8px; }
+
+/* ── Formula / calc ───────────────────────────────────── */
+.calc { display:flex; flex-direction:column; gap:12px; }
+.formula { background:var(--surface-lowest); border:1px solid var(--outline-variant);
+  border-left:4px solid var(--primary); border-radius:0 14px 14px 0; padding:16px 20px; }
+.formula .eq { font-family:'JetBrains Mono',monospace; font-size:16px; font-weight:700; color:var(--on-surface); }
+.formula .eq .res { color:var(--ok); }
+.formula .eq .op  { color:var(--primary); }
+.formula .desc { font-size:12px; color:var(--on-surface-variant); margin-top:6px; }
+
+/* running balance visual */
+.run { display:flex; align-items:stretch; gap:0; flex-wrap:wrap; background:var(--surface-lowest);
+  border:1px solid var(--outline-variant); border-radius:14px; padding:18px; overflow-x:auto; }
+.run .node { flex:none; min-width:96px; text-align:center; padding:0 6px; }
+.run .node .ev { font-size:10.5px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:var(--on-surface-variant); }
+.run .node .dl { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; margin:4px 0; }
+.run .node .dl.p { color:var(--plus); } .run .node .dl.m { color:var(--minus); }
+.run .node .bal { font-family:'JetBrains Mono',monospace; font-size:17px; font-weight:800; color:var(--primary); }
+.run .arrow { flex:none; align-self:center; color:var(--outline); font-size:22px; padding:0 2px; }
+
+/* ── Permission matrix ────────────────────────────────── */
+.matrix { width:100%; border-collapse:separate; border-spacing:0; font-size:13px;
+  background:var(--surface-lowest); border:1px solid var(--outline-variant); border-radius:14px; overflow:hidden; }
+.matrix th, .matrix td { padding:11px 14px; text-align:center; border-bottom:1px solid var(--outline-variant); }
+.matrix thead th { background:var(--primary); color:#fff; font-size:12px; font-weight:800; letter-spacing:.03em; }
+.matrix tbody th { text-align:left; font-weight:800; background:var(--surface-low); color:var(--on-surface); }
+.matrix tbody tr:last-child th, .matrix tbody tr:last-child td { border-bottom:none; }
+.matrix .y { color:var(--ok); font-weight:800; }
+.matrix .n { color:var(--outline); }
+.matrix .adm { color:var(--primary); font-weight:800; }
+.mi.tiny { font-size:17px; vertical-align:-3px; }
+
+/* ── Note ─────────────────────────────────────────────── */
+.note { display:flex; gap:11px; background:var(--warn-bg); border:1px solid rgba(154,103,0,.3);
+  border-radius:12px; padding:13px 16px; margin-top:14px; font-size:12.5px; color:#7a5200; }
+.note .mi { flex:none; color:var(--warn); font-size:19px; }
+.note b { color:#5e3f00; }
+.note.info { background:var(--primary-container); border-color:rgba(20,92,183,.25); color:var(--on-primary-container); }
+.note.info .mi { color:var(--primary); }
+.note.info b { color:var(--on-primary-container); }
+
+.foot { margin-top:50px; padding-top:18px; border-top:1px solid var(--outline-variant);
+  text-align:center; font-size:11.5px; color:var(--on-surface-variant); }
+.foot code { font-family:'JetBrains Mono',monospace; color:var(--primary); }
+
+</style>
+<style>/* inlined from walkthrough.css */
+/* @import inlined: ../../assets/design-tokens-creative.css */
+/* =============================================================
+   CATEGORY 3 (CREATIVE / GENERAL / ONBOARDING / RESUME)
+   Soft Pastel Mesh Gradient & True Glassmorphism Styling
+   Seed: Soft Blue (#3B82F6) — 레퍼런스: JLPT 어휘 마스터(부드러운 로열 블루)
+   ============================================================= */
+
+/* 카테고리 3 테마 활성화 시 세맨틱 토큰 오버라이드 */
+body.creative-theme {
+  --md-sys-color-primary: #3B82F6;
+  --md-sys-color-on-primary: #ffffff;
+  --md-sys-color-primary-container: #e0ebfd;
+  --md-sys-color-on-primary-container: #173a5e;
+  --md-sys-color-secondary: #5c6e82;
+  --md-sys-color-on-secondary: #ffffff;
+  --md-sys-color-secondary-container: #ebf1f7;
+  --md-sys-color-on-secondary-container: #222c38;
+  
+  --md-sys-color-surface: #f4f8fc;
+  --md-sys-color-on-surface: #1e293b;
+  --md-sys-color-surface-container-lowest: #ffffff;
+  --md-sys-color-surface-container-low: #ebf2f7;
+  --md-sys-color-surface-container: #dfe8f0;
+  --md-sys-color-surface-container-high: #d4dfea;
+  
+  --md-sys-color-outline: #7c8d9e;
+  --md-sys-color-outline-variant: #cbd6e2;
+
+  /* techspec 토큰 미러 (대시보드/워크스루·온보딩·이력서 — techspec.css의 bare 토큰을 소비하므로
+     creative 적용 시 이 이름들도 반드시 remap해야 키 색상이 실제로 바뀐다. md-sys 토큰만 덮으면 무효과) */
+  --primary: #3B82F6;
+  --on-primary: #ffffff;
+  --primary-container: #e0ebfd;
+  --on-primary-container: #173a5e;
+  --secondary-container: #ebf1f7;
+  --on-secondary-container: #222c38;
+  --surface: #eef4fc;
+  --surface-lowest: #ffffff;
+  --surface-low: #eef4fb;
+  --surface-container: #e3edf7;
+  --on-surface: #1e293b;
+  --on-surface-variant: #5a6b7d;
+  --outline-variant: #cdd9e6;
+  --ok: #10b981;       --ok-bg: #e3f7ef;
+
+  /* 액센트 (레퍼런스 급수 배지 — 민트/그린/퍼플; 소비 시 var로 참조) */
+  --creative-accent-mint: #2bb8a3;
+  --creative-accent-green: #10b981;
+  --creative-accent-purple: #8b5cf6;
+
+  /* 모서리 토큰 매핑 */
+  --md-sys-shape-corner-small: 16px; /* 카테고리 3 카드는 16px를 기본으로 소비 */
+
+  /* 배경 — 가시적인 소프트 파스텔 메시(레퍼런스 감성; 4% 알파는 사실상 안 보였음 → 가시화) */
+  background:
+    radial-gradient(at 88% 0%, rgba(59, 130, 246, 0.1) 0px, transparent 52%),
+    radial-gradient(at 3% 99%, rgba(139, 92, 246, 0.1) 0px, transparent 50%),
+    radial-gradient(at 99% 97%, rgba(45, 212, 191, 0.06) 0px, transparent 46%),
+    #f4f8fe;
+  background-attachment: fixed;
+  font-size: 15px;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── 글래스모피즘 카드 (Glassmorphism Card) ── */
+.glass-card {
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 
+    0 4px 30px rgba(59, 130, 246, 0.02),
+    0 1px 3px rgba(0, 0, 0, 0.01),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border-radius: var(--md-sys-shape-corner-large, 16px);
+  transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1),
+              box-shadow 0.25s cubic-bezier(0.2, 0, 0, 1),
+              border-color 0.25s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.glass-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 
+    0 20px 40px rgba(59, 130, 246, 0.06),
+    0 1px 10px rgba(59, 130, 246, 0.03);
+  border-color: rgba(59, 130, 246, 0.25);
+}
+
+/* ── 카테고리 3 전용 알약형 버튼 (Stadium Button) ── */
+.creative-btn {
+  border-radius: 9999px !important;
+  padding: 8px 18px !important;
+  font-weight: 700;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.creative-btn:hover {
+  transform: translateY(-1px);
+}
+
+
+/* =============================================================
+   워크스루 인터랙티브 컴포넌트 (plan workspace/0007)
+   techspec.css 토큰 위에서만 동작 — raw hex 금지, var(--*)만.
+   techspec.css 다음에 로드한다.
+   ============================================================= */
+
+/* ── 상단 툴바 ─────────────────────────────────────────── */
+.wt-toolbar { display:flex; gap:8px; align-items:center; justify-content:flex-end; margin:-8px 0 18px; }
+.wt-hint { margin-right:auto; font-size:11.5px; color:var(--on-surface-variant); display:inline-flex; align-items:center; gap:6px; }
+.wt-hint .mi { font-size:15px; color:var(--primary); }
+
+/* ── 스텝 플레이어 ────────────────────────────────────── */
+.wt-controls { display:flex; align-items:center; gap:9px; margin-bottom:12px; }
+.wt-btn { font-family:inherit; font-size:12px; font-weight:700; cursor:pointer;
+  border:1px solid var(--outline-variant); background:var(--surface-lowest); color:var(--on-surface);
+  border-radius:8px; padding:7px 13px; display:inline-flex; align-items:center; gap:6px; transition:background .15s, border-color .15s; }
+.wt-btn:hover { background:var(--surface-low); }
+.wt-btn .mi { font-size:16px; }
+.wt-btn.primary { background:var(--primary); color:var(--on-primary); border-color:var(--primary); }
+.wt-btn.primary:hover { background:#0c3d80; }
+.wt-step { font-family:'JetBrains Mono',monospace; font-size:12.5px; font-weight:700; color:var(--on-surface-variant); margin-left:2px; }
+
+/* stepped run: 공개 전 노드/화살표 숨김 → 재생하며 등장 */
+.run.stepped .node, .run.stepped .arrow { opacity:0; transform:translateY(7px);
+  transition:opacity .35s ease, transform .35s ease; }
+.run.stepped .node.shown, .run.stepped .arrow.shown { opacity:1; transform:none; }
+.run.stepped .node .bal { display:inline-block; transition:color .2s; }
+.run.stepped .node.pulse .bal { animation:wtPulse .5s ease; }
+@keyframes wtPulse { 0%{ transform:scale(1);} 38%{ transform:scale(1.22); color:var(--ok);} 100%{ transform:scale(1);} }
+
+/* ── "왜?" 토글 (채택 vs 기각 + 근거) ─────────────────── */
+.why-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:start; }
+@media (max-width:820px){ .why-grid{ grid-template-columns:1fr; } }
+.why { border:1px solid var(--outline-variant); border-radius:13px; background:var(--surface-lowest); overflow:hidden;
+  box-shadow:0 1px 2px rgba(26,27,31,.04); }
+.why-q { width:100%; text-align:left; cursor:pointer; font-family:inherit; font-size:13px; font-weight:800;
+  color:var(--on-surface); background:var(--surface-low); border:0; padding:13px 15px;
+  display:flex; align-items:center; justify-content:space-between; gap:10px; transition:background .15s; }
+.why-q:hover { background:var(--surface-container); }
+.why-q .why-ic { flex:none; font-family:'Material Symbols Outlined'; font-size:20px; color:var(--primary); transition:transform .25s; }
+.why.open .why-q .why-ic { transform:rotate(180deg); }
+.why-a { max-height:0; overflow:hidden; transition:max-height .3s ease; }
+.why.open .why-a { max-height:460px; }
+.why-a .inner { padding:13px 15px; font-size:12.5px; line-height:1.62; color:var(--on-surface-variant); }
+.why-a .row { display:flex; gap:8px; margin-bottom:7px; }
+.why-a .row:last-child { margin-bottom:0; }
+.why-a .k { flex:none; width:42px; font-weight:800; font-size:11px; padding-top:1px; }
+.why-a .k.pick { color:var(--ok); } .why-a .k.drop { color:var(--minus); } .why-a .k.rsn { color:var(--primary); }
+.why-a code { font-family:'JetBrains Mono',monospace; color:var(--primary); font-size:11.5px; }
+
+/* ── 허브 인덱스 ──────────────────────────────────────── */
+.wt-tier { display:inline-flex; align-items:center; gap:5px; font-size:10px; font-weight:800; letter-spacing:.05em;
+  padding:2px 8px; border-radius:999px; text-transform:uppercase; }
+.wt-tier.a { background:var(--primary-container); color:var(--on-primary-container); }
+.wt-tier.b { background:var(--secondary-container); color:var(--on-secondary-container); }
+.wt-tier.c { background:var(--surface-container); color:var(--on-surface-variant); }
+.wt-cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px,1fr)); gap:14px; }
+.wt-card { display:flex; flex-direction:column; gap:8px; background:var(--surface-lowest); border:1px solid var(--outline-variant);
+  border-radius:14px; padding:16px 17px; box-shadow:0 1px 2px rgba(26,27,31,.05); text-decoration:none; color:inherit;
+  transition:box-shadow .15s, border-color .15s, transform .15s; position:relative; }
+a.wt-card:hover { box-shadow:0 6px 20px rgba(26,27,31,.10); border-color:var(--primary); transform:translateY(-2px); }
+.wt-card.soon { opacity:.62; }
+.wt-card .top { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.wt-card h3 { font-size:15px; font-weight:800; }
+.wt-card p { font-size:12px; color:var(--on-surface-variant); line-height:1.5; }
+.wt-card .plans { font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--on-surface-variant);
+  background:var(--surface-low); border:1px solid var(--outline-variant); border-radius:7px; padding:3px 8px; align-self:flex-start; }
+.wt-card .status { font-size:11px; font-weight:800; display:inline-flex; align-items:center; gap:4px; }
+.wt-card .status.done { color:var(--ok); } .wt-card .status.soon { color:var(--on-surface-variant); }
+.wt-readbox { position:absolute; bottom:15px; right:15px; display:inline-flex; align-items:center; gap:5px; font-size:10.5px;
+  font-weight:700; color:var(--on-surface-variant); cursor:pointer; user-select:none; }
+.wt-readbox input { accent-color:var(--ok); cursor:pointer; }
+.wt-card.read { border-color:var(--ok); }
+.wt-card.read .status.done::after { content:' · 읽음 ✓'; color:var(--ok); }
+
+/* ── 카테고리 3 (Creative) 테마 통합 오버라이드 ── */
+body.creative-theme .wt-card {
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 
+    0 4px 30px rgba(59, 130, 246, 0.02),
+    0 1px 3px rgba(0, 0, 0, 0.01),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border-radius: 16px;
+  transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1),
+              box-shadow 0.25s cubic-bezier(0.2, 0, 0, 1),
+              border-color 0.25s cubic-bezier(0.2, 0, 0, 1);
+}
+
+body.creative-theme a.wt-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 
+    0 20px 40px rgba(59, 130, 246, 0.06),
+    0 1px 10px rgba(59, 130, 246, 0.03);
+  border-color: rgba(59, 130, 246, 0.25);
+}
+
+/* 컨트롤 버튼들 알약형(Stadium) 변환 */
+body.creative-theme .wt-btn,
+body.creative-theme .wt-btn.primary {
+  border-radius: 9999px !important;
+  padding: 8px 18px !important;
+  font-weight: 700;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   창의 테마 확장 (plan workspace/0011 §2.1) — 좌측 점프 네비 · 대문 카드 ·
+   섹션 번호별 그라데이션 · 콜아웃 재디자인. walkthrough.js가 네비를 주입한다.
+   ════════════════════════════════════════════════════════════════════ */
+
+/* 본문을 좌측 레일만큼 밀어줌 (creative-theme 페이지에서만) */
+body.creative-theme { padding-left: 264px; }
+@media (max-width: 900px) {
+  body.creative-theme { padding-left: 0; }
+  .wt-nav { transform: translateX(-100%); }
+}
+
+/* ── 좌측 점프 네비(고정 레일 + 주제별 아코디언) ── */
+.wt-nav { position:fixed; top:0; left:0; width:264px; height:100vh; box-sizing:border-box; z-index:60;
+  display:flex; flex-direction:column; padding:16px 12px; overflow-y:auto;
+  background:rgba(255,255,255,.72); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
+  border-right:1px solid rgba(255,255,255,.65); box-shadow:2px 0 30px rgba(59,130,246,.05);
+  transition:transform .26s; }
+.wt-nav__head { display:flex; align-items:center; gap:9px; padding:6px 6px 12px; margin-bottom:4px;
+  border-bottom:1px solid var(--outline-variant); }
+.wt-nav__logo { flex:none; width:32px; height:32px; border-radius:10px; display:grid; place-items:center; color:#fff;
+  background:linear-gradient(135deg,#3B82F6,#7C3AED); box-shadow:0 5px 14px rgba(99,80,237,.28); }
+.wt-nav__logo .mi { font-size:19px; }
+.wt-nav__brand { font-size:13.5px; font-weight:800; color:var(--on-surface); white-space:nowrap; overflow:hidden; }
+
+/* 주제(그룹) 아코디언 — 라벨 클릭으로 접고 펴기 */
+.wt-nav__group-label { width:100%; display:flex; align-items:center; justify-content:space-between; gap:8px;
+  background:none; border:0; cursor:pointer; font-family:inherit; font-size:9.5px; font-weight:800; letter-spacing:.07em;
+  text-transform:uppercase; color:var(--on-surface-variant); padding:13px 10px 6px; transition:color .14s; }
+.wt-nav__group-label:hover { color:var(--primary); }
+.wt-nav__group-label .gchev { font-size:16px; opacity:.6; transition:transform .24s cubic-bezier(.2,0,0,1); }
+.wt-nav__group.grp-collapsed .wt-nav__group-label .gchev { transform:rotate(-90deg); }
+.wt-nav__group-items { overflow:hidden; max-height:560px; opacity:1; transition:max-height .28s ease, opacity .2s; }
+.wt-nav__group.grp-collapsed .wt-nav__group-items { max-height:0; opacity:0; }
+
+.wt-nav__item { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:10px; text-decoration:none;
+  color:var(--on-surface); font-size:12.5px; font-weight:600; white-space:nowrap; overflow:hidden;
+  transition:background .14s, color .14s, transform .16s; }
+.wt-nav__item .d { flex:none; width:8px; height:8px; border-radius:50%;
+  background:linear-gradient(135deg,#3B82F6,#7C3AED); opacity:.45; transition:opacity .14s, transform .2s; }
+.wt-nav__item:hover { background:rgba(59,130,246,.08); }
+.wt-nav__item:hover .d { opacity:.8; }
+.wt-nav__item.active { background:linear-gradient(135deg, rgba(59,130,246,.15), rgba(124,58,237,.10));
+  color:var(--primary); font-weight:800; }
+.wt-nav__item.active .d { opacity:1; }
+
+/* ── 대문 카드(.hero) — 라이트 파스텔 그라데이션 채움(레퍼런스 웰컴배너) ── */
+body.creative-theme .hero {
+  background:linear-gradient(135deg, rgba(224,238,255,.7) 0%, rgba(238,233,253,.58) 50%, rgba(250,246,255,.5) 100%);
+  backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+  border:1px solid rgba(191,214,250,.6); border-radius:22px; padding:26px 28px 24px; margin-bottom:38px;
+  box-shadow:0 12px 38px rgba(99,102,241,.1), inset 0 1px 0 rgba(255,255,255,.85); position:relative; overflow:hidden; }
+body.creative-theme .hero::before { content:''; position:absolute; inset:0 0 auto 0; height:3px;
+  background:linear-gradient(90deg, rgba(147,197,253,.9), rgba(196,181,253,.9), rgba(167,243,208,.85)); }
+body.creative-theme .hero::after { content:''; position:absolute; top:-42%; right:-8%; width:320px; height:320px; pointer-events:none;
+  background:radial-gradient(circle, rgba(139,92,246,.08), transparent 64%); }
+body.creative-theme .hero > * { position:relative; z-index:1; }
+body.creative-theme .hero .crest { background:linear-gradient(135deg,#3B82F6,#2563EB) !important; color:#fff !important;
+  border-radius:18px; box-shadow:0 10px 24px rgba(59,130,246,.34); animation:wtFloat 4.5s ease-in-out infinite; }
+@keyframes wtFloat { 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-5px); } }
+
+/* ── 섹션 번호 배지: 번호별 그라데이션(walkthrough.js가 .g1~.g6 부여) ── */
+body.creative-theme .sec-head .no { color:#fff !important; border-radius:11px; box-shadow:0 4px 12px rgba(59,130,246,.16); }
+body.creative-theme .sec-head .no.g1 { background:linear-gradient(135deg,#3B82F6,#2563EB) !important; }
+body.creative-theme .sec-head .no.g2 { background:linear-gradient(135deg,#8B5CF6,#7C3AED) !important; }
+body.creative-theme .sec-head .no.g3 { background:linear-gradient(135deg,#14B8A6,#0D9488) !important; }
+body.creative-theme .sec-head .no.g4 { background:linear-gradient(135deg,#F59E0B,#D97706) !important; }
+body.creative-theme .sec-head .no.g5 { background:linear-gradient(135deg,#F43F5E,#E11D48) !important; }
+body.creative-theme .sec-head .no.g6 { background:linear-gradient(135deg,#06B6D4,#0891B2) !important; }
+
+/* ── 콜아웃(느낌표/전구) — 화이트-팝 + 좌측 컬러 슬리버(배경 대비). walkthrough.js가 .note--* 부여 ── */
+body.creative-theme .note { border-radius:14px; border:1px solid rgba(30,41,59,.08); border-left:5px solid #3B82F6;
+  background:linear-gradient(100deg, rgba(59,130,246,.16) 0%, rgba(255,255,255,.9) 44%); backdrop-filter:blur(8px);
+  padding:14px 17px; margin:22px 0; box-shadow:0 5px 20px rgba(30,41,59,.07); position:relative;
+  transition:transform .18s cubic-bezier(.2,0,0,1), box-shadow .18s; }
+body.creative-theme .note:hover { transform:translateY(-2px); box-shadow:0 13px 32px rgba(30,41,59,.14); z-index:6; }
+body.creative-theme .note .mi { transition:transform .2s; }
+body.creative-theme .note:hover .mi { transform:scale(1.18) rotate(-6deg); }
+body.creative-theme .note b { color:#1e293b; }
+body.creative-theme .note.note--blue   { border-left-color:#3B82F6; background:linear-gradient(100deg, rgba(59,130,246,.17) 0%, rgba(255,255,255,.9) 44%); }
+body.creative-theme .note.note--blue .mi   { color:#3B82F6; }
+body.creative-theme .note.note--purple { border-left-color:#8B5CF6; background:linear-gradient(100deg, rgba(139,92,246,.18) 0%, rgba(255,255,255,.9) 44%); }
+body.creative-theme .note.note--purple .mi { color:#7C3AED; }
+body.creative-theme .note.note--teal   { border-left-color:#14B8A6; background:linear-gradient(100deg, rgba(20,184,166,.17) 0%, rgba(255,255,255,.9) 44%); }
+body.creative-theme .note.note--teal .mi   { color:#0D9488; }
+body.creative-theme .note.note--amber  { border-left-color:#F59E0B; background:linear-gradient(100deg, rgba(245,158,11,.19) 0%, rgba(255,255,255,.9) 44%); }
+body.creative-theme .note.note--amber .mi  { color:#D97706; }
+
+/* ── 인터랙션: 호버 · 스크롤 리빌 · 맨 위로 ── */
+.wt-nav__item { transition:background .14s, transform .16s cubic-bezier(.2,0,0,1), color .14s; }
+.wt-nav__item:hover { transform:translateX(4px); }
+.wt-nav__item .d { transition:opacity .14s, transform .2s; }
+.wt-nav__item:hover .d { transform:scale(1.55); }
+.wt-nav__logo { transition:transform .3s cubic-bezier(.34,1.56,.64,1); }
+.wt-nav__head:hover .wt-nav__logo { transform:rotate(-8deg) scale(1.06); }
+
+body.creative-theme .sec-head .no { transition:transform .22s cubic-bezier(.34,1.56,.64,1), box-shadow .22s; }
+body.creative-theme .sec-head:hover .no { transform:scale(1.14) rotate(-5deg); box-shadow:0 7px 18px rgba(59,130,246,.28); }
+
+body.creative-theme .es-card, body.creative-theme .evt, body.creative-theme .why {
+  position:relative; transition:transform .2s cubic-bezier(.2,0,0,1), box-shadow .2s, border-color .2s; }
+body.creative-theme .es-card:hover, body.creative-theme .evt:hover, body.creative-theme .why:hover {
+  transform:translateY(-3px); box-shadow:0 16px 34px rgba(59,130,246,.14); border-color:rgba(59,130,246,.32); z-index:6; }
+
+/* 이격 — 호버 리프트가 이웃 카드/콜아웃/표와 겹치지 않게 간격 확보 */
+body.creative-theme .wrap > section { margin-bottom:42px; }
+body.creative-theme .events { gap:20px; }
+body.creative-theme .why-grid { gap:18px; }
+body.creative-theme .wt-cards { gap:18px; }
+
+body.creative-theme.js-reveal .wrap > section { opacity:0; transform:translateY(18px);
+  transition:opacity .55s cubic-bezier(.2,0,0,1), transform .55s cubic-bezier(.2,0,0,1); }
+body.creative-theme.js-reveal .wrap > section.wt-in { opacity:1; transform:none; }
+
+.wt-top { position:fixed; right:22px; bottom:22px; width:46px; height:46px; border-radius:50%; border:0; cursor:pointer; z-index:70;
+  color:#fff; background:linear-gradient(135deg,#3B82F6,#7C3AED); box-shadow:0 8px 22px rgba(99,80,237,.4);
+  display:grid; place-items:center; opacity:0; transform:translateY(14px) scale(.85); pointer-events:none;
+  transition:opacity .25s, transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .2s; }
+.wt-top.show { opacity:1; transform:none; pointer-events:auto; }
+.wt-top:hover { transform:translateY(-3px) scale(1.06); box-shadow:0 14px 30px rgba(99,80,237,.5); }
+.wt-top .mi { font-size:22px; }
+
+@media (prefers-reduced-motion: reduce) {
+  body.creative-theme.js-reveal .wrap > section { opacity:1; transform:none; transition:none; }
+  body.creative-theme .hero .crest { animation:none; }
+}
+
+</style>
+<script>/* inlined (deferred) from walkthrough.js */
+(function(__run){if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',__run);}else{__run();}})(function(){
+/* 워크스루 인터랙티브 (plan workspace/0007) — 의존성 0, 빌드 0.
+   ① 스텝 플레이어(.wt-controls → 대상 .run.stepped) ② "왜?" 토글(.why-q) ③ 허브 읽음표시(.wt-readbox).
+   접근성: prefers-reduced-motion이면 애니메이션 생략. */
+(function () {
+  'use strict';
+  var REDUCE = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ── ① 스텝 플레이어 ─────────────────────────────────────────
+  function numOf(el) { return parseFloat(String(el).replace(/[^0-9.\-]/g, '')) || 0; }
+
+  document.querySelectorAll('.wt-controls').forEach(function (ctl) {
+    var run = document.getElementById(ctl.dataset.target || '');
+    if (!run) return;
+    var nodes = Array.prototype.slice.call(run.querySelectorAll('.node'));
+    var arrows = Array.prototype.slice.call(run.querySelectorAll('.arrow'));
+    var lbl = ctl.querySelector('.wt-step');
+    var total = nodes.length, step = 0, timer = null;
+
+    // 각 .bal 원본값 보존
+    nodes.forEach(function (n) {
+      var b = n.querySelector('.bal');
+      if (b && b.dataset.bal == null) b.dataset.bal = b.textContent.trim();
+    });
+
+    function balAt(i) { var b = nodes[i].querySelector('.bal'); return numOf(b.dataset.bal != null ? b.dataset.bal : b.textContent); }
+    function setLbl() { if (lbl) lbl.textContent = step + ' / ' + total; }
+
+    function animate(node, from, to) {
+      var el = node.querySelector('.bal'); if (!el) return;
+      if (REDUCE) { el.textContent = to; return; }
+      var t0 = null, dur = 420;
+      function fr(ts) { if (!t0) t0 = ts; var p = Math.min(1, (ts - t0) / dur);
+        el.textContent = Math.round(from + (to - from) * p);
+        if (p < 1) requestAnimationFrame(fr); else el.textContent = to; }
+      requestAnimationFrame(fr);
+    }
+
+    function reveal() {
+      if (step >= total) return false;
+      if (step > 0 && arrows[step - 1]) arrows[step - 1].classList.add('shown');
+      var node = nodes[step];
+      node.classList.add('shown', 'pulse');
+      setTimeout(function () { node.classList.remove('pulse'); }, 520);
+      animate(node, step > 0 ? balAt(step - 1) : 0, balAt(step));
+      step++; setLbl();
+      return true;
+    }
+
+    function reset() {
+      step = 0; if (timer) { clearInterval(timer); timer = null; }
+      nodes.forEach(function (n) { n.classList.remove('shown', 'pulse');
+        var b = n.querySelector('.bal'); if (b && b.dataset.bal != null) b.textContent = b.dataset.bal; });
+      arrows.forEach(function (a) { a.classList.remove('shown'); });
+      setLbl();
+    }
+
+    ctl.querySelectorAll('[data-act]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var act = btn.dataset.act;
+        if (act === 'step') { if (timer) { clearInterval(timer); timer = null; } reveal(); }
+        else if (act === 'auto') {
+          if (timer) { clearInterval(timer); timer = null; return; }
+          if (step >= total) reset();
+          timer = setInterval(function () { if (!reveal()) { clearInterval(timer); timer = null; } }, 820);
+        } else if (act === 'reset') { reset(); }
+      });
+    });
+    reset();
+  });
+
+  // ── ② "왜?" 토글 ───────────────────────────────────────────
+  document.querySelectorAll('.why-q').forEach(function (q) {
+    q.setAttribute('aria-expanded', 'false');
+    q.addEventListener('click', function () {
+      var box = q.closest('.why'); if (!box) return;
+      var open = box.classList.toggle('open');
+      q.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+  });
+
+  // ── ③ 허브 읽음표시 (localStorage) ─────────────────────────
+  document.querySelectorAll('.wt-card[data-read-id]').forEach(function (card) {
+    var id = card.dataset.readId, key = 'wt-read-' + id;
+    var box = card.querySelector('.wt-readbox input');
+    var on = localStorage.getItem(key) === '1';
+    if (on) card.classList.add('read');
+    if (box) {
+      box.checked = on;
+      box.addEventListener('click', function (e) { e.stopPropagation(); });
+      box.addEventListener('change', function () {
+        if (box.checked) { localStorage.setItem(key, '1'); card.classList.add('read'); }
+        else { localStorage.removeItem(key); card.classList.remove('read'); }
+      });
+    }
+  });
+})();
+
+/* ── ④ 좌측 점프 네비 주입 + 섹션 번호 그라데이션 (creative-theme 전용, plan 0011 §2.1) ── */
+(function () {
+  if (!document.body.classList.contains('creative-theme')) return;
+
+  // 섹션 번호 배지에 번호별 그라데이션 클래스(.g1~.g6) 부여 — HTML 무수정
+  document.querySelectorAll('.sec-head .no').forEach(function (el) {
+    var n = parseInt((el.textContent || '').replace(/[^0-9]/g, ''), 10);
+    if (!isNaN(n)) el.classList.add('g' + (((n - 1) % 6) + 1));
+  });
+
+  // 페이지 매니페스트(단일 출처) — 그룹 → [파일, 제목]
+  var NAV = [
+    ['여기서 시작', [['워크스루.html', '교육문서 허브'], ['워크스루-시스템오버뷰.html', '시스템 오버뷰']]],
+    ['기초·핵심', [['워크스루-재고이벤트소싱.html', '재고 이벤트 소싱'], ['워크스루-생산일지분해.html', '생산일지 분해']]],
+    ['도메인 주제', [['워크스루-일정문의챗봇.html', '일정문의·챗봇'], ['워크스루-자금채권.html', '자금·채권'], ['워크스루-생산로스율.html', '생산·로스율'], ['워크스루-샘플관리.html', '샘플관리'], ['워크스루-거래처마스터.html', '거래처 마스터'], ['워크스루-협업보드.html', '협업보드'], ['워크스루-발주출고-SSoT.html', '발주·출고 SSoT'], ['워크스루-마이그레이션.html', '마이그레이션'], ['워크스루-온톨로지.html', '온톨로지'], ['워크스루-문서허브.html', '문서허브'], ['워크스루-코퍼스적재.html', '코퍼스 적재']]],
+    ['거버넌스·운영', [['워크스루-권한감사.html', '권한·감사'], ['워크스루-거버넌스.html', '거버넌스 체계'], ['워크스루-기타요약.html', '그 외 요약']]]
+  ];
+  var here = decodeURIComponent((location.pathname.split('/').pop() || '')).toLowerCase();
+
+  var nav = document.createElement('nav');
+  nav.className = 'wt-nav';
+
+  var head = document.createElement('div');
+  head.className = 'wt-nav__head';
+  head.innerHTML = '<span class="wt-nav__logo"><span class="mi">school</span></span>'
+    + '<span class="wt-nav__brand">워크스루</span>';
+  nav.appendChild(head);
+
+  // 주제(그룹)별 아코디언 — 라벨 클릭으로 접고 펴기, 상태 기억(현재 페이지 그룹은 항상 펼침)
+  NAV.forEach(function (grp, gi) {
+    var groupEl = document.createElement('div');
+    groupEl.className = 'wt-nav__group';
+
+    var lbl = document.createElement('button');
+    lbl.className = 'wt-nav__group-label';
+    lbl.type = 'button';
+    lbl.innerHTML = '<span class="gl"></span><span class="mi gchev">expand_more</span>';
+    lbl.querySelector('.gl').textContent = grp[0];
+    groupEl.appendChild(lbl);
+
+    var items = document.createElement('div');
+    items.className = 'wt-nav__group-items';
+    var hasActive = false;
+    grp[1].forEach(function (it) {
+      var a = document.createElement('a');
+      a.className = 'wt-nav__item';
+      a.href = it[0];
+      if (it[0].toLowerCase() === here) { a.classList.add('active'); hasActive = true; }
+      a.innerHTML = '<span class="d"></span><span class="t"></span>';
+      a.querySelector('.t').textContent = it[1];
+      items.appendChild(a);
+    });
+    groupEl.appendChild(items);
+
+    var gkey = 'wtGrp_' + gi;
+    var gcol = false;
+    try { gcol = localStorage.getItem(gkey) === '1'; } catch (e) {}
+    if (gcol && !hasActive) groupEl.classList.add('grp-collapsed');
+    lbl.addEventListener('click', function () {
+      var c = groupEl.classList.toggle('grp-collapsed');
+      try { localStorage.setItem(gkey, c ? '1' : '0'); } catch (e) {}
+    });
+
+    nav.appendChild(groupEl);
+  });
+
+  document.body.insertBefore(nav, document.body.firstChild);
+
+  // 콜아웃 타입별 색상 — .note의 아이콘을 4버킷(purple/teal/amber/blue)으로 매핑
+  var NOTE_BUCKET = {
+    lightbulb:'purple', insights:'purple', bolt:'purple', psychology:'purple', palette:'purple', manage_search:'purple', trending_up:'purple', history_edu:'purple',
+    verified:'teal', verified_user:'teal', shield_lock:'teal', rule:'teal', balance:'teal', bookmark:'teal', key_off:'teal', badge:'teal', filter_center_focus:'teal', join_inner:'teal',
+    priority_high:'amber', warning:'amber', report_problem:'amber', bug_report:'amber', block:'amber', link_off:'amber', visibility_off:'amber', settings_ethernet:'amber'
+  };
+  document.querySelectorAll('.note').forEach(function (el) {
+    var ic = el.querySelector('.mi');
+    var name = ic ? (ic.textContent || '').trim() : '';
+    el.classList.add('note--' + (NOTE_BUCKET[name] || 'blue'));
+  });
+
+  // 스크롤 리빌 — 섹션이 뷰포트 진입 시 페이드업 (no-JS 폴백: js-reveal 가드로 항상 보임)
+  if ('IntersectionObserver' in window) {
+    document.body.classList.add('js-reveal');
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('wt-in'); io.unobserve(e.target); } });
+    }, { threshold: 0.06, rootMargin: '0px 0px -36px 0px' });
+    document.querySelectorAll('.wrap > section').forEach(function (s) { io.observe(s); });
+  }
+
+  // 맨 위로 — 스크롤 시 등장, 클릭 시 부드럽게 상단으로
+  var top = document.createElement('button');
+  top.className = 'wt-top'; top.type = 'button'; top.setAttribute('aria-label', '맨 위로');
+  top.innerHTML = '<span class="mi">arrow_upward</span>';
+  document.body.appendChild(top);
+  top.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+  window.addEventListener('scroll', function () { top.classList.toggle('show', window.scrollY > 420); }, { passive: true });
+})();
+
+});
+</script>
+</head>
+<body class="creative-theme">
+<div class="wrap">
+
+  <header class="hero">
+    <div class="crest"><span class="mi">hub</span></div>
+    <div>
+      <h1>재고 이벤트 소싱 코어</h1>
+      <span class="tag"><span class="mi">school</span>교육 워크스루 · plan 0001 / 0010 / 0015</span>
+      <p class="lead">제조 ERP의 재고는 <b>"현재값"을 저장하지 않습니다.</b> 입고·생산·출고·샘플·실사 — 모든 변화를
+        <b>사건(이동)으로 한 곳에 쌓고</b>, 현재 재고는 그 사건들의 <b>합으로 파생</b>합니다. 0097에서 <b>그림</b>으로
+        본 허브의 <b>실제 엔진</b>이 바로 이 구조예요. (<code>stock/movements.py</code> · <code>stock/ledger.py</code> · 재고장 VIEW)</p>
+    </div>
+  </header>
+
+  <div class="wt-toolbar">
+    <span class="wt-hint"><span class="mi">touch_app</span>§3에서 <b>사건을 눌러</b> 재고가 쌓이는 걸 직접 보고, §5 결정 카드의 <b>'왜?'</b>를 펼쳐 보세요.</span>
+    <a class="wt-btn" href="워크스루.html"><span class="mi">grid_view</span>워크스루 허브</a>
+  </div>
+
+  <!-- 1. 큰 그림 -->
+  <section>
+    <div class="sec-head"><span class="no">1</span><h2>사건이 쌓이고, 재고는 파생된다</h2><span class="sub">발생원 → 게이트 → 로그 → 뷰 → 소비자</span></div>
+    <div class="esflow">
+      <div class="es-stage">
+        <span class="lbl">발생원 (5)</span>
+        <div class="es-src">
+          <div class="es-chip"><span class="ic"><span class="mi">call_received</span></span><span>입고</span></div>
+          <div class="es-chip"><span class="ic"><span class="mi">factory</span></span><span>생산일지</span></div>
+          <div class="es-chip"><span class="ic"><span class="mi">local_shipping</span></span><span>출고</span></div>
+          <div class="es-chip"><span class="ic"><span class="mi">science</span></span><span>샘플</span></div>
+          <div class="es-chip"><span class="ic"><span class="mi">fact_check</span></span><span>실사 조정</span></div>
+        </div>
+      </div>
+      <div class="es-conn"><span class="tag">±qty</span><span class="line"></span></div>
+      <div class="es-stage">
+        <span class="lbl">유일 쓰기 게이트</span>
+        <div class="es-gate">
+          <span class="ic"><span class="mi">key</span></span>
+          <code>record_movement()</code>
+          <small>여기 하나만 INSERT · commit 안 함(호출자 트랜잭션)</small>
+        </div>
+      </div>
+      <div class="es-conn"><span class="tag">INSERT</span><span class="line"></span></div>
+      <div class="es-stage">
+        <span class="lbl">사건 로그</span>
+        <div class="es-card store">
+          <span class="ic"><span class="mi">receipt_long</span></span>
+          <h4>pp_stock_movements</h4>
+          <p>append-only 이동 로그. 부호 있는 qty(+입고/−소모)</p>
+          <span class="pill"><span class="mi">lock</span>불변·유일 쓰기</span>
+        </div>
+      </div>
+      <div class="es-conn"><span class="tag">SUM 파생</span><span class="line"></span></div>
+      <div class="es-stage">
+        <span class="lbl">파생 읽기 모델</span>
+        <div class="es-card view">
+          <span class="ic"><span class="mi">table_view</span></span>
+          <h4>재고장 VIEW</h4>
+          <p>pp_stock_ledger · total / reserved / available</p>
+          <span class="pill">직접 쓰지 않음</span>
+        </div>
+      </div>
+      <div class="es-conn"><span class="tag">SELECT</span><span class="line"></span></div>
+      <div class="es-stage">
+        <span class="lbl">소비자</span>
+        <div class="es-card ui">
+          <span class="ic"><span class="mi">insights</span></span>
+          <h4>재고장·경영분석<br/>추천·발주점</h4>
+          <p>모두 VIEW를 읽기만</p>
+          <span class="pill">read-only</span>
+        </div>
+      </div>
+    </div>
+    <p class="cap"><b>핵심 한 줄:</b> 재고는 어딘가에 저장된 숫자가 아니라 <b>「그 품목에 일어난 모든 사건의 합」</b>입니다.
+      그래서 "지금 재고가 왜 이렇지?"는 항상 <b>이력으로 설명</b>되고, 되돌리기는 <b>음수 사건</b>으로 합니다(삭제 아님).</p>
+    <div class="note info"><span class="mi">lightbulb</span><div>0097 <b>트랜잭션 구조 시각화</b>에서 본 허브 그래프가 바로 이 그림입니다 —
+      그쪽은 실측 데이터(행수·movement 타입)를 입혀 <b>"맵에 없는 사건=미분류"</b>로 드리프트를 신호화했죠.
+      <b>OPENING</b>이 미분류로 떴던 게 바로 아래 §2의 movement 타입 중 하나예요.</div></div>
+  </section>
+
+  <!-- 2. 쓰기 규칙 -->
+  <section>
+    <div class="sec-head"><span class="no">2</span><h2>게이트의 규칙 — 부호 있는 사건 7종</h2><span class="sub">movement_type CHECK enum</span></div>
+    <div class="events">
+      <div class="evt"><span class="sign p">+</span><code>OPENING</code><h3>기초재고</h3><p>이관 시점 시드. 0078 재고 기초 import의 출발점.</p><span class="src">plan 0078</span></div>
+      <div class="evt"><span class="sign p">+</span><code>INBOUND</code><h3>매입 입고</h3><p>원료·부자재·상품 입고. supplier_id=공급처.</p><span class="src">plan 0011 · 0027</span></div>
+      <div class="evt"><span class="sign p">+</span><code>PROD_OUTPUT</code><h3>생산 양품</h3><p>생산일지가 만든 완제품. 불량귀속(+supplier_id)은 현재고 제외.</p><span class="src">plan 0010 · bom.py</span></div>
+      <div class="evt"><span class="sign m">−</span><code>PROD_CONSUME</code><h3>원료 소모</h3><p>생산에 투입된 PPG/MDI 차감(유량계 실측).</p><span class="src">plan 0035 · bom.py</span></div>
+      <div class="evt"><span class="sign m">−</span><code>OUTBOUND</code><h3>출고 차감</h3><p>수주 기반 출고 확정. COGS 스냅샷(cost_*) 동봉.</p><span class="src">plan 0014 · 0015</span></div>
+      <div class="evt"><span class="sign m">−</span><code>SAMPLE</code><h3>샘플 발송</h3><p>원장 절단 샘플 차감.</p><span class="src">plan 0018 · 0022</span></div>
+      <div class="evt"><span class="sign z">±</span><code>ADJUST</code><h3>실사 조정</h3><p>실사 감모/보정. 차이를 한 사건으로 흡수.</p><span class="src">plan 0078</span></div>
+    </div>
+    <div class="note"><span class="mi">priority_high</span><div><b>두 가지 불변 규칙.</b>
+      ① <b>취소 = 삭제가 아님</b> — 음수(또는 반대부호) 사건을 추가해 상계합니다(로그는 영구·감사 가능).
+      ② <b>호출자가 트랜잭션 소유</b> — <code>record_movement()</code>는 <code>conn</code>만 받아 INSERT만 하고
+      <code>commit</code>을 절대 안 합니다. 그래서 "출고 1건 = 여러 이동"이 <b>원자적</b>으로 묶입니다.
+      (왜 이렇게? → §5 결정 카드)</div></div>
+  </section>
+
+  <!-- 3. 워크드 예제 (스텝 플레이어) -->
+  <section>
+    <div class="sec-head"><span class="no">3</span><h2>품목 하나가 흐르면 — 2-2-50T</h2><span class="sub">사건을 눌러 재고를 쌓아보세요</span></div>
+    <div class="wt-controls" data-target="runDemo">
+      <button class="wt-btn primary" data-act="step"><span class="mi">play_arrow</span>다음 사건</button>
+      <button class="wt-btn" data-act="auto"><span class="mi">fast_forward</span>자동</button>
+      <button class="wt-btn" data-act="reset"><span class="mi">replay</span>리셋</button>
+      <span class="wt-step">0 / 4</span>
+    </div>
+    <div class="run stepped" id="runDemo">
+      <div class="node"><div class="ev">OPENING</div><div class="dl p">+50</div><div class="bal" data-bal="50">50</div></div>
+      <span class="arrow">→</span>
+      <div class="node"><div class="ev">PROD_OUTPUT</div><div class="dl p">+100</div><div class="bal" data-bal="150">150</div></div>
+      <span class="arrow">→</span>
+      <div class="node"><div class="ev">OUTBOUND</div><div class="dl m">−30</div><div class="bal" data-bal="120">120</div></div>
+      <span class="arrow">→</span>
+      <div class="node"><div class="ev">SAMPLE</div><div class="dl m">−2</div><div class="bal" data-bal="118">118</div></div>
+    </div>
+    <p class="cap"><code>get_movements()</code>는 이 누적 잔량(<b>running_balance</b>)을 <b>오래된 순으로 계산</b>한 뒤
+      <b>최신 순으로 뒤집어</b> 반환합니다 — 수불부 팝업(0033)이 그대로 씁니다.</p>
+    <div class="calc">
+      <div class="formula"><div class="eq">total_qty <span class="op">=</span> SUM(qty) <span class="op">=</span> 50+100−30−2 <span class="op">=</span> <span class="res">118</span></div><div class="desc">현재고(on-hand) — 그 품목 모든 사건의 합.</div></div>
+      <div class="formula"><div class="eq">reserved_qty <span class="op">=</span> 미마감 발주 스케줄 잔량 <span class="op">=</span> <span class="res">20</span></div><div class="desc">아직 안 나간 발주분 — <b>발주는 재고 이동이 아님</b>(open order로 예약만).</div></div>
+      <div class="formula"><div class="eq">available_qty <span class="op">=</span> total <span class="op">−</span> reserved <span class="op">=</span> 118−20 <span class="op">=</span> <span class="res">98</span></div><div class="desc">실제로 더 팔 수 있는 양 — 일정문의 판정·발주점이 보는 숫자.</div></div>
+    </div>
+  </section>
+
+  <!-- 4. VIEW 진화 -->
+  <section>
+    <div class="sec-head"><span class="no">4</span><h2>재고장 VIEW가 3번 진화한 이유</h2><span class="sub">파생 모델은 도메인 따라 다시 그려진다</span></div>
+    <table class="matrix">
+      <thead><tr><th>마이그레이션</th><th>reserved 기준</th><th>onhand 특이점</th><th>계기</th></tr></thead>
+      <tbody>
+        <tr><th>a3f1c9d27b40 <span style="font-weight:600;color:var(--on-surface-variant)">(0001)</span></th><td>발주 <code>status='PENDING'</code> 합</td><td>전체 <code>SUM(qty)</code></td><td>최초 — 발주 헤더 단위</td></tr>
+        <tr><th>c4d8e1f02a90</th><td>(재정의)</td><td class="n">—</td><td>발주가 헤더/라인/<b>스케줄</b>로 분화</td></tr>
+        <tr><th>b1e7c4a920d5 <span class="adm">(최신·정본)</span></th><td>스케줄 <b>미마감 잔량</b><br/><code>pp_order_schedule_status</code></td><td><b>불량귀속 양품 제외</b><br/><code>NOT(PROD_OUTPUT AND supplier_id)</code></td><td>정밀화 + 불량모델(0010)</td></tr>
+      </tbody>
+    </table>
+    <div class="note"><span class="mi">bookmark</span><div>재고 산출을 바꾸려면 <b>최신 마이그(<code>b1e7c4a920d5</code>)가 정본</b>입니다 — 옛 판은 보지 마세요.
+      "불량으로 만든 양품은 <b>팔 재고가 아니다</b>"(0010)가 onhand의 한 줄 <code>WHERE</code>로 들어가 있는 게 포인트.</div></div>
+  </section>
+
+  <!-- 5. 결정과 트레이드오프 -->
+  <section>
+    <div class="sec-head"><span class="no">5</span><h2>결정과 트레이드오프 — 왜 이렇게 만들었나</h2><span class="sub">카드를 눌러 채택 vs 기각을 펼쳐보세요</span></div>
+    <div class="why-grid">
+
+      <div class="why">
+        <button class="why-q">현재 재고를 컬럼에 저장하면 빠른데, 왜 사건을 쌓나? <span class="why-ic">expand_more</span></button>
+        <div class="why-a"><div class="inner">
+          <div class="row"><span class="k pick">채택</span><span>이벤트 소싱 — append-only 로그 + <code>SUM</code> 파생.</span></div>
+          <div class="row"><span class="k drop">기각</span><span>품목 테이블에 <code>current_qty</code> 스냅샷 컬럼.</span></div>
+          <div class="row"><span class="k rsn">근거</span><span>스냅샷은 "왜 이 숫자?"를 설명 못 하고 동시갱신·중복차감에 취약. 로그는 모든 변화가 <b>감사 가능</b>하고 재계산으로 항상 복원된다. 비용=<code>SUM</code>(현 규모 무시 가능, 커지면 materialized view).</span></div>
+        </div></div>
+      </div>
+
+      <div class="why">
+        <button class="why-q">왜 INSERT를 <code>record_movement</code> 하나로만? <span class="why-ic">expand_more</span></button>
+        <div class="why-a"><div class="inner">
+          <div class="row"><span class="k pick">채택</span><span>단일 쓰기 게이트 1함수.</span></div>
+          <div class="row"><span class="k drop">기각</span><span>각 모듈이 직접 <code>pp_stock_movements</code>에 INSERT.</span></div>
+          <div class="row"><span class="k rsn">근거</span><span>분산 쓰기는 부호·메타(cost/supplier/source)·CHECK 규칙이 모듈마다 흩어져 드리프트. 단일 게이트가 무결성을 <b>한 곳에서 강제</b>.</span></div>
+        </div></div>
+      </div>
+
+      <div class="why">
+        <button class="why-q">취소는 왜 행 삭제가 아니라 음수 사건? <span class="why-ic">expand_more</span></button>
+        <div class="why-a"><div class="inner">
+          <div class="row"><span class="k pick">채택</span><span>반대부호 사건을 추가해 상계(net 0).</span></div>
+          <div class="row"><span class="k drop">기각</span><span>해당 movement 행 <code>DELETE</code>.</span></div>
+          <div class="row"><span class="k rsn">근거</span><span>삭제는 이력을 지워 감사 불가·"있었던 일"을 부정. 음수 상계는 <b>발생→취소가 둘 다 로그에 남는다</b>(회계 역분개와 동형).</span></div>
+        </div></div>
+      </div>
+
+      <div class="why">
+        <button class="why-q">재고장은 왜 물리 테이블이 아니라 VIEW? <span class="why-ic">expand_more</span></button>
+        <div class="why-a"><div class="inner">
+          <div class="row"><span class="k pick">채택</span><span>파생 VIEW(<code>pp_stock_ledger</code>).</span></div>
+          <div class="row"><span class="k drop">기각</span><span>물리 테이블에 재고 캐시(트리거 갱신).</span></div>
+          <div class="row"><span class="k rsn">근거</span><span>캐시 테이블은 트리거 누락·경합으로 로그와 어긋날 수 있다. VIEW는 <b>항상 로그와 100% 정합</b>. 느려지면 그때 materialized view(정합 유지하며 캐시).</span></div>
+        </div></div>
+      </div>
+
+      <div class="why">
+        <button class="why-q">불량으로 만든 양품을 왜 onhand에서 빼나? <span class="why-ic">expand_more</span></button>
+        <div class="why-a"><div class="inner">
+          <div class="row"><span class="k pick">채택</span><span>onhand에서 <code>PROD_OUTPUT AND supplier_id</code> 제외.</span></div>
+          <div class="row"><span class="k drop">기각</span><span>모든 PROD_OUTPUT을 현재고로 합산.</span></div>
+          <div class="row"><span class="k rsn">근거</span><span>불량 거래처에 귀속된 양품은 "만들어졌지만 <b>정상 판매 재고가 아님</b>"(0010). 현재고에 더하면 가용재고가 부풀어 잘못 판다. 사건은 남기되 onhand에서만 제외.</span></div>
+        </div></div>
+      </div>
+
+      <div class="why">
+        <button class="why-q"><code>record_movement</code>는 왜 commit을 안 하나? <span class="why-ic">expand_more</span></button>
+        <div class="why-a"><div class="inner">
+          <div class="row"><span class="k pick">채택</span><span>호출자가 트랜잭션 소유(<code>conn</code>만 받음).</span></div>
+          <div class="row"><span class="k drop">기각</span><span>함수 안에서 INSERT 후 즉시 <code>commit</code>.</span></div>
+          <div class="row"><span class="k rsn">근거</span><span>출고 1건 = 여러 이동(+COGS·shipment 그룹). 매번 commit하면 중간 실패 시 부분반영(원장 깨짐). 호출자 트랜잭션이라야 <b>전부 또는 전무</b>(원자성).</span></div>
+        </div></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 6. 재도출 + 주의 -->
+  <section>
+    <div class="sec-head"><span class="no">6</span><h2>재도출 패턴 + 다음에 볼 것</h2><span class="sub">고치면 그 날짜·출처를 통째로 다시 계산</span></div>
+    <div class="note info"><span class="mi">cached</span><div><b>생산일지를 재저장하면?</b> <code>delete_source_movements(source_module, movement_date)</code>로
+      이전 자동생성 이동을 <b>싹 지우고 다시 INSERT</b> — 이벤트 로그라서 가능한 <b>idempotent 재도출</b>입니다.
+      "그 날 그 출처의 사건을 통째로 새로 계산"이라 부분 갱신 버그가 끼지 않아요.</div></div>
+    <div class="events" style="margin-top:14px">
+      <div class="evt"><span class="sign z">1</span><h3>단일 게이트 고수</h3><p>새 이벤트 소스도 <b>record_movement만</b> 통해 쓰기. 직접 INSERT 금지(무결성 단일화).</p></div>
+      <div class="evt"><span class="sign z">2</span><h3>새 타입 = 두 곳 갱신</h3><p>movement_type 추가 시 <b>CHECK enum + 0097 txStructure.ts</b> 둘 다. 안 하면 미분류로 환기됨.</p></div>
+      <div class="evt"><span class="sign z">3</span><h3>SUM의 비용</h3><p>현재고가 <code>SUM</code>이라 사건이 폭증하면 느려질 수 있음 — 지금 규모 OK, 커지면 materialized view.</p></div>
+      <div class="evt"><span class="sign z">4</span><h3>VIEW 정본 위치</h3><p>VIEW 정의가 마이그에 흩어져 있으니, 항상 <b>최신 마이그</b>를 정본으로.</p></div>
+      <div class="evt"><span class="sign z">5</span><h3>부호 규약</h3><p>+입고/−소모. 새 타입 넣을 때 부호를 먼저 정하세요(합산이 곧 재고).</p></div>
+      <div class="evt"><span class="sign z">6</span><h3>다음 워크스루</h3><p>#2 = <code>bom.py</code> — 생산일지 1행이 어떻게 양품+원료 <b>두 사건</b>으로 쪼개지는지.</p></div>
+    </div>
+  </section>
+
+  <div class="foot">
+    재고 이벤트 소싱 코어 · 교육 워크스루 · 코드 정본 <code>api/stock/movements.py</code> · <code>api/stock/ledger.py</code> · VIEW <code>alembic/.../b1e7c4a920d5</code> · 설계 plan 0001 · 0010 · 0015 · 문서 체계 plan workspace/0007
+  </div>
+
+</div>
+</body>
+</html>
+

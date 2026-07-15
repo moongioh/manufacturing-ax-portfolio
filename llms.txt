@@ -1,0 +1,29 @@
+# Manufacturing AX Portfolio (moongioh)
+
+> Forward Deployed Engineer / AX engineer portfolio: solo end-to-end design, build and
+> operation of a cloud full-stack ERP (FastAPI, React, PostgreSQL, Cloud Run) for an
+> 18-person manufacturing/chemical SME in Korea, shipped to production in about two months.
+> Event-sourced data backbone + domain-ontology validation + RAG semantic document hub over
+> 16GB of unstructured files. Content is in Korean; this file indexes it for agents.
+
+Author: moongioh · awsgioh@gmail.com · https://github.com/moongioh
+Related open-source tool: harness-scope (Apache-2.0) — https://github.com/moongioh/harness-scope
+
+## Core pages
+
+- [Portfolio home](https://moongioh.github.io/manufacturing-ax-portfolio/): overview, 4 pillars, impact metrics (Korean, with English abstract)
+- [Resume](https://moongioh.github.io/manufacturing-ax-portfolio/resume.html): full case study and career detail
+- [Screen tour](slides.html): key screens of the ERP's admin UI on dummy data (slide deck of screenshots). A live frontend-only demo (static build, MSW mocks) is available on request.
+
+## Architecture walkthroughs (Korean, interactive HTML)
+
+- [Walkthrough hub](https://moongioh.github.io/manufacturing-ax-portfolio/walkthroughs/%EC%9B%8C%ED%81%AC%EC%8A%A4%EB%A3%A8.html): index of all 23 design walkthroughs
+- [System overview](https://moongioh.github.io/manufacturing-ax-portfolio/walkthroughs/%EC%9B%8C%ED%81%AC%EC%8A%A4%EB%A3%A8-%EC%8B%9C%EC%8A%A4%ED%85%9C%EC%98%A4%EB%B2%84%EB%B7%B0.html): the whole system on one page
+- [Stock event sourcing](https://moongioh.github.io/manufacturing-ax-portfolio/walkthroughs/%EC%9B%8C%ED%81%AC%EC%8A%A4%EB%A3%A8-%EC%9E%AC%EA%B3%A0%EC%9D%B4%EB%B2%A4%ED%8A%B8%EC%86%8C%EC%8B%B1.html): append-only movement ledger, stock as a derived sum
+- [Domain ontology](https://moongioh.github.io/manufacturing-ax-portfolio/walkthroughs/%EC%9B%8C%ED%81%AC%EC%8A%A4%EB%A3%A8-%EC%98%A8%ED%86%A8%EB%A1%9C%EC%A7%80.html): business rules as a validated concept graph
+- [Document hub (RAG)](https://moongioh.github.io/manufacturing-ax-portfolio/walkthroughs/%EC%9B%8C%ED%81%AC%EC%8A%A4%EB%A3%A8-%EB%AC%B8%EC%84%9C%ED%97%88%EB%B8%8C.html): pgvector semantic search over 16GB of unstructured files
+- [Data migration](https://moongioh.github.io/manufacturing-ax-portfolio/walkthroughs/%EC%9B%8C%ED%81%AC%EC%8A%A4%EB%A3%A8-%EB%A7%88%EC%9D%B4%EA%B7%B8%EB%A0%88%EC%9D%B4%EC%85%98.html): keyless legacy data, FK reconstruction, bank-anchored reconciliation
+
+## Machine-readable
+
+- [sitemap.xml](https://moongioh.github.io/manufacturing-ax-portfolio/sitemap.xml): all 25 pages with lastmod

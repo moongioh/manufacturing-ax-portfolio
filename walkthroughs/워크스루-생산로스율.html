@@ -1,0 +1,988 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>워크스루 — 생산 · 로스율 (소요시간 · 유량계 · 네팅)</title>
+<meta name="description" content="&quot;이 주문, 몇 분 걸리고 언제 끝나나? 원료는 얼마 먹고 로스는 어디서 보나? 재고가 있으면 얼마만 만들면 되나?&quot; — 이걸 사람 감이 아니라 결정적 공식으로 답합니다. 두께·밀도로 속도를 풀고, 점심·잔업을 넘겨 시각을 쌓고, 로스는 추정율 대신 유량계 실측 + 실사로 잡고, …" />
+<link rel="canonical" href="https://moongioh.github.io/manufacturing-ax-portfolio/walkthroughs/%EC%9B%8C%ED%81%AC%EC%8A%A4%EB%A3%A8-%EC%83%9D%EC%82%B0%EB%A1%9C%EC%8A%A4%EC%9C%A8.html" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="워크스루 — 생산 · 로스율 (소요시간 · 유량계 · 네팅)" />
+<meta property="og:description" content="&quot;이 주문, 몇 분 걸리고 언제 끝나나? 원료는 얼마 먹고 로스는 어디서 보나? 재고가 있으면 얼마만 만들면 되나?&quot; — 이걸 사람 감이 아니라 결정적 공식으로 답합니다. 두께·밀도로 속도를 풀고, 점심·잔업을 넘겨 시각을 쌓고, 로스는 추정율 대신 유량계 실측 + 실사로 잡고, …" />
+<meta property="og:url" content="https://moongioh.github.io/manufacturing-ax-portfolio/walkthroughs/%EC%9B%8C%ED%81%AC%EC%8A%A4%EB%A3%A8-%EC%83%9D%EC%82%B0%EB%A1%9C%EC%8A%A4%EC%9C%A8.html" />
+<meta property="og:site_name" content="Manufacturing AX Portfolio" />
+<meta property="og:locale" content="ko_KR" />
+<meta name="twitter:card" content="summary" />
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "TechArticle", "headline": "워크스루 — 생산 · 로스율 (소요시간 · 유량계 · 네팅)", "url": "https://moongioh.github.io/manufacturing-ax-portfolio/walkthroughs/%EC%9B%8C%ED%81%AC%EC%8A%A4%EB%A3%A8-%EC%83%9D%EC%82%B0%EB%A1%9C%EC%8A%A4%EC%9C%A8.html", "description": "\"이 주문, 몇 분 걸리고 언제 끝나나? 원료는 얼마 먹고 로스는 어디서 보나? 재고가 있으면 얼마만 만들면 되나?\" — 이걸 사람 감이 아니라 결정적 공식으로 답합니다. 두께·밀도로 속도를 풀고, 점심·잔업을 넘겨 시각을 쌓고, 로스는 추정율 대신 유량계 실측 + 실사로 잡고, …", "inLanguage": "ko", "dateModified": "2026-07-10", "author": {"@type": "Person", "name": "moongioh", "email": "awsgioh@gmail.com", "url": "https://moongioh.github.io/manufacturing-ax-portfolio/", "sameAs": ["https://github.com/moongioh", "https://github.com/moongioh/harness-scope"], "jobTitle": "Forward Deployed Engineer / AX Engineer"}, "isPartOf": {"@type": "WebSite", "name": "Manufacturing AX Portfolio", "url": "https://moongioh.github.io/manufacturing-ax-portfolio/"}}</script>
+<style>/* inlined from ../tech-specs/techspec.css */
+/* =============================================================
+   기술명세서 전용 시각 양식 (techspec) — 관리부 전용.
+   매뉴얼(manual.css)과 분리된 별도 계열: 글 최소 · 도식 최대.
+   전체화면 폭. Material 3 seed #1A5FBA(DESIGN.md) 색 토큰 공유.
+   Mermaid.js 다이어그램 + 커스텀 비주얼(이벤트 카드·계산식·권한 매트릭스).
+   ============================================================= */
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&display=swap');
+
+:root {
+  --primary:#145cb7;            --on-primary:#ffffff;
+  --primary-container:#d7e2ff;  --on-primary-container:#001b40;
+  --secondary-container:#dae2f9;--on-secondary-container:#131c2c;
+  --tertiary:#705574;          --tertiary-container:#fad7fc; --on-tertiary-container:#29132e;
+  --surface:#faf9fd;           --on-surface:#1a1b1f;
+  --surface-lowest:#ffffff;    --surface-low:#f4f3f7;
+  --surface-container:#efedf1; --surface-high:#e9e7ec;
+  --on-surface-variant:#44474e;
+  --outline:#74777f;           --outline-variant:#c4c6d0;
+  --ok:#2E7D32; --ok-bg:#e6f4e6;
+  --warn:#9a6700; --warn-bg:#fdf0d5;
+  --alert:#ba1a1a; --alert-bg:#ffdad6;
+  --plus:#1565c0; --plus-bg:#e3f0fd;
+  --minus:#c62828; --minus-bg:#fdeaea;
+  --radius:16px;
+}
+
+* { box-sizing:border-box; margin:0; padding:0; }
+
+body {
+  background:
+    radial-gradient(1200px 480px at 90% -10%, rgba(20,92,183,.06), transparent),
+    var(--surface);
+  color:var(--on-surface);
+  font-family:'Pretendard','Pretendard Variable',-apple-system,system-ui,sans-serif;
+  font-size:14px; line-height:1.65;
+  padding:40px 28px 80px;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap { width:min(100%, 1280px); margin:0 auto; }
+
+.mi { font-family:'Material Symbols Outlined'; font-weight:400; font-style:normal;
+  line-height:1; vertical-align:-4px; -webkit-font-feature-settings:'liga'; display:inline-block; }
+
+/* ── Hero ─────────────────────────────────────────────── */
+.hero { display:flex; align-items:flex-start; gap:18px; padding-bottom:24px; margin-bottom:8px;
+  border-bottom:2px solid var(--outline-variant); }
+.hero .crest { flex:none; width:60px; height:60px; border-radius:18px; display:grid; place-items:center;
+  background:linear-gradient(135deg, var(--primary), #0c3d80); color:#fff; box-shadow:0 6px 18px rgba(20,92,183,.28); }
+.hero .crest .mi { font-size:34px; }
+.hero h1 { font-size:27px; font-weight:800; letter-spacing:-.4px; }
+.hero .tag { display:inline-flex; align-items:center; gap:6px; margin-top:7px; font-size:11px; font-weight:800;
+  letter-spacing:.1em; text-transform:uppercase; color:var(--alert); background:var(--alert-bg);
+  border-radius:999px; padding:4px 12px; }
+.hero .tag .mi { font-size:15px; }
+.hero .lead { margin-top:9px; font-size:13.5px; color:var(--on-surface-variant); max-width:680px; }
+
+/* ── Section ──────────────────────────────────────────── */
+section { margin-top:40px; }
+.sec-head { display:flex; align-items:center; gap:13px; margin-bottom:16px; }
+.sec-head .no { flex:none; width:30px; height:30px; border-radius:9px; display:grid; place-items:center;
+  background:var(--primary); color:#fff; font-weight:800; font-size:14px; font-family:'JetBrains Mono',monospace; }
+.sec-head h2 { font-size:18px; font-weight:800; letter-spacing:-.2px; }
+.sec-head .sub { font-size:12.5px; color:var(--on-surface-variant); margin-left:auto; }
+
+/* ── Diagram card (holds Mermaid) ─────────────────────── */
+.diagram { background:var(--surface-lowest); border:1px solid var(--outline-variant);
+  border-radius:var(--radius); padding:24px; box-shadow:0 1px 2px rgba(26,27,31,.05), 0 8px 24px rgba(26,27,31,.06);
+  overflow-x:auto; }
+.diagram .mermaid { display:flex; justify-content:center; min-width:min-content; }
+.cap { margin-top:12px; font-size:12px; color:var(--on-surface-variant); text-align:center; }
+.cap b { color:var(--on-surface); }
+
+/* ── Event-sourcing flow (custom pipeline diagram) ────── */
+.esflow {
+  display:flex; align-items:stretch; gap:0;
+  background:
+    radial-gradient(620px 220px at 28% 18%, rgba(20,92,183,.05), transparent),
+    linear-gradient(180deg, var(--surface-lowest), var(--surface-low));
+  border:1px solid var(--outline-variant); border-radius:var(--radius);
+  padding:26px 22px; overflow-x:auto;
+  box-shadow:0 1px 2px rgba(26,27,31,.05), 0 10px 28px rgba(26,27,31,.06);
+}
+.es-stage { display:flex; flex-direction:column; align-items:center; gap:10px; flex:none; }
+.es-stage > .lbl { font-size:9.5px; font-weight:800; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--on-surface-variant); opacity:.7; }
+
+/* source column — stacked chips */
+.es-src { display:flex; flex-direction:column; gap:8px; }
+.es-chip { display:flex; align-items:center; gap:9px; background:var(--surface-lowest);
+  border:1px solid var(--outline-variant); border-radius:11px; padding:9px 13px 9px 10px;
+  box-shadow:0 1px 2px rgba(26,27,31,.05); min-width:128px; }
+.es-chip .ic { flex:none; width:28px; height:28px; border-radius:8px; display:grid; place-items:center;
+  background:var(--secondary-container); color:var(--on-secondary-container); }
+.es-chip .ic .mi { font-size:17px; }
+.es-chip span { font-size:12px; font-weight:700; color:var(--on-surface); }
+
+/* node card (store / view / ui) */
+.es-card { background:var(--surface-lowest); border:1px solid var(--outline-variant); border-radius:15px;
+  padding:15px 16px; width:150px; box-shadow:0 2px 6px rgba(26,27,31,.07); position:relative; }
+.es-card .ic { width:34px; height:34px; border-radius:10px; display:grid; place-items:center; margin-bottom:9px; }
+.es-card .ic .mi { font-size:20px; }
+.es-card h4 { font-size:13px; font-weight:800; line-height:1.3; }
+.es-card p { font-size:10.5px; color:var(--on-surface-variant); margin-top:3px; line-height:1.45; }
+.es-card .pill { display:inline-flex; align-items:center; gap:4px; margin-top:9px; font-size:9.5px; font-weight:800;
+  letter-spacing:.04em; padding:3px 8px; border-radius:999px; }
+.es-card .pill .mi { font-size:12px; }
+/* variants */
+.es-card.store { border-color:var(--primary); box-shadow:0 4px 16px rgba(20,92,183,.16); }
+.es-card.store .ic { background:var(--primary-container); color:var(--primary); }
+.es-card.store .pill { background:var(--primary); color:#fff; }
+.es-card.view .ic { background:var(--tertiary-container); color:var(--on-tertiary-container); }
+.es-card.view .pill { background:var(--tertiary-container); color:var(--on-tertiary-container); }
+.es-card.ui .ic { background:var(--ok-bg); color:var(--ok); }
+.es-card.ui .pill { background:var(--ok-bg); color:var(--ok); }
+
+/* central write gate */
+.es-gate { display:flex; flex-direction:column; align-items:center; justify-content:center;
+  min-width:120px; max-width:180px; padding:16px 12px; border-radius:16px; text-align:center;
+  background:linear-gradient(150deg, var(--primary), #0c3d80); color:#fff;
+  box-shadow:0 8px 22px rgba(20,92,183,.30); }
+.es-gate .ic .mi { font-size:24px; }
+.es-gate code { display:block; font-family:'JetBrains Mono',monospace; font-size:11.5px; font-weight:700;
+  margin-top:6px; line-height:1.3; word-break:break-all; }
+.es-gate small { font-size:9.5px; opacity:.85; margin-top:4px; }
+
+/* connectors */
+.es-conn { flex:none; align-self:center; display:flex; flex-direction:column; align-items:center; gap:3px;
+  padding:0 8px; }
+.es-conn .line { width:34px; height:2px; border-radius:2px;
+  background:linear-gradient(90deg, var(--outline-variant), var(--primary)); position:relative; }
+.es-conn .line::after { content:''; position:absolute; right:-1px; top:-3px;
+  border-left:7px solid var(--primary); border-top:4px solid transparent; border-bottom:4px solid transparent; }
+.es-conn .tag { font-size:9px; font-weight:800; letter-spacing:.03em; color:var(--primary); white-space:nowrap; }
+@media (max-width:900px){ .esflow{ gap:4px; } }
+
+/* multi-lane variant (분기 흐름 — 자재/운임 등) */
+.esflow.lanes { flex-direction:column; gap:14px; align-items:stretch; }
+.es-lane { display:flex; align-items:stretch; gap:0; min-width:min-content; }
+.es-lane + .es-lane { padding-top:14px; border-top:1px dashed var(--outline-variant); }
+.lane-tag { flex:none; align-self:center; margin-right:12px; writing-mode:vertical-rl; text-orientation:mixed;
+  font-size:10px; font-weight:800; letter-spacing:.12em; padding:8px 5px; border-radius:9px;
+  background:var(--primary-container); color:var(--on-primary-container); }
+.es-card.file { border-color:var(--tertiary); }
+.es-card.file .ic { background:var(--tertiary-container); color:var(--on-tertiary-container); }
+.es-card.file .pill { background:var(--tertiary-container); color:var(--on-tertiary-container); }
+
+/* ── Event cards grid ─────────────────────────────────── */
+.events { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+@media (max-width:820px){ .events{ grid-template-columns:repeat(2,1fr);} }
+.evt { background:var(--surface-lowest); border:1px solid var(--outline-variant); border-radius:14px;
+  padding:16px; position:relative; box-shadow:0 1px 2px rgba(26,27,31,.04); }
+.evt .sign { position:absolute; top:14px; right:14px; width:30px; height:30px; border-radius:9px;
+  display:grid; place-items:center; font-weight:800; font-size:18px; }
+.evt .sign.p { background:var(--plus-bg); color:var(--plus); }
+.evt .sign.m { background:var(--minus-bg); color:var(--minus); }
+.evt .sign.z { background:var(--surface-container); color:var(--on-surface-variant); }
+.evt code { font-family:'JetBrains Mono',monospace; font-weight:700; font-size:13px; color:var(--primary); }
+.evt h3 { font-size:14.5px; font-weight:800; margin:3px 0 6px; }
+.evt p { font-size:12px; color:var(--on-surface-variant); }
+.evt .src { display:inline-block; margin-top:9px; font-size:10.5px; font-weight:700; color:var(--on-surface-variant);
+  background:var(--surface-low); border:1px solid var(--outline-variant); border-radius:7px; padding:3px 8px; }
+
+/* ── Formula / calc ───────────────────────────────────── */
+.calc { display:flex; flex-direction:column; gap:12px; }
+.formula { background:var(--surface-lowest); border:1px solid var(--outline-variant);
+  border-left:4px solid var(--primary); border-radius:0 14px 14px 0; padding:16px 20px; }
+.formula .eq { font-family:'JetBrains Mono',monospace; font-size:16px; font-weight:700; color:var(--on-surface); }
+.formula .eq .res { color:var(--ok); }
+.formula .eq .op  { color:var(--primary); }
+.formula .desc { font-size:12px; color:var(--on-surface-variant); margin-top:6px; }
+
+/* running balance visual */
+.run { display:flex; align-items:stretch; gap:0; flex-wrap:wrap; background:var(--surface-lowest);
+  border:1px solid var(--outline-variant); border-radius:14px; padding:18px; overflow-x:auto; }
+.run .node { flex:none; min-width:96px; text-align:center; padding:0 6px; }
+.run .node .ev { font-size:10.5px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:var(--on-surface-variant); }
+.run .node .dl { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; margin:4px 0; }
+.run .node .dl.p { color:var(--plus); } .run .node .dl.m { color:var(--minus); }
+.run .node .bal { font-family:'JetBrains Mono',monospace; font-size:17px; font-weight:800; color:var(--primary); }
+.run .arrow { flex:none; align-self:center; color:var(--outline); font-size:22px; padding:0 2px; }
+
+/* ── Permission matrix ────────────────────────────────── */
+.matrix { width:100%; border-collapse:separate; border-spacing:0; font-size:13px;
+  background:var(--surface-lowest); border:1px solid var(--outline-variant); border-radius:14px; overflow:hidden; }
+.matrix th, .matrix td { padding:11px 14px; text-align:center; border-bottom:1px solid var(--outline-variant); }
+.matrix thead th { background:var(--primary); color:#fff; font-size:12px; font-weight:800; letter-spacing:.03em; }
+.matrix tbody th { text-align:left; font-weight:800; background:var(--surface-low); color:var(--on-surface); }
+.matrix tbody tr:last-child th, .matrix tbody tr:last-child td { border-bottom:none; }
+.matrix .y { color:var(--ok); font-weight:800; }
+.matrix .n { color:var(--outline); }
+.matrix .adm { color:var(--primary); font-weight:800; }
+.mi.tiny { font-size:17px; vertical-align:-3px; }
+
+/* ── Note ─────────────────────────────────────────────── */
+.note { display:flex; gap:11px; background:var(--warn-bg); border:1px solid rgba(154,103,0,.3);
+  border-radius:12px; padding:13px 16px; margin-top:14px; font-size:12.5px; color:#7a5200; }
+.note .mi { flex:none; color:var(--warn); font-size:19px; }
+.note b { color:#5e3f00; }
+.note.info { background:var(--primary-container); border-color:rgba(20,92,183,.25); color:var(--on-primary-container); }
+.note.info .mi { color:var(--primary); }
+.note.info b { color:var(--on-primary-container); }
+
+.foot { margin-top:50px; padding-top:18px; border-top:1px solid var(--outline-variant);
+  text-align:center; font-size:11.5px; color:var(--on-surface-variant); }
+.foot code { font-family:'JetBrains Mono',monospace; color:var(--primary); }
+
+</style>
+<style>/* inlined from walkthrough.css */
+/* @import inlined: ../../assets/design-tokens-creative.css */
+/* =============================================================
+   CATEGORY 3 (CREATIVE / GENERAL / ONBOARDING / RESUME)
+   Soft Pastel Mesh Gradient & True Glassmorphism Styling
+   Seed: Soft Blue (#3B82F6) — 레퍼런스: JLPT 어휘 마스터(부드러운 로열 블루)
+   ============================================================= */
+
+/* 카테고리 3 테마 활성화 시 세맨틱 토큰 오버라이드 */
+body.creative-theme {
+  --md-sys-color-primary: #3B82F6;
+  --md-sys-color-on-primary: #ffffff;
+  --md-sys-color-primary-container: #e0ebfd;
+  --md-sys-color-on-primary-container: #173a5e;
+  --md-sys-color-secondary: #5c6e82;
+  --md-sys-color-on-secondary: #ffffff;
+  --md-sys-color-secondary-container: #ebf1f7;
+  --md-sys-color-on-secondary-container: #222c38;
+  
+  --md-sys-color-surface: #f4f8fc;
+  --md-sys-color-on-surface: #1e293b;
+  --md-sys-color-surface-container-lowest: #ffffff;
+  --md-sys-color-surface-container-low: #ebf2f7;
+  --md-sys-color-surface-container: #dfe8f0;
+  --md-sys-color-surface-container-high: #d4dfea;
+  
+  --md-sys-color-outline: #7c8d9e;
+  --md-sys-color-outline-variant: #cbd6e2;
+
+  /* techspec 토큰 미러 (대시보드/워크스루·온보딩·이력서 — techspec.css의 bare 토큰을 소비하므로
+     creative 적용 시 이 이름들도 반드시 remap해야 키 색상이 실제로 바뀐다. md-sys 토큰만 덮으면 무효과) */
+  --primary: #3B82F6;
+  --on-primary: #ffffff;
+  --primary-container: #e0ebfd;
+  --on-primary-container: #173a5e;
+  --secondary-container: #ebf1f7;
+  --on-secondary-container: #222c38;
+  --surface: #eef4fc;
+  --surface-lowest: #ffffff;
+  --surface-low: #eef4fb;
+  --surface-container: #e3edf7;
+  --on-surface: #1e293b;
+  --on-surface-variant: #5a6b7d;
+  --outline-variant: #cdd9e6;
+  --ok: #10b981;       --ok-bg: #e3f7ef;
+
+  /* 액센트 (레퍼런스 급수 배지 — 민트/그린/퍼플; 소비 시 var로 참조) */
+  --creative-accent-mint: #2bb8a3;
+  --creative-accent-green: #10b981;
+  --creative-accent-purple: #8b5cf6;
+
+  /* 모서리 토큰 매핑 */
+  --md-sys-shape-corner-small: 16px; /* 카테고리 3 카드는 16px를 기본으로 소비 */
+
+  /* 배경 — 가시적인 소프트 파스텔 메시(레퍼런스 감성; 4% 알파는 사실상 안 보였음 → 가시화) */
+  background:
+    radial-gradient(at 88% 0%, rgba(59, 130, 246, 0.1) 0px, transparent 52%),
+    radial-gradient(at 3% 99%, rgba(139, 92, 246, 0.1) 0px, transparent 50%),
+    radial-gradient(at 99% 97%, rgba(45, 212, 191, 0.06) 0px, transparent 46%),
+    #f4f8fe;
+  background-attachment: fixed;
+  font-size: 15px;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── 글래스모피즘 카드 (Glassmorphism Card) ── */
+.glass-card {
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 
+    0 4px 30px rgba(59, 130, 246, 0.02),
+    0 1px 3px rgba(0, 0, 0, 0.01),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border-radius: var(--md-sys-shape-corner-large, 16px);
+  transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1),
+              box-shadow 0.25s cubic-bezier(0.2, 0, 0, 1),
+              border-color 0.25s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.glass-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 
+    0 20px 40px rgba(59, 130, 246, 0.06),
+    0 1px 10px rgba(59, 130, 246, 0.03);
+  border-color: rgba(59, 130, 246, 0.25);
+}
+
+/* ── 카테고리 3 전용 알약형 버튼 (Stadium Button) ── */
+.creative-btn {
+  border-radius: 9999px !important;
+  padding: 8px 18px !important;
+  font-weight: 700;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.creative-btn:hover {
+  transform: translateY(-1px);
+}
+
+
+/* =============================================================
+   워크스루 인터랙티브 컴포넌트 (plan workspace/0007)
+   techspec.css 토큰 위에서만 동작 — raw hex 금지, var(--*)만.
+   techspec.css 다음에 로드한다.
+   ============================================================= */
+
+/* ── 상단 툴바 ─────────────────────────────────────────── */
+.wt-toolbar { display:flex; gap:8px; align-items:center; justify-content:flex-end; margin:-8px 0 18px; }
+.wt-hint { margin-right:auto; font-size:11.5px; color:var(--on-surface-variant); display:inline-flex; align-items:center; gap:6px; }
+.wt-hint .mi { font-size:15px; color:var(--primary); }
+
+/* ── 스텝 플레이어 ────────────────────────────────────── */
+.wt-controls { display:flex; align-items:center; gap:9px; margin-bottom:12px; }
+.wt-btn { font-family:inherit; font-size:12px; font-weight:700; cursor:pointer;
+  border:1px solid var(--outline-variant); background:var(--surface-lowest); color:var(--on-surface);
+  border-radius:8px; padding:7px 13px; display:inline-flex; align-items:center; gap:6px; transition:background .15s, border-color .15s; }
+.wt-btn:hover { background:var(--surface-low); }
+.wt-btn .mi { font-size:16px; }
+.wt-btn.primary { background:var(--primary); color:var(--on-primary); border-color:var(--primary); }
+.wt-btn.primary:hover { background:#0c3d80; }
+.wt-step { font-family:'JetBrains Mono',monospace; font-size:12.5px; font-weight:700; color:var(--on-surface-variant); margin-left:2px; }
+
+/* stepped run: 공개 전 노드/화살표 숨김 → 재생하며 등장 */
+.run.stepped .node, .run.stepped .arrow { opacity:0; transform:translateY(7px);
+  transition:opacity .35s ease, transform .35s ease; }
+.run.stepped .node.shown, .run.stepped .arrow.shown { opacity:1; transform:none; }
+.run.stepped .node .bal { display:inline-block; transition:color .2s; }
+.run.stepped .node.pulse .bal { animation:wtPulse .5s ease; }
+@keyframes wtPulse { 0%{ transform:scale(1);} 38%{ transform:scale(1.22); color:var(--ok);} 100%{ transform:scale(1);} }
+
+/* ── "왜?" 토글 (채택 vs 기각 + 근거) ─────────────────── */
+.why-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:start; }
+@media (max-width:820px){ .why-grid{ grid-template-columns:1fr; } }
+.why { border:1px solid var(--outline-variant); border-radius:13px; background:var(--surface-lowest); overflow:hidden;
+  box-shadow:0 1px 2px rgba(26,27,31,.04); }
+.why-q { width:100%; text-align:left; cursor:pointer; font-family:inherit; font-size:13px; font-weight:800;
+  color:var(--on-surface); background:var(--surface-low); border:0; padding:13px 15px;
+  display:flex; align-items:center; justify-content:space-between; gap:10px; transition:background .15s; }
+.why-q:hover { background:var(--surface-container); }
+.why-q .why-ic { flex:none; font-family:'Material Symbols Outlined'; font-size:20px; color:var(--primary); transition:transform .25s; }
+.why.open .why-q .why-ic { transform:rotate(180deg); }
+.why-a { max-height:0; overflow:hidden; transition:max-height .3s ease; }
+.why.open .why-a { max-height:460px; }
+.why-a .inner { padding:13px 15px; font-size:12.5px; line-height:1.62; color:var(--on-surface-variant); }
+.why-a .row { display:flex; gap:8px; margin-bottom:7px; }
+.why-a .row:last-child { margin-bottom:0; }
+.why-a .k { flex:none; width:42px; font-weight:800; font-size:11px; padding-top:1px; }
+.why-a .k.pick { color:var(--ok); } .why-a .k.drop { color:var(--minus); } .why-a .k.rsn { color:var(--primary); }
+.why-a code { font-family:'JetBrains Mono',monospace; color:var(--primary); font-size:11.5px; }
+
+/* ── 허브 인덱스 ──────────────────────────────────────── */
+.wt-tier { display:inline-flex; align-items:center; gap:5px; font-size:10px; font-weight:800; letter-spacing:.05em;
+  padding:2px 8px; border-radius:999px; text-transform:uppercase; }
+.wt-tier.a { background:var(--primary-container); color:var(--on-primary-container); }
+.wt-tier.b { background:var(--secondary-container); color:var(--on-secondary-container); }
+.wt-tier.c { background:var(--surface-container); color:var(--on-surface-variant); }
+.wt-cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px,1fr)); gap:14px; }
+.wt-card { display:flex; flex-direction:column; gap:8px; background:var(--surface-lowest); border:1px solid var(--outline-variant);
+  border-radius:14px; padding:16px 17px; box-shadow:0 1px 2px rgba(26,27,31,.05); text-decoration:none; color:inherit;
+  transition:box-shadow .15s, border-color .15s, transform .15s; position:relative; }
+a.wt-card:hover { box-shadow:0 6px 20px rgba(26,27,31,.10); border-color:var(--primary); transform:translateY(-2px); }
+.wt-card.soon { opacity:.62; }
+.wt-card .top { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.wt-card h3 { font-size:15px; font-weight:800; }
+.wt-card p { font-size:12px; color:var(--on-surface-variant); line-height:1.5; }
+.wt-card .plans { font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--on-surface-variant);
+  background:var(--surface-low); border:1px solid var(--outline-variant); border-radius:7px; padding:3px 8px; align-self:flex-start; }
+.wt-card .status { font-size:11px; font-weight:800; display:inline-flex; align-items:center; gap:4px; }
+.wt-card .status.done { color:var(--ok); } .wt-card .status.soon { color:var(--on-surface-variant); }
+.wt-readbox { position:absolute; bottom:15px; right:15px; display:inline-flex; align-items:center; gap:5px; font-size:10.5px;
+  font-weight:700; color:var(--on-surface-variant); cursor:pointer; user-select:none; }
+.wt-readbox input { accent-color:var(--ok); cursor:pointer; }
+.wt-card.read { border-color:var(--ok); }
+.wt-card.read .status.done::after { content:' · 읽음 ✓'; color:var(--ok); }
+
+/* ── 카테고리 3 (Creative) 테마 통합 오버라이드 ── */
+body.creative-theme .wt-card {
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 
+    0 4px 30px rgba(59, 130, 246, 0.02),
+    0 1px 3px rgba(0, 0, 0, 0.01),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border-radius: 16px;
+  transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1),
+              box-shadow 0.25s cubic-bezier(0.2, 0, 0, 1),
+              border-color 0.25s cubic-bezier(0.2, 0, 0, 1);
+}
+
+body.creative-theme a.wt-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 
+    0 20px 40px rgba(59, 130, 246, 0.06),
+    0 1px 10px rgba(59, 130, 246, 0.03);
+  border-color: rgba(59, 130, 246, 0.25);
+}
+
+/* 컨트롤 버튼들 알약형(Stadium) 변환 */
+body.creative-theme .wt-btn,
+body.creative-theme .wt-btn.primary {
+  border-radius: 9999px !important;
+  padding: 8px 18px !important;
+  font-weight: 700;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   창의 테마 확장 (plan workspace/0011 §2.1) — 좌측 점프 네비 · 대문 카드 ·
+   섹션 번호별 그라데이션 · 콜아웃 재디자인. walkthrough.js가 네비를 주입한다.
+   ════════════════════════════════════════════════════════════════════ */
+
+/* 본문을 좌측 레일만큼 밀어줌 (creative-theme 페이지에서만) */
+body.creative-theme { padding-left: 264px; }
+@media (max-width: 900px) {
+  body.creative-theme { padding-left: 0; }
+  .wt-nav { transform: translateX(-100%); }
+}
+
+/* ── 좌측 점프 네비(고정 레일 + 주제별 아코디언) ── */
+.wt-nav { position:fixed; top:0; left:0; width:264px; height:100vh; box-sizing:border-box; z-index:60;
+  display:flex; flex-direction:column; padding:16px 12px; overflow-y:auto;
+  background:rgba(255,255,255,.72); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
+  border-right:1px solid rgba(255,255,255,.65); box-shadow:2px 0 30px rgba(59,130,246,.05);
+  transition:transform .26s; }
+.wt-nav__head { display:flex; align-items:center; gap:9px; padding:6px 6px 12px; margin-bottom:4px;
+  border-bottom:1px solid var(--outline-variant); }
+.wt-nav__logo { flex:none; width:32px; height:32px; border-radius:10px; display:grid; place-items:center; color:#fff;
+  background:linear-gradient(135deg,#3B82F6,#7C3AED); box-shadow:0 5px 14px rgba(99,80,237,.28); }
+.wt-nav__logo .mi { font-size:19px; }
+.wt-nav__brand { font-size:13.5px; font-weight:800; color:var(--on-surface); white-space:nowrap; overflow:hidden; }
+
+/* 주제(그룹) 아코디언 — 라벨 클릭으로 접고 펴기 */
+.wt-nav__group-label { width:100%; display:flex; align-items:center; justify-content:space-between; gap:8px;
+  background:none; border:0; cursor:pointer; font-family:inherit; font-size:9.5px; font-weight:800; letter-spacing:.07em;
+  text-transform:uppercase; color:var(--on-surface-variant); padding:13px 10px 6px; transition:color .14s; }
+.wt-nav__group-label:hover { color:var(--primary); }
+.wt-nav__group-label .gchev { font-size:16px; opacity:.6; transition:transform .24s cubic-bezier(.2,0,0,1); }
+.wt-nav__group.grp-collapsed .wt-nav__group-label .gchev { transform:rotate(-90deg); }
+.wt-nav__group-items { overflow:hidden; max-height:560px; opacity:1; transition:max-height .28s ease, opacity .2s; }
+.wt-nav__group.grp-collapsed .wt-nav__group-items { max-height:0; opacity:0; }
+
+.wt-nav__item { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:10px; text-decoration:none;
+  color:var(--on-surface); font-size:12.5px; font-weight:600; white-space:nowrap; overflow:hidden;
+  transition:background .14s, color .14s, transform .16s; }
+.wt-nav__item .d { flex:none; width:8px; height:8px; border-radius:50%;
+  background:linear-gradient(135deg,#3B82F6,#7C3AED); opacity:.45; transition:opacity .14s, transform .2s; }
+.wt-nav__item:hover { background:rgba(59,130,246,.08); }
+.wt-nav__item:hover .d { opacity:.8; }
+.wt-nav__item.active { background:linear-gradient(135deg, rgba(59,130,246,.15), rgba(124,58,237,.10));
+  color:var(--primary); font-weight:800; }
+.wt-nav__item.active .d { opacity:1; }
+
+/* ── 대문 카드(.hero) — 라이트 파스텔 그라데이션 채움(레퍼런스 웰컴배너) ── */
+body.creative-theme .hero {
+  background:linear-gradient(135deg, rgba(224,238,255,.7) 0%, rgba(238,233,253,.58) 50%, rgba(250,246,255,.5) 100%);
+  backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+  border:1px solid rgba(191,214,250,.6); border-radius:22px; padding:26px 28px 24px; margin-bottom:38px;
+  box-shadow:0 12px 38px rgba(99,102,241,.1), inset 0 1px 0 rgba(255,255,255,.85); position:relative; overflow:hidden; }
+body.creative-theme .hero::before { content:''; position:absolute; inset:0 0 auto 0; height:3px;
+  background:linear-gradient(90deg, rgba(147,197,253,.9), rgba(196,181,253,.9), rgba(167,243,208,.85)); }
+body.creative-theme .hero::after { content:''; position:absolute; top:-42%; right:-8%; width:320px; height:320px; pointer-events:none;
+  background:radial-gradient(circle, rgba(139,92,246,.08), transparent 64%); }
+body.creative-theme .hero > * { position:relative; z-index:1; }
+body.creative-theme .hero .crest { background:linear-gradient(135deg,#3B82F6,#2563EB) !important; color:#fff !important;
+  border-radius:18px; box-shadow:0 10px 24px rgba(59,130,246,.34); animation:wtFloat 4.5s ease-in-out infinite; }
+@keyframes wtFloat { 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-5px); } }
+
+/* ── 섹션 번호 배지: 번호별 그라데이션(walkthrough.js가 .g1~.g6 부여) ── */
+body.creative-theme .sec-head .no { color:#fff !important; border-radius:11px; box-shadow:0 4px 12px rgba(59,130,246,.16); }
+body.creative-theme .sec-head .no.g1 { background:linear-gradient(135deg,#3B82F6,#2563EB) !important; }
+body.creative-theme .sec-head .no.g2 { background:linear-gradient(135deg,#8B5CF6,#7C3AED) !important; }
+body.creative-theme .sec-head .no.g3 { background:linear-gradient(135deg,#14B8A6,#0D9488) !important; }
+body.creative-theme .sec-head .no.g4 { background:linear-gradient(135deg,#F59E0B,#D97706) !important; }
+body.creative-theme .sec-head .no.g5 { background:linear-gradient(135deg,#F43F5E,#E11D48) !important; }
+body.creative-theme .sec-head .no.g6 { background:linear-gradient(135deg,#06B6D4,#0891B2) !important; }
+
+/* ── 콜아웃(느낌표/전구) — 화이트-팝 + 좌측 컬러 슬리버(배경 대비). walkthrough.js가 .note--* 부여 ── */
+body.creative-theme .note { border-radius:14px; border:1px solid rgba(30,41,59,.08); border-left:5px solid #3B82F6;
+  background:linear-gradient(100deg, rgba(59,130,246,.16) 0%, rgba(255,255,255,.9) 44%); backdrop-filter:blur(8px);
+  padding:14px 17px; margin:22px 0; box-shadow:0 5px 20px rgba(30,41,59,.07); position:relative;
+  transition:transform .18s cubic-bezier(.2,0,0,1), box-shadow .18s; }
+body.creative-theme .note:hover { transform:translateY(-2px); box-shadow:0 13px 32px rgba(30,41,59,.14); z-index:6; }
+body.creative-theme .note .mi { transition:transform .2s; }
+body.creative-theme .note:hover .mi { transform:scale(1.18) rotate(-6deg); }
+body.creative-theme .note b { color:#1e293b; }
+body.creative-theme .note.note--blue   { border-left-color:#3B82F6; background:linear-gradient(100deg, rgba(59,130,246,.17) 0%, rgba(255,255,255,.9) 44%); }
+body.creative-theme .note.note--blue .mi   { color:#3B82F6; }
+body.creative-theme .note.note--purple { border-left-color:#8B5CF6; background:linear-gradient(100deg, rgba(139,92,246,.18) 0%, rgba(255,255,255,.9) 44%); }
+body.creative-theme .note.note--purple .mi { color:#7C3AED; }
+body.creative-theme .note.note--teal   { border-left-color:#14B8A6; background:linear-gradient(100deg, rgba(20,184,166,.17) 0%, rgba(255,255,255,.9) 44%); }
+body.creative-theme .note.note--teal .mi   { color:#0D9488; }
+body.creative-theme .note.note--amber  { border-left-color:#F59E0B; background:linear-gradient(100deg, rgba(245,158,11,.19) 0%, rgba(255,255,255,.9) 44%); }
+body.creative-theme .note.note--amber .mi  { color:#D97706; }
+
+/* ── 인터랙션: 호버 · 스크롤 리빌 · 맨 위로 ── */
+.wt-nav__item { transition:background .14s, transform .16s cubic-bezier(.2,0,0,1), color .14s; }
+.wt-nav__item:hover { transform:translateX(4px); }
+.wt-nav__item .d { transition:opacity .14s, transform .2s; }
+.wt-nav__item:hover .d { transform:scale(1.55); }
+.wt-nav__logo { transition:transform .3s cubic-bezier(.34,1.56,.64,1); }
+.wt-nav__head:hover .wt-nav__logo { transform:rotate(-8deg) scale(1.06); }
+
+body.creative-theme .sec-head .no { transition:transform .22s cubic-bezier(.34,1.56,.64,1), box-shadow .22s; }
+body.creative-theme .sec-head:hover .no { transform:scale(1.14) rotate(-5deg); box-shadow:0 7px 18px rgba(59,130,246,.28); }
+
+body.creative-theme .es-card, body.creative-theme .evt, body.creative-theme .why {
+  position:relative; transition:transform .2s cubic-bezier(.2,0,0,1), box-shadow .2s, border-color .2s; }
+body.creative-theme .es-card:hover, body.creative-theme .evt:hover, body.creative-theme .why:hover {
+  transform:translateY(-3px); box-shadow:0 16px 34px rgba(59,130,246,.14); border-color:rgba(59,130,246,.32); z-index:6; }
+
+/* 이격 — 호버 리프트가 이웃 카드/콜아웃/표와 겹치지 않게 간격 확보 */
+body.creative-theme .wrap > section { margin-bottom:42px; }
+body.creative-theme .events { gap:20px; }
+body.creative-theme .why-grid { gap:18px; }
+body.creative-theme .wt-cards { gap:18px; }
+
+body.creative-theme.js-reveal .wrap > section { opacity:0; transform:translateY(18px);
+  transition:opacity .55s cubic-bezier(.2,0,0,1), transform .55s cubic-bezier(.2,0,0,1); }
+body.creative-theme.js-reveal .wrap > section.wt-in { opacity:1; transform:none; }
+
+.wt-top { position:fixed; right:22px; bottom:22px; width:46px; height:46px; border-radius:50%; border:0; cursor:pointer; z-index:70;
+  color:#fff; background:linear-gradient(135deg,#3B82F6,#7C3AED); box-shadow:0 8px 22px rgba(99,80,237,.4);
+  display:grid; place-items:center; opacity:0; transform:translateY(14px) scale(.85); pointer-events:none;
+  transition:opacity .25s, transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .2s; }
+.wt-top.show { opacity:1; transform:none; pointer-events:auto; }
+.wt-top:hover { transform:translateY(-3px) scale(1.06); box-shadow:0 14px 30px rgba(99,80,237,.5); }
+.wt-top .mi { font-size:22px; }
+
+@media (prefers-reduced-motion: reduce) {
+  body.creative-theme.js-reveal .wrap > section { opacity:1; transform:none; transition:none; }
+  body.creative-theme .hero .crest { animation:none; }
+}
+
+</style>
+<script>/* inlined (deferred) from walkthrough.js */
+(function(__run){if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',__run);}else{__run();}})(function(){
+/* 워크스루 인터랙티브 (plan workspace/0007) — 의존성 0, 빌드 0.
+   ① 스텝 플레이어(.wt-controls → 대상 .run.stepped) ② "왜?" 토글(.why-q) ③ 허브 읽음표시(.wt-readbox).
+   접근성: prefers-reduced-motion이면 애니메이션 생략. */
+(function () {
+  'use strict';
+  var REDUCE = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ── ① 스텝 플레이어 ─────────────────────────────────────────
+  function numOf(el) { return parseFloat(String(el).replace(/[^0-9.\-]/g, '')) || 0; }
+
+  document.querySelectorAll('.wt-controls').forEach(function (ctl) {
+    var run = document.getElementById(ctl.dataset.target || '');
+    if (!run) return;
+    var nodes = Array.prototype.slice.call(run.querySelectorAll('.node'));
+    var arrows = Array.prototype.slice.call(run.querySelectorAll('.arrow'));
+    var lbl = ctl.querySelector('.wt-step');
+    var total = nodes.length, step = 0, timer = null;
+
+    // 각 .bal 원본값 보존
+    nodes.forEach(function (n) {
+      var b = n.querySelector('.bal');
+      if (b && b.dataset.bal == null) b.dataset.bal = b.textContent.trim();
+    });
+
+    function balAt(i) { var b = nodes[i].querySelector('.bal'); return numOf(b.dataset.bal != null ? b.dataset.bal : b.textContent); }
+    function setLbl() { if (lbl) lbl.textContent = step + ' / ' + total; }
+
+    function animate(node, from, to) {
+      var el = node.querySelector('.bal'); if (!el) return;
+      if (REDUCE) { el.textContent = to; return; }
+      var t0 = null, dur = 420;
+      function fr(ts) { if (!t0) t0 = ts; var p = Math.min(1, (ts - t0) / dur);
+        el.textContent = Math.round(from + (to - from) * p);
+        if (p < 1) requestAnimationFrame(fr); else el.textContent = to; }
+      requestAnimationFrame(fr);
+    }
+
+    function reveal() {
+      if (step >= total) return false;
+      if (step > 0 && arrows[step - 1]) arrows[step - 1].classList.add('shown');
+      var node = nodes[step];
+      node.classList.add('shown', 'pulse');
+      setTimeout(function () { node.classList.remove('pulse'); }, 520);
+      animate(node, step > 0 ? balAt(step - 1) : 0, balAt(step));
+      step++; setLbl();
+      return true;
+    }
+
+    function reset() {
+      step = 0; if (timer) { clearInterval(timer); timer = null; }
+      nodes.forEach(function (n) { n.classList.remove('shown', 'pulse');
+        var b = n.querySelector('.bal'); if (b && b.dataset.bal != null) b.textContent = b.dataset.bal; });
+      arrows.forEach(function (a) { a.classList.remove('shown'); });
+      setLbl();
+    }
+
+    ctl.querySelectorAll('[data-act]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var act = btn.dataset.act;
+        if (act === 'step') { if (timer) { clearInterval(timer); timer = null; } reveal(); }
+        else if (act === 'auto') {
+          if (timer) { clearInterval(timer); timer = null; return; }
+          if (step >= total) reset();
+          timer = setInterval(function () { if (!reveal()) { clearInterval(timer); timer = null; } }, 820);
+        } else if (act === 'reset') { reset(); }
+      });
+    });
+    reset();
+  });
+
+  // ── ② "왜?" 토글 ───────────────────────────────────────────
+  document.querySelectorAll('.why-q').forEach(function (q) {
+    q.setAttribute('aria-expanded', 'false');
+    q.addEventListener('click', function () {
+      var box = q.closest('.why'); if (!box) return;
+      var open = box.classList.toggle('open');
+      q.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+  });
+
+  // ── ③ 허브 읽음표시 (localStorage) ─────────────────────────
+  document.querySelectorAll('.wt-card[data-read-id]').forEach(function (card) {
+    var id = card.dataset.readId, key = 'wt-read-' + id;
+    var box = card.querySelector('.wt-readbox input');
+    var on = localStorage.getItem(key) === '1';
+    if (on) card.classList.add('read');
+    if (box) {
+      box.checked = on;
+      box.addEventListener('click', function (e) { e.stopPropagation(); });
+      box.addEventListener('change', function () {
+        if (box.checked) { localStorage.setItem(key, '1'); card.classList.add('read'); }
+        else { localStorage.removeItem(key); card.classList.remove('read'); }
+      });
+    }
+  });
+})();
+
+/* ── ④ 좌측 점프 네비 주입 + 섹션 번호 그라데이션 (creative-theme 전용, plan 0011 §2.1) ── */
+(function () {
+  if (!document.body.classList.contains('creative-theme')) return;
+
+  // 섹션 번호 배지에 번호별 그라데이션 클래스(.g1~.g6) 부여 — HTML 무수정
+  document.querySelectorAll('.sec-head .no').forEach(function (el) {
+    var n = parseInt((el.textContent || '').replace(/[^0-9]/g, ''), 10);
+    if (!isNaN(n)) el.classList.add('g' + (((n - 1) % 6) + 1));
+  });
+
+  // 페이지 매니페스트(단일 출처) — 그룹 → [파일, 제목]
+  var NAV = [
+    ['여기서 시작', [['워크스루.html', '교육문서 허브'], ['워크스루-시스템오버뷰.html', '시스템 오버뷰']]],
+    ['기초·핵심', [['워크스루-재고이벤트소싱.html', '재고 이벤트 소싱'], ['워크스루-생산일지분해.html', '생산일지 분해']]],
+    ['도메인 주제', [['워크스루-일정문의챗봇.html', '일정문의·챗봇'], ['워크스루-자금채권.html', '자금·채권'], ['워크스루-생산로스율.html', '생산·로스율'], ['워크스루-샘플관리.html', '샘플관리'], ['워크스루-거래처마스터.html', '거래처 마스터'], ['워크스루-협업보드.html', '협업보드'], ['워크스루-발주출고-SSoT.html', '발주·출고 SSoT'], ['워크스루-마이그레이션.html', '마이그레이션'], ['워크스루-온톨로지.html', '온톨로지'], ['워크스루-문서허브.html', '문서허브'], ['워크스루-코퍼스적재.html', '코퍼스 적재']]],
+    ['거버넌스·운영', [['워크스루-권한감사.html', '권한·감사'], ['워크스루-거버넌스.html', '거버넌스 체계'], ['워크스루-기타요약.html', '그 외 요약']]]
+  ];
+  var here = decodeURIComponent((location.pathname.split('/').pop() || '')).toLowerCase();
+
+  var nav = document.createElement('nav');
+  nav.className = 'wt-nav';
+
+  var head = document.createElement('div');
+  head.className = 'wt-nav__head';
+  head.innerHTML = '<span class="wt-nav__logo"><span class="mi">school</span></span>'
+    + '<span class="wt-nav__brand">워크스루</span>';
+  nav.appendChild(head);
+
+  // 주제(그룹)별 아코디언 — 라벨 클릭으로 접고 펴기, 상태 기억(현재 페이지 그룹은 항상 펼침)
+  NAV.forEach(function (grp, gi) {
+    var groupEl = document.createElement('div');
+    groupEl.className = 'wt-nav__group';
+
+    var lbl = document.createElement('button');
+    lbl.className = 'wt-nav__group-label';
+    lbl.type = 'button';
+    lbl.innerHTML = '<span class="gl"></span><span class="mi gchev">expand_more</span>';
+    lbl.querySelector('.gl').textContent = grp[0];
+    groupEl.appendChild(lbl);
+
+    var items = document.createElement('div');
+    items.className = 'wt-nav__group-items';
+    var hasActive = false;
+    grp[1].forEach(function (it) {
+      var a = document.createElement('a');
+      a.className = 'wt-nav__item';
+      a.href = it[0];
+      if (it[0].toLowerCase() === here) { a.classList.add('active'); hasActive = true; }
+      a.innerHTML = '<span class="d"></span><span class="t"></span>';
+      a.querySelector('.t').textContent = it[1];
+      items.appendChild(a);
+    });
+    groupEl.appendChild(items);
+
+    var gkey = 'wtGrp_' + gi;
+    var gcol = false;
+    try { gcol = localStorage.getItem(gkey) === '1'; } catch (e) {}
+    if (gcol && !hasActive) groupEl.classList.add('grp-collapsed');
+    lbl.addEventListener('click', function () {
+      var c = groupEl.classList.toggle('grp-collapsed');
+      try { localStorage.setItem(gkey, c ? '1' : '0'); } catch (e) {}
+    });
+
+    nav.appendChild(groupEl);
+  });
+
+  document.body.insertBefore(nav, document.body.firstChild);
+
+  // 콜아웃 타입별 색상 — .note의 아이콘을 4버킷(purple/teal/amber/blue)으로 매핑
+  var NOTE_BUCKET = {
+    lightbulb:'purple', insights:'purple', bolt:'purple', psychology:'purple', palette:'purple', manage_search:'purple', trending_up:'purple', history_edu:'purple',
+    verified:'teal', verified_user:'teal', shield_lock:'teal', rule:'teal', balance:'teal', bookmark:'teal', key_off:'teal', badge:'teal', filter_center_focus:'teal', join_inner:'teal',
+    priority_high:'amber', warning:'amber', report_problem:'amber', bug_report:'amber', block:'amber', link_off:'amber', visibility_off:'amber', settings_ethernet:'amber'
+  };
+  document.querySelectorAll('.note').forEach(function (el) {
+    var ic = el.querySelector('.mi');
+    var name = ic ? (ic.textContent || '').trim() : '';
+    el.classList.add('note--' + (NOTE_BUCKET[name] || 'blue'));
+  });
+
+  // 스크롤 리빌 — 섹션이 뷰포트 진입 시 페이드업 (no-JS 폴백: js-reveal 가드로 항상 보임)
+  if ('IntersectionObserver' in window) {
+    document.body.classList.add('js-reveal');
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('wt-in'); io.unobserve(e.target); } });
+    }, { threshold: 0.06, rootMargin: '0px 0px -36px 0px' });
+    document.querySelectorAll('.wrap > section').forEach(function (s) { io.observe(s); });
+  }
+
+  // 맨 위로 — 스크롤 시 등장, 클릭 시 부드럽게 상단으로
+  var top = document.createElement('button');
+  top.className = 'wt-top'; top.type = 'button'; top.setAttribute('aria-label', '맨 위로');
+  top.innerHTML = '<span class="mi">arrow_upward</span>';
+  document.body.appendChild(top);
+  top.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+  window.addEventListener('scroll', function () { top.classList.toggle('show', window.scrollY > 420); }, { passive: true });
+})();
+
+});
+</script>
+</head>
+<body class="creative-theme">
+<div class="wrap">
+
+  <header class="hero">
+    <div class="crest"><span class="mi">precision_manufacturing</span></div>
+    <div>
+      <h1>생산 · 로스율 (소요시간 · 유량계 · 네팅)</h1>
+      <span class="tag"><span class="mi">school</span>교육 워크스루 · plan 0026 / 0035 / 0040 / 0064 / 0084 / 0089</span>
+      <p class="lead">"이 주문, <b>몇 분</b> 걸리고 <b>언제</b> 끝나나? 원료는 <b>얼마</b> 먹고 <b>로스</b>는 어디서 보나? 재고가 있으면 <b>얼마만</b> 만들면 되나?"
+        — 이걸 사람 감이 아니라 <b>결정적 공식</b>으로 답합니다. 두께·밀도로 속도를 풀고, 점심·잔업을 넘겨 시각을 쌓고,
+        로스는 추정율 대신 <b>유량계 실측 + 실사</b>로 잡고, 생산량은 부족분만 <b>네팅</b>합니다.</p>
+    </div>
+  </header>
+
+  <div class="wt-toolbar">
+    <span class="wt-hint"><span class="mi">touch_app</span><b>▶ 재생</b>으로 점심을 넘기는 타임라인을 보고, §6 결정 카드의 <b>'왜?'</b>를 눌러 보세요.</span>
+    <a class="wt-btn" href="워크스루.html"><span class="mi">grid_view</span>워크스루 허브</a>
+  </div>
+
+  <!-- 1. 큰 그림 -->
+  <section>
+    <div class="sec-head"><span class="no">1</span><h2>두 갈래 — 시간을 풀고, 로스를 드러낸다</h2><span class="sub">결정적 계산 + 실측 기반 로스</span></div>
+    <div class="esflow">
+      <div class="es-stage">
+        <span class="lbl">품목 규격</span>
+        <div class="es-card store">
+          <span class="ic"><span class="mi">straighten</span></span>
+          <h4>두께 · 밀도 · 길이</h4>
+          <p><code>pp_density_profile</code>에서 목표밀도 조회</p>
+          <span class="pill">입력</span>
+        </div>
+      </div>
+      <div class="es-conn"><span class="tag">속도 공식</span><span class="line"></span></div>
+      <div class="es-stage">
+        <span class="lbl">컨베이어 속도</span>
+        <div class="es-src">
+          <div class="es-chip"><span class="ic"><span class="mi">speed</span></span><span>min(12, 450÷…)</span></div>
+          <div class="es-chip"><span class="ic"><span class="mi">tune</span></span><span>심재 vs 일반 coef</span></div>
+        </div>
+      </div>
+      <div class="es-conn"><span class="tag">분 + 점심·잔업</span><span class="line"></span></div>
+      <div class="es-stage">
+        <span class="lbl">타임라인</span>
+        <div class="es-card view">
+          <span class="ic"><span class="mi">schedule</span></span>
+          <h4>소요분 → 종료시각</h4>
+          <p>08:00부터 누적, 점심 흡수, 19:00 잔업</p>
+          <span class="pill">build_timeline</span>
+        </div>
+      </div>
+      <div class="es-conn"><span class="tag">생산 발생</span><span class="line"></span></div>
+      <div class="es-stage">
+        <span class="lbl">로스 모델</span>
+        <div class="es-card store">
+          <span class="ic"><span class="mi">water_drop</span></span>
+          <h4>유량계 실측 = 장부</h4>
+          <p>로스는 추정율 X → <b>실사(ADJUST) 감모</b></p>
+          <span class="pill">예상잔량 파생</span>
+        </div>
+      </div>
+      <div class="es-conn"><span class="tag">네팅</span><span class="line"></span></div>
+      <div class="es-stage">
+        <span class="lbl">생산 목표</span>
+        <div class="es-card view">
+          <span class="ic"><span class="mi">filter_alt</span></span>
+          <h4>부족분만</h4>
+          <p><code>max(0, 발주 − 가용재고)</code></p>
+          <span class="pill">demand-driven</span>
+        </div>
+      </div>
+    </div>
+    <p class="cap"><b>핵심:</b> 윗줄(규격→속도→타임라인)은 <b>한 치의 추정도 없는 결정적 계산</b>입니다.
+      반면 로스는 <b>측정할 수 없는 걸 추정율로 녹이지 않고</b>, 유량계가 잰 실측을 장부에 그대로 쓰고 차이는 실사로 드러냅니다. 둘 다 <b>"감 대신 측정"</b>이 원칙이에요.</p>
+  </section>
+
+  <!-- 2. 소요시간 공식 -->
+  <section>
+    <div class="sec-head"><span class="no">2</span><h2>소요시간 공식 — 두께가 속도를, 속도가 분을</h2><span class="sub">prodtime_calc.py</span></div>
+    <div class="calc">
+      <div class="formula"><div class="eq">속도(m/min) <span class="op">=</span> min<span class="op">(</span>V_max, &nbsp;Q_target <span class="op">÷</span> (두께m <span class="op">×</span> 밀도 <span class="op">×</span> coef)<span class="op">)</span></div><div class="desc"><code>calc_speed</code> — 두꺼울수록·밀할수록 느려진다. 토출·속도 상한은 마스터 상수(값 비공개).</div></div>
+      <div class="formula"><div class="eq">소요분 <span class="op">=</span> 길이m <span class="op">×</span> 수량 <span class="op">÷</span> 속도</div><div class="desc"><code>calc_minutes</code> — 장당 길이 × 장수 ÷ 분속. 단순하고 <b>완전히 결정적</b>.</div></div>
+      <div class="formula"><div class="eq">coef <span class="op">=</span> 제품 타입별 마스터 상수 (값 비공개)</div><div class="desc">제품 타입별 PPG:MDI 배합비로 결정(plan 0040). <span class="res">"심재" in product_type</span>으로 분기.</div></div>
+    </div>
+    <div class="note info"><span class="mi">swap_horiz</span><div><b>교체시간도 규칙으로.</b> 그날 첫 품목·동일 품목 연속 = 0분. 전환에 <b>심재가 끼면 배관 제거 30분</b>, 그 외 20분(<code>calc_changeover</code>).
+      이 모든 마스터(속도상한·토출·배합비·작업시간)는 <code>pp_calc_const</code> 한 행에서 와요 — 현장이 바뀌면 코드가 아니라 데이터를 고칩니다.</div></div>
+  </section>
+
+  <!-- 3. 타임라인 (인터랙티브) -->
+  <section>
+    <div class="sec-head"><span class="no">3</span><h2>시각을 쌓는다 — 점심은 일 안 해도 흐른다</h2><span class="sub">08:00 → 점심 → 17:00 → 잔업</span></div>
+
+    <p class="cap" style="margin-top:0">예: 08:00 시작. 품목 두 개를 돌리는데 사이에 점심(12–13)이 낍니다. <b>경과분</b>이 어떻게 쌓이는지 ▶로 보세요.</p>
+
+    <div class="wt-controls" data-target="timeDemo">
+      <button class="wt-btn primary" data-act="auto"><span class="mi">play_arrow</span>재생</button>
+      <button class="wt-btn" data-act="step"><span class="mi">skip_next</span>한 단</button>
+      <button class="wt-btn" data-act="reset"><span class="mi">replay</span>리셋</button>
+      <span class="wt-step">0 / 4</span>
+    </div>
+
+    <div class="run stepped" id="timeDemo">
+      <div class="node"><div class="ev">08:00 시작</div><div class="dl">경과 0</div><div class="bal" data-bal="0">0</div></div>
+      <span class="arrow">→</span>
+      <div class="node"><div class="ev">품목A 작업</div><div class="dl p">+200분</div><div class="bal" data-bal="200">200</div></div>
+      <span class="arrow">→</span>
+      <div class="node"><div class="ev">점심 12–13</div><div class="dl">+60 (작업X)</div><div class="bal" data-bal="260">260</div></div>
+      <span class="arrow">→</span>
+      <div class="node"><div class="ev">품목B 작업</div><div class="dl p">+300분</div><div class="bal" data-bal="560">560</div></div>
+    </div>
+    <p class="cap"><b>bal = 08:00부터 경과한 벽시계 분.</b> 점심은 <b>일을 안 해도 +60분</b>이 흘러요(<code>_advance</code>가 흡수). 정규 만료 = 540분(17:00),
+      잔업 한계 = 660분(19:00). 마지막 <b>560분 &gt; 540분</b>이라 이 배치는 <b>잔업으로 넘어갑니다</b>(<code>overtime_exceeded</code>).</p>
+  </section>
+
+  <!-- 4. 로스율 모델 -->
+  <section>
+    <div class="sec-head"><span class="no">4</span><h2>로스 — 추정율을 빼고 측정으로</h2><span class="sub">유량계 실측 = 장부, 차이는 실사</span></div>
+    <div class="events">
+      <div class="evt"><span class="sign z">1</span><h3>장부 = 유량계 그대로</h3><p>예전엔 소모량 = 유량계 ÷ (1−로스율). 이제 <b>÷ 제거</b> — 수불부·생산일지·이카운트 <b>세 기준을 실측으로 통일</b>(plan 0035).</p></div>
+      <div class="evt"><span class="sign z">2</span><h3>로스 = 실사 감모</h3><p>로스는 거래마다 추정율로 녹이지 않고, <b>실사(ADJUST)에서 장부−실물 차이</b>로 명시 인식. 회계 표준에 더 가깝다.</p></div>
+      <div class="evt"><span class="sign z">3</span><h3>예상잔량은 파생</h3><p><code>장부재고 − Σ|소모|×r/(1−r)</code>(마지막 ADJUST 이후). 병행 원장 안 만들고 쿼리로 파생. <b>"참고용 추정" 라벨 필수</b>.</p></div>
+      <div class="evt"><span class="sign z">4</span><h3>실사 = 데이터 1점</h3><p>실측 로스율 = <code>|ADJUST 감모| ÷ Σ|유량계 소모|</code>(직전~이번 실사). 카드에 <b>"추정치 / 실측치 병기(수치 비공개)"</b> → 사람이 상수 보정.</p></div>
+      <div class="evt"><span class="sign z">5</span><h3>측정 레이어 분리</h3><p>일별 탱크 실측은 <code>pp_material_stock_daily</code>(장부와 <b>완전 분리</b> — 노이즈가 회계 미오염). 기온·습도(<code>pp_daily_weather</code>)도 수집.</p></div>
+      <div class="evt"><span class="sign z">6</span><h3>틀린 상수가 로스를 가렸다</h3><p>PPG 추정 로스율과 실손실 분석이 크게 벌어져 <b>상당한 초과 손실</b>이 어디에도 안 보였다. 실측+실사로 가면 로스가 <b>매기 측정되는 숫자</b>가 된다.</p></div>
+    </div>
+    <div class="note"><span class="mi">insights</span><div><b>로스 분석 대시보드</b>(<code>pages/LossAnalysis</code>, plan 0064)가 이 측정을 쌓습니다 — 일별 실측 입력·기상 오버레이·캘리브레이션.
+      자동화(이동평균)는 실사 3회+ 쌓인 뒤(v2). 데이터 1~2점으로 자동화하지 않아요 — 신호 있는 곳에서만 학습.</div></div>
+  </section>
+
+  <!-- 5. 네팅 -->
+  <section>
+    <div class="sec-head"><span class="no">5</span><h2>네팅 — 있는 만큼 빼고, 부족분만 만든다</h2><span class="sub">발주 demand → 생산 목표</span></div>
+    <div class="calc">
+      <div class="formula"><div class="eq">생산 목표 <span class="op">=</span> max<span class="op">(</span>0, &nbsp;발주수량 <span class="op">−</span> 가용재고<span class="op">)</span></div><div class="desc">plan 0084 — 창고에 있으면 그만큼 빼고, <b>부족분(shortfall)만</b> 생산계획에 자동 편입.</div></div>
+      <div class="formula"><div class="eq">소요·용량 판정 <span class="op">=</span> shortfall <span class="op">+</span> 2 (부산물)</div><div class="desc">기계 배치 앞뒤 자동 2장(<code>PROD_BUFFER</code>)은 <b>소요시간엔 반영, 계획 target엔 제외</b> — 생산일지 실측에서 자연 흡수.</div></div>
+    </div>
+    <div class="note info"><span class="mi">link</span><div>이 네팅은 일정문의 판정엔진(#3)의 <b>①가용재고 단계와 같은 식</b>입니다 — <code>shortfall = max(0, qty − available)</code>.
+      생산계획(<code>production_plan.py</code>)도 주문을 순회하며 재고를 차감하고 <b>부족분만 생산 목표에 더해요</b>. 엔진이 임의로 재고를 쌓지 않는 <b>demand-driven</b> 원칙(잉여 생산 회피).</div></div>
+  </section>
+
+  <!-- 6. 결정과 트레이드오프 -->
+  <section>
+    <div class="sec-head"><span class="no">6</span><h2>결정과 트레이드오프 — 왜 이렇게 지었나</h2><span class="sub">카드를 눌러 채택 vs 기각</span></div>
+    <div class="why-grid">
+
+      <div class="why">
+        <button class="why-q">로스를 왜 추정율 대신 실사로? <span class="why-ic">expand_more</span></button>
+        <div class="why-a"><div class="inner">
+          <div class="row"><span class="k pick">채택</span><span>소모량=유량계 실측, 로스=<b>실사(ADJUST) 감모</b>로 명시 인식.</span></div>
+          <div class="row"><span class="k drop">기각</span><span>소모량 = 유량계 ÷ (1−로스율) (추정율 녹이기).</span></div>
+          <div class="row"><span class="k rsn">근거</span><span>틀린 추정 상수가 실손실을 가려 <b>상당한 초과분</b>이 안 보였다. 실측+실사로 가면 로스가 <b>매기 측정되는 숫자</b> → 추적 개선. 회계 표준(감모는 실사 시점 인식)에도 부합.</span></div>
+        </div></div>
+      </div>
+
+      <div class="why">
+        <button class="why-q">예상잔량을 왜 병행 원장 없이 파생으로? <span class="why-ic">expand_more</span></button>
+        <div class="why-a"><div class="inner">
+          <div class="row"><span class="k pick">채택</span><span>실원장에서 <b>쿼리로 파생</b>(저장 X). ADJUST가 기준점 자동 리셋.</span></div>
+          <div class="row"><span class="k drop">기각</span><span>"예상치 수불부"를 별도 영구 저장.</span></div>
+          <div class="row"><span class="k rsn">근거</span><span>두 벌 원장은 쓰기마다 동기화·드리프트(이벤트소싱 SSoT 위배). 같은 숫자를 쿼리 한 번으로 도출 가능하니 저장할 이유가 없다.</span></div>
+        </div></div>
+      </div>
+
+      <div class="why">
+        <button class="why-q">소요시간을 왜 ML이 아니라 공식으로? <span class="why-ic">expand_more</span></button>
+        <div class="why-a"><div class="inner">
+          <div class="row"><span class="k pick">채택</span><span>두께·밀도·길이 → 속도 → 분, <b>결정적 물리 공식</b>.</span></div>
+          <div class="row"><span class="k drop">기각</span><span>과거 생산시간으로 학습한 회귀/ML 추정.</span></div>
+          <div class="row"><span class="k rsn">근거</span><span>공정이 물리적으로 결정적(토출·배합비·속도상한)이라 공식이 정확·설명가능·검산가능. ML은 블랙박스에 데이터도 부족. <b>신호 있는 곳에서만 학습</b>(과적합 회피).</span></div>
+        </div></div>
+      </div>
+
+      <div class="why">
+        <button class="why-q">측정 데이터를 왜 장부와 분리하나? <span class="why-ic">expand_more</span></button>
+        <div class="why-a"><div class="inner">
+          <div class="row"><span class="k pick">채택</span><span>일별 탱크 실측·기상은 <code>pp_material_stock_daily</code>/<code>pp_daily_weather</code> <b>별도 테이블</b>.</span></div>
+          <div class="row"><span class="k drop">기각</span><span>실측을 재고 원장(movements)에 직접 기록.</span></div>
+          <div class="row"><span class="k rsn">근거</span><span>측정은 노이즈가 많은 <b>분석용 신호</b>. 회계 장부에 섞으면 재고·원가가 오염된다. 분석 레이어를 분리해 <b>실험은 자유롭게, 장부는 깨끗하게</b>.</span></div>
+        </div></div>
+      </div>
+
+      <div class="why">
+        <button class="why-q">생산량을 왜 네팅(부족분만)으로? <span class="why-ic">expand_more</span></button>
+        <div class="why-a"><div class="inner">
+          <div class="row"><span class="k pick">채택</span><span>생산 목표 = <code>max(0, 발주 − 가용재고)</code>. 부산물 +2는 소요엔 반영·target 제외.</span></div>
+          <div class="row"><span class="k drop">기각</span><span>발주수량 전부를 생산(재고 무시).</span></div>
+          <div class="row"><span class="k rsn">근거</span><span>이미 있는 재고를 또 만들면 잉여 적치. 부족분만 만드는 게 <b>demand-driven</b>. 일정문의 판정엔진(#3) ①단계와 동일 식 — 한 곳의 진실.</span></div>
+        </div></div>
+      </div>
+
+      <div class="why">
+        <button class="why-q">점심·잔업을 왜 타임라인에 박나? <span class="why-ic">expand_more</span></button>
+        <div class="why-a"><div class="inner">
+          <div class="row"><span class="k pick">채택</span><span><code>_advance</code>가 점심(12–13) 가로지름 +60 흡수, 19:00 초과 시 <code>overtime_exceeded</code>.</span></div>
+          <div class="row"><span class="k drop">기각</span><span>단순 누적(점심·잔업 무시).</span></div>
+          <div class="row"><span class="k rsn">근거</span><span>"몇 시에 끝나나"가 현실 일정의 핵심. 점심 무시하면 종료시각이 1시간 당겨져 틀린다. 정규 만석/잔업 여부가 동승·신규배치 판정(#3)에 직접 들어간다.</span></div>
+        </div></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 7. 주의 + 다음 -->
+  <section>
+    <div class="sec-head"><span class="no">7</span><h2>주의 + 다음에 볼 것</h2><span class="sub">생산 계산을 만질 때</span></div>
+    <div class="events">
+      <div class="evt"><span class="sign z">1</span><h3>상수는 데이터에</h3><p>속도상한·토출·배합비·작업시간은 <code>pp_calc_const</code>(1행). 코드 하드코딩 아님 — 현장 변하면 마스터를 고친다.</p></div>
+      <div class="evt"><span class="sign z">2</span><h3>예상잔량 ≠ 장부</h3><p>예상잔량은 추정. "참고용" 라벨·보조 톤 필수 — 장부 숫자로 오해되면 안 됨.</p></div>
+      <div class="evt"><span class="sign z">3</span><h3>실사 안 돌면 추정 누적</h3><p>로스 모델 전제 = 실사가 돈다. 실사 없으면 기준점(ADJUST) 안 갱신 → 예상 오차 누적. 월 1회 권장.</p></div>
+      <div class="evt"><span class="sign z">4</span><h3>심재 분기 확인</h3><p>새 제품군 추가 시 <code>"심재" in product_type</code> 분기·배관 30분·배합비 coef를 같이 점검.</p></div>
+      <div class="evt"><span class="sign z">5</span><h3>밀도 우선순위</h3><p><code>pp_density_profile</code>은 item_prefix &gt; ppg_code &gt; product_type &gt; 전역 순. 새 프로파일이 기존을 가릴 수 있다.</p></div>
+      <div class="evt"><span class="sign z">6</span><h3>다음 워크스루</h3><p>#6 = 샘플관리 saga — 원장 절단 칸반의 진화(거래처 연동·부분출고·라벨·재고신호·병합출력).</p></div>
+    </div>
+  </section>
+
+  <div class="foot">
+    생산 · 로스율 (소요시간 · 유량계 · 네팅) · 교육 워크스루 · 코드 정본 <code>api/prodtime_calc.py</code>(calc_speed·calc_minutes·build_timeline) ·
+    <code>api/routers/loss.py</code> · <code>api/inquiry_engine.py</code>(네팅) · 대시보드 <code>pages/LossAnalysis</code> · 설계 plan 0026 · 0035 · 0040 · 0064 · 0084 · 0089 · 문서 체계 plan workspace/0007
+  </div>
+
+</div>
+</body>
+</html>
+

@@ -1,0 +1,20 @@
+# dependencies & build artifacts
+demo/node_modules/
+demo/dist/
+demo/.vercel/
+node_modules/
+dist/
+
+# env / secrets
+.env
+.env.*
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 공개 제외 — 로컬 유지(비공개 데모 빌드·스크럽 게이트)
+demo/
+excerpts/
+scripts/scrub-check.mjs
