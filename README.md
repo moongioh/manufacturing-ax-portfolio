@@ -14,7 +14,7 @@ open-sourced the AI-governance methodology behind that delivery speed as
 manufacturing/chemicals; the approach is domain-agnostic.
 
 🖥 **포트폴리오 홈(브라우저): https://moongioh.github.io/manufacturing-ax-portfolio/** · 📄 **[이력서](https://moongioh.github.io/manufacturing-ax-portfolio/resume.html)**
-📧 **awsgioh@gmail.com** · 🖼 **화면 둘러보기: [slides.html](slides.html)** (라이브 데모는 요청 시) · ⚙ **오픈소스: [harness-scope](https://github.com/moongioh/harness-scope)**
+📧 **awsgioh@gmail.com** · 🖼 **화면 둘러보기: [슬라이드쇼](https://moongioh.github.io/manufacturing-ax-portfolio/slides.html)** (아래 README GIF에서도 바로 재생 · 라이브 데모는 요청 시) · ⚙ **오픈소스: [harness-scope](https://github.com/moongioh/harness-scope)**
 
 > `.html` 워크스루는 GitHub에서 소스로만 보입니다 — **위 "포트폴리오 홈" 링크(GitHub Pages)**에서 렌더된 화면으로 열람하세요.
 
@@ -30,7 +30,7 @@ manufacturing/chemicals; the approach is domain-agnostic.
 
 | 자원 | 위치 | 설명 |
 |---|---|---|
-| **화면 둘러보기** | [slides.html](slides.html) | 관리자 주요 메뉴를 더미 데이터로 시연(스크린샷 슬라이드). 발주→생산→재고 연쇄. 라이브 데모는 요청 시 |
+| **화면 둘러보기** | [슬라이드쇼(Pages)](https://moongioh.github.io/manufacturing-ax-portfolio/slides.html) · README 상단 GIF | 관리자 주요 12화면을 더미 데이터로 시연. 발주→생산→재고 연쇄. 라이브 데모는 요청 시 |
 | **워크스루 문서** | [`walkthroughs/`](./walkthroughs) | 도메인·설계 결정을 다이어그램으로 설명한 인터랙티브 문서 23종 |
 | **오픈소스** | [moongioh/harness-scope](https://github.com/moongioh/harness-scope) | AI 에이전트 거버넌스 관측 도구 (Apache-2.0 · `pip install hscope`) — 별도 공개 저장소 |
 | **이력서** | [resume.html (Pages)](https://moongioh.github.io/manufacturing-ax-portfolio/resume.html) | 상세 경력·케이스 스터디 |
@@ -39,57 +39,13 @@ manufacturing/chemicals; the approach is domain-agnostic.
 
 ## 🖼 화면 둘러보기
 
-관리자 주요 화면을 **더미 데이터**로 시연합니다. 인터랙티브 슬라이드(키보드·다크모드): **[slides.html](slides.html)** · 라이브 데모는 요청 시 안내.
+관리자 주요 **12개 화면**을 더미 데이터로 시연합니다 — 아래 슬라이드쇼가 약 2초 간격으로 자동 재생됩니다(홈·발주·재고장·생산일지·로스분석·자금일보·경영분석·온톨로지·관리콘솔·재고추천·모바일).
 
-**1. 홈 · 업무 흐름 대시보드** — 수주 → 생산 → 재고 → 회계를 하나의 흐름으로 한 화면에. 각 단계를 클릭하면 해당 업무로 직행.
+![제조 ERP 데모 — 주요 화면 슬라이드쇼](images/screens-slideshow.gif)
 
-![홈 · 업무 흐름 대시보드](images/slides/01-home.png)
+▶ 한 화면씩 크게(키보드·다크모드): **[인터랙티브 슬라이드쇼](https://moongioh.github.io/manufacturing-ax-portfolio/slides.html)** · 라이브 데모는 요청 시 안내.
 
-**2. 발주서 보드** — 발주(헤더–라인–스케줄)가 생산·승인·이행·출고 상태로 살아 움직인다. 부분출고·잔량 추적.
-
-![발주서 보드](images/slides/02-order-board.png)
-
-**3. 재고장** — 재고는 저장된 “현재값”이 아니라 수불 이력의 합(SUM). 음수(결손 신호)는 항상 노출.
-
-![재고장](images/slides/03-stock-ledger.png)
-
-**4. 현장 생산계획 (APS)** — 생산 큐 + 현장 모바일 입력. 완료 수량이 생산일지·재고로 그대로 흐른다.
-
-![현장 생산계획](images/slides/04-daily-plan.png)
-
-**5. 생산일지** — 엑셀 탈피·실시간 DB 적재. 유량계 실측 vs 이론 계산 대사 + 원가율 자동 통제.
-
-![생산일지](images/slides/05-production-log.png)
-
-**6. 로스 분석** — 원료 로스를 품목·조건별로 회귀 귀속하고 쌓일수록 정밀해지는 경험계수. 영업비밀 계수는 마스킹.
-
-![로스 분석](images/slides/06-loss-analysis.png)
-
-**7. 자금일보** — 계좌별 마감잔액(실측) + 미수·어음·고정비에서 파생한 입출금 예정. 실지급은 사람이 확정.
-
-![자금일보](images/slides/07-treasury.png)
-
-**8. 경영분석 콘솔** — 발주 기준 매출·원가율·세무·채권채무를 한 콘솔에서. 12개월 추이 실시간 집계.
-
-![경영분석 콘솔](images/slides/08-analytics-console.png)
-
-**9. 자기보정 온톨로지** — 도메인 개념그래프 + DB가 쌓일수록 정확해지는 경험계수. 팔란티어식 개념 탐색.
-
-![자기보정 온톨로지](images/slides/09-ontology.png)
-
-**10. 통합 관리 콘솔** — 스택·규모·다층 보안·RBAC·기술명세를 한 눈에.
-
-![통합 관리 콘솔](images/slides/10-admin-console.png)
-
-**11. 재고생산 추천** — 회전 빠른 품목을 라인 여유분에 발주 확정 전 선제 생산 제안(투기적·사람 통제).
-
-![재고생산 추천](images/slides/11-mts.png)
-
-**12. 모바일 라이트** — 현장은 폰으로. 재고·발주를 풀스크린 경량 화면으로.
-
-![모바일 라이트](images/slides/12-mobile.png)
-
-> 화면의 거래처·품목·금액·계좌는 전부 시연용 더미이며, 회사 식별정보·영업비밀(로스율·배합비·계수)은 마스킹되어 포함되지 않습니다.
+> 거래처·품목·금액·계좌는 전부 시연용 더미이며, 회사 식별정보·영업비밀은 마스킹되어 포함되지 않습니다.
 
 ---
 
