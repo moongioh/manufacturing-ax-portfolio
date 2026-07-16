@@ -25,6 +25,7 @@ AI-agent workflow tooling used to build it as [harness-scope](https://github.com
 
 - 실제 운영 시스템의 **전체 소스는 NDA·보안 규정으로 비공개**입니다.
 - 이 저장소에는 **기밀·회사 식별 정보가 제거된 (1) 화면 둘러보기(주요 화면 스크린샷 슬라이드), (2) 아키텍처 워크스루 문서, (3) 이력서**를 담았습니다.
+- 커밋 히스토리는 회사 식별 정보 익명화를 위해 **2026-07에 스쿼시 후 재게시**한 것입니다 — 실제 개발 이력(계획 문서·커밋 원본)은 비공개 저장소에 있으며, 면접 시 화면 공유로 열람 가능합니다.
 - 화면은 **더미 데이터 + 백엔드 없는 정적 빌드**에서 캡처한 것이라 영업비밀·회사 식별정보 노출이 0입니다. 라이브 데모는 요청 시 안내드립니다.
 
 | 자원 | 위치 | 설명 |
@@ -156,13 +157,7 @@ flowchart LR
 
 ---
 
-## 데모 로컬 실행
+## 라이브 데모
 
-```bash
-cd demo
-npm install
-npm run dev          # 개발 서버
-# 또는 정적 데모 빌드:
-npm run build:demo
-```
-데모는 백엔드 없이 동작합니다 (MSW가 API를 mock으로 가로채고, 상태는 인메모리 — 새로고침 시 초기 더미로 리셋).
+화면은 README 상단 GIF와 [슬라이드쇼](https://moongioh.github.io/manufacturing-ax-portfolio/slides.html)로 볼 수 있습니다.
+동작하는 라이브 데모(백엔드 없이 MSW mock 기반, 더미 데이터)는 **요청 시 링크로 공유**합니다 — awsgioh@gmail.com
