@@ -1,17 +1,16 @@
-# Forward Deployed Engineer / AX Engineer — 포트폴리오
+# 제조 중소기업 웹 ERP 1인 구축 — 포트폴리오
 
-> **자체 소프트웨어가 없고 업무 데이터가 6~7곳에 흩어져 있던 18인 제조·화학 중소기업에서, 약 2개월 만에 데이터를 단일 정합 구조로 옮기고 그 위에 웹 ERP를 1인으로 설계·구축 완료하여 운영 중입니다.**
-> 정형 백본 위에 **비정형 16GB를 검색하는 RAG 시멘틱 문서허브**까지 얹었고, 이를 가능케 한 AI 거버넌스 방법론은 **오픈소스 [harness-scope](https://github.com/moongioh/harness-scope)** 로 공개했습니다.
-> 제조/화학에서 수행했고, 접근 방식은 특정 도메인에 종속되지 않습니다.
+> **자체 소프트웨어가 없고 업무 데이터가 6~7곳에 흩어져 있던 18인 제조·화학 중소기업에서, 웹 ERP를 1인으로 설계·구축해 운영 중입니다.**
+> 입사 4주 차에 첫 실가동을 시작했고, 약 2개월에 걸쳐 발주·생산·재고·자금·관리회계 등 주요 업무 도메인으로 확장했습니다.
+> 정형 백본 위에 **비정형 문서 16GB를 검색하는 시멘틱 문서허브**를 얹었고, 개발에 사용한 AI 에이전트 작업 규율은 **오픈소스 [harness-scope](https://github.com/moongioh/harness-scope)** 로 공개했습니다.
 
-**In English** — Forward Deployed Engineer / AX solution architect portfolio: solo end-to-end design, build and
-operation of a cloud full-stack ERP (FastAPI · React · PostgreSQL · Cloud Run) for an 18-person manufacturing/chemical
-SME in Korea, shipped to production in about two months. Unified 6–7 scattered sources of truth (legacy ERP exports,
-paper orders, KakaoTalk, fax, handwritten shop-floor notes, keyless spreadsheets) into a single event-sourced data
-backbone with domain-ontology validation; added a RAG semantic document hub over 16GB of unstructured files; and
-open-sourced the AI-governance methodology behind that delivery speed as
-[harness-scope](https://github.com/moongioh/harness-scope) (Apache-2.0, `pip install hscope`). The domain was
-manufacturing/chemicals; the approach is domain-agnostic.
+**In English** — Solo design, build and operation of a cloud full-stack ERP (FastAPI · React · PostgreSQL · Cloud Run)
+for an 18-person manufacturing/chemical SME in Korea — first production use four weeks in, expanded to the main
+business domains over about two months. Unified 6–7 scattered sources of truth (legacy ERP exports, paper orders,
+KakaoTalk, fax, handwritten shop-floor notes, keyless spreadsheets) into a single event-sourced data backbone with
+domain-ontology validation; added a semantic document hub over 16GB of unstructured files; and open-sourced the
+AI-agent workflow tooling used to build it as [harness-scope](https://github.com/moongioh/harness-scope)
+(Apache-2.0, `pip install hscope`).
 
 🖥 **포트폴리오 홈(브라우저): https://moongioh.github.io/manufacturing-ax-portfolio/** · 📄 **[이력서](https://moongioh.github.io/manufacturing-ax-portfolio/resume.html)**
 📧 **awsgioh@gmail.com** · 🖼 **화면 둘러보기: [슬라이드쇼](https://moongioh.github.io/manufacturing-ax-portfolio/slides.html)** (아래 README GIF에서도 바로 재생 · 라이브 데모는 요청 시) · ⚙ **오픈소스: [harness-scope](https://github.com/moongioh/harness-scope)**
@@ -22,7 +21,7 @@ manufacturing/chemicals; the approach is domain-agnostic.
 
 ## 이 저장소는 무엇인가
 
-18인 제조·화학 중소기업의 ERP를 **입사 2개월 만에 1인 종단(End-to-End)으로 설계·구축**하고 실제 운영에 투입한 프로젝트의 공개 포트폴리오입니다.
+18인 제조·화학 중소기업의 ERP를 **1인으로 설계·구축**해 실제 운영에 투입한 프로젝트의 공개 포트폴리오입니다 (입사 4주 차 첫 실가동 → 약 2개월에 걸쳐 주요 도메인 확장).
 
 - 실제 운영 시스템의 **전체 소스는 NDA·보안 규정으로 비공개**입니다.
 - 이 저장소에는 **기밀·회사 식별 정보가 제거된 (1) 화면 둘러보기(주요 화면 스크린샷 슬라이드), (2) 아키텍처 워크스루 문서, (3) 이력서**를 담았습니다.
@@ -49,27 +48,27 @@ manufacturing/chemicals; the approach is domain-agnostic.
 
 ---
 
-## 핵심 역량 (4 Pillars)
+## 핵심 작업 영역
 
-1. **데이터 정합 구조 (Data Integrity Backbone)** — 6~7곳에 분산됐던 다중 SSoT(이카운트·종이 발주서·카톡·팩스·현장 수기 노트·현장 사진·식별키 없는 엑셀)를 도메인 온톨로지·검증 레이어로 강제한 **단일 정합 데이터 백본**.
-2. **AX 기틀 (Ontology-Driven AX)** — 비정형 비즈니스 규칙을 그래프로 구조화한 **온톨로지 Sieve(체)** + 의사결정 레이어. 데이터 정합 위에 자율화가 얹히는 기틀.
-3. **루트 코즈 진단 (Root-Cause Structuring)** — 증상(입력이 느리다·재고가 안 맞는다)이 아니라 근본 원인(SSoT 분산 → 데이터 거버넌스 공백 → 특정 담당자 의존)으로 구조화하고, 각 코즈를 후속 실행 계획에 1:1 매핑.
-4. **변화 관리 (Change Management)** — 예산이 없던 출발점에서 프로토타입으로 가치를 먼저 증명·설득해 실가동까지 안착.
+1. **데이터 정합 구조** — 6~7곳에 분산됐던 다중 SSoT(이카운트·종이 발주서·카톡·팩스·현장 수기 노트·현장 사진·식별키 없는 엑셀)를 도메인 온톨로지·검증 레이어로 강제한 **단일 정합 데이터 백본**.
+2. **온톨로지 기반 검증** — 비정형 비즈니스 규칙을 그래프로 구조화한 **온톨로지 Sieve(체)** — 적재 단계에서 정합성 위반을 걸러내는 검증 레이어.
+3. **근본 원인 구조화** — 증상(입력이 느리다·재고가 안 맞는다)이 아니라 근본 원인(SSoT 분산 → 데이터 관리 공백 → 특정 담당자 의존)으로 구조화하고, 각 원인을 후속 실행 계획에 1:1 매핑.
+4. **도입·변화 관리** — 예산이 없던 출발점에서 프로토타입으로 가치를 먼저 보여 승인을 얻고, 실가동·일상 사용까지 안착.
 
 ---
 
-## 🤖 AI-Native Engineering — 속도의 구조
+## 🤖 AI 에이전트 개발 방식 — 1인·단기 구축이 가능했던 이유
 
-전체 시스템을 **약 2개월** 만에 1인으로 설계·구축하고 안정적으로 운영할 수 있었던 이유는 **AI를 프로덕션 수준의 정합성으로 통제하는 개발 거버넌스**를 구축했기 때문입니다. "AI를 쓴다"가 아니라, AI가 실수 없이 일하도록 규율을 코드·문서로 강제하는 쪽 — 자율화를 안전하게 이륙시키는 이 방법론 자체가 AX 실행 역량의 직접 증거입니다.
+이 시스템은 대부분 **AI 코딩 에이전트와 함께** 개발했습니다. 1인이 이 범위를 이 기간에 다룰 수 있었던 것은 개인 코딩 속도가 아니라, **에이전트의 실수를 줄이는 작업 규율을 문서·훅으로 강제**했기 때문입니다.
 
-- **계획 게이트 개발** — 모든 비트리비얼 작업은 승인된 계획 문서를 거쳐 착수. 결정·트레이드오프·검증 기준을 먼저 확정.
-- **거버넌스 기계 강제** — 상태/로그 크기 캡·규칙 드리프트 검사·커밋 게이트를 pre-commit 훅으로 자동화(규율이 도구로 유지).
-- **멀티에이전트 검증** — 구현과 검증을 분리해 독립 에이전트가 diff를 적대적으로 리뷰(자기확증 편향 구조적 차단).
-- **온톨로지 = 에이전트 컨텍스트** — 도메인 개념그래프를 에이전트의 코드 내비·정합 근거로 공급(AI가 도메인을 추측 않고 정본에서 착지).
+- **계획 게이트** — 비트리비얼 작업은 승인된 계획 문서를 거쳐 착수. 결정·트레이드오프·검증 기준을 먼저 확정.
+- **기계 강제** — 상태/로그 크기 캡·규칙 드리프트 검사·커밋 게이트를 pre-commit 훅으로 자동화(규율이 사람 기억이 아니라 도구로 유지).
+- **구현·검증 분리** — 구현과 검증을 분리해 독립 에이전트가 diff를 리뷰(구현자의 자기확증 편향 차단).
+- **온톨로지 = 에이전트 컨텍스트** — 도메인 개념그래프를 에이전트의 코드 내비·정합 근거로 공급(도메인을 추측하지 않고 정본에서 착지).
 
 > 설계·운영 방식은 [`워크스루-거버넌스`](https://moongioh.github.io/manufacturing-ax-portfolio/walkthroughs/워크스루-거버넌스.html)에서 다이어그램으로 확인할 수 있습니다.
 
-**이 방법론은 산문으로 끝나지 않습니다** — 에이전트 세션 로그를 턴 단위로 판정하는 관측 도구 **[harness-scope](https://github.com/moongioh/harness-scope)** 를 Apache-2.0 오픈소스로 공개했습니다 (`pip install hscope` · npm `hscope` · 3-OS CI · MCP 서버 10툴).
+이 작업 규율 중 관측 가능한 부분은 도구로 만들어 공개했습니다 — 에이전트 세션 로그를 턴 단위로 판정하는 **[harness-scope](https://github.com/moongioh/harness-scope)** (Apache-2.0 · `pip install hscope` · npm `hscope` · 3-OS CI · MCP 서버 10툴).
 
 ![harness-scope 데모 — Session Replay·Circuit·Rule Health·Token Loss](assets/harness-scope-demo.gif)
 
@@ -77,10 +76,10 @@ manufacturing/chemicals; the approach is domain-agnostic.
 
 ## 임팩트 (before → after)
 
-| 항목 | before (전환 이전 실측) | after |
+| 항목 | before (전환 이전) | after |
 |---|---|---|
 | 생산지시서 작성 | 수작업, **건당 ~40분** | 자동 추천 **1클릭**, 작성자 제약 해소 |
-| 발주 관리 | 다중 SSoT 정합 맞추기 **하루 ~2시간** | **실시간 발주서 보드**, 정합 유지 비용 소멸 |
+| 발주 관리 | 다중 SSoT 정합 맞추기 **하루 ~2시간** | **실시간 발주서 보드**, 정합 수작업 제거 |
 | 진실 원천 | **6~7곳 분산** | **단일 정합 백본** |
 | 재고 정합 | **3~4개월 실사 = 리셋 반복** (원인 추적 실패) | 이벤트소싱 수불부 (사건의 합) |
 | 경영 현황 | **실시간 집계 수단 부재** | 실시간 KPI |
@@ -96,8 +95,8 @@ manufacturing/chemicals; the approach is domain-agnostic.
 
 | 규모 | 값 |
 |---|---|
-| 종단 구축·운영 | **2개월 · 1인** (첫 컷오버 4주) |
-| 동시 재구축 도메인 | **14+** |
+| 구축·운영 | **1인** (첫 실가동 4주 차 · 약 2개월에 걸쳐 확장) |
+| 재구축 도메인 | **14개** |
 | 진실 원천 통합 | **6~7곳 → 단일 백본** |
 | 거래처 마스터 정합 적재 | **973건** |
 | 온톨로지 개념그래프 | **203개념 · 233엣지** |

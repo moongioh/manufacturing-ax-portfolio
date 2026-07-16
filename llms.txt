@@ -1,8 +1,8 @@
 # Manufacturing AX Portfolio (moongioh)
 
-> Forward Deployed Engineer / AX engineer portfolio: solo end-to-end design, build and
-> operation of a cloud full-stack ERP (FastAPI, React, PostgreSQL, Cloud Run) for an
-> 18-person manufacturing/chemical SME in Korea, shipped to production in about two months.
+> Portfolio: solo design, build and operation of a cloud full-stack ERP (FastAPI, React,
+> PostgreSQL, Cloud Run) for an 18-person manufacturing/chemical SME in Korea — first
+> production use four weeks in, expanded over about two months.
 > Event-sourced data backbone + domain-ontology validation + RAG semantic document hub over
 > 16GB of unstructured files. Content is in Korean; this file indexes it for agents.
 
