@@ -13,7 +13,7 @@
 <meta property="og:site_name" content="Manufacturing AX Portfolio" />
 <meta property="og:locale" content="ko_KR" />
 <meta name="twitter:card" content="summary" />
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "ProfilePage", "name": "이력서 — 제조 중소기업 웹 ERP 1인 구축·운영", "url": "https://moongioh.github.io/manufacturing-ax-portfolio/resume.html", "description": "자체 소프트웨어가 없고 업무 데이터가 6~7곳에 흩어져 있던 18인 제조·화학 중소기업에서, 웹 ERP를 1인으로 설계·구축해 실운영에 안착시켰습니다 (재직 2026.04~2026.07, 입사 4주 차 첫 실가동 후 약 2개월에 걸쳐 확장). 정형 백본 위에 비정형 16GB를 검색하는 시멘틱 문서허브를 얹…", "inLanguage": "ko", "dateModified": "2026-07-16", "mainEntity": {"@type": "Person", "name": "moongioh", "email": "awsgioh@gmail.com", "url": "https://moongioh.github.io/manufacturing-ax-portfolio/", "sameAs": ["https://github.com/moongioh", "https://github.com/moongioh/harness-scope"]}}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "ProfilePage", "name": "이력서 — 제조 중소기업 웹 ERP 1인 구축·운영", "url": "https://moongioh.github.io/manufacturing-ax-portfolio/resume.html", "description": "자체 소프트웨어가 없고 업무 데이터가 6~7곳에 흩어져 있던 18인 제조·화학 중소기업에서, 웹 ERP를 1인으로 설계·구축해 실운영에 안착시켰습니다 (재직 2026.04~2026.07, 입사 4주 차 첫 실가동 후 약 2개월에 걸쳐 확장). 정형 백본 위에 비정형 16GB를 검색하는 시멘틱 문서허브를 얹…", "inLanguage": "ko", "dateModified": "2026-07-20", "mainEntity": {"@type": "Person", "name": "moongioh", "email": "awsgioh@gmail.com", "url": "https://moongioh.github.io/manufacturing-ax-portfolio/", "sameAs": ["https://github.com/moongioh", "https://github.com/moongioh/harness-scope"]}}</script>
 <link rel="stylesheet" href="assets/creative.css" />
 <style>
   /* 이 페이지는 좌측 워크스루 네비가 없으므로 rail padding 해제 */
@@ -192,7 +192,7 @@
       <div class="q"><span class="lab">AX · 기둥①②</span>문서허브 — 비정형 문서 16GB를 검색·정본 관리되는 시멘틱 백본으로</div>
       <ul>
         <li><b>Problem:</b> 계약·품질·기술 문서 수년치(hwp·PDF·엑셀, 16GB)가 폴더와 개인 PC에 흩어져 검색이 어려웠고, "최신 정본이 어느 파일인가"가 사람 기억에 의존 — 정형 데이터 백본과 단절된 두 번째 진실 원천.</li>
-        <li><b>Approach:</b> 16GB 코퍼스 정제(2,809문서 · hwp는 라이브러리 한계로 <b>olefile 직접 파서 자작</b>) → 문서카드 2,809 + 청크 13,759를 <b>pgvector 임베딩 적재(적재 에러 0 · per-call 과금으로 idle 비용 $0)</b> → 키워드+벡터 <b>RRF 융합에 온톨로지 개념 채널을 더한 하이브리드 검색</b> → 정본 레지스트리(<b>슬롯당 정본 1개를 DB UNIQUE 제약으로 강제</b>, LLM 제안 + 1클릭 확정, 만료 임박 알림) → d3-force 의미지도 → 인앱 업로드·델타 ETL 증분 동기 → RAG 초안 생성(근거 인용·docx 출력).</li>
+        <li><b>Approach:</b> 16GB 코퍼스 정제(2,809문서 · hwp는 라이브러리 한계로 <b>olefile 직접 파서 자작</b>) → 문서카드 2,809 + 청크 13,759를 <b>pgvector 임베딩 적재(적재 에러 0 · per-call 과금으로 idle 비용 $0)</b> → 키워드+벡터 <b>RRF 융합에 온톨로지 개념 채널을 더한 하이브리드 검색</b> → 정본 레지스트리(<b>슬롯당 정본 1개를 DB UNIQUE 제약으로 강제</b>, LLM 제안 + 1클릭 확정, 만료 임박 알림) → d3-force 의미지도 → 인앱 업로드·델타 ETL 증분 동기 → <b>문장별 출처를 인용하는 AI 질의응답</b> → RAG 초안 생성(근거 인용·docx 출력).</li>
         <li><b>Impact:</b> 수년치 비정형 문서가 <b>의미 검색 가능한 자산</b>으로 전환 · 정본 관리가 기억에서 <b>시스템 제약</b>으로 이동 · 문서 기반 작성 업무가 근거 문서를 인용한 초안에서 시작.</li>
       </ul>
       <a href="walkthroughs/워크스루-문서허브.html" style="display:inline-block;margin-top:8px;color:var(--primary);font-weight:700;text-decoration:none;font-size:11.5px">↳ 워크스루: 문서허브</a>
@@ -208,6 +208,36 @@
       <a href="https://github.com/moongioh/harness-scope" target="_blank" style="display:inline-block;margin-top:8px;color:var(--primary);font-weight:700;text-decoration:none;font-size:11.5px">↳ GitHub: moongioh/harness-scope</a>
       <a href="https://pypi.org/project/hscope/" target="_blank" style="display:inline-block;margin-top:8px;margin-left:14px;color:var(--primary);font-weight:700;text-decoration:none;font-size:11.5px">↳ PyPI: hscope</a>
     </div>
+
+    <div class="case">
+      <div class="q"><span class="lab">AI-Native · 외부검증</span>harness-scope 기여 — Phoenix(Arize) 오픈소스의 토큰 계측 결함 진단·수정</div>
+      <ul>
+        <li><b>Problem:</b> 자체 OSS 공개는 자기평가에 그친다 — 내 AI-native 방식이 통용되는지 <b>제3자 검증</b>이 필요.</li>
+        <li><b>Approach:</b> harness-scope가 <b>자체 룰로</b> 토큰 이중계산 버그 클래스(<code>requestId</code> last-record-wins)를 탐지 → 같은 결함이 <b>LLM 관측 분야 대표 도구 Phoenix를 만든 Arize의 오픈소스</b>(<code>coding-harness-tracing</code>)의 실제 Claude Code 어댑터에도 실재함을 재현·확인(<b>출력 2.79× · 프롬프트 2.37× 과다계산</b>) → 픽스 + 회귀 테스트 패치 제출.</li>
+        <li><b>Impact:</b> 해당 프로젝트 <b>메인테이너가 내 패치를 작성자 보존·크레딧과 함께 채택</b> — 내가 만든 도구가 대표 프로젝트에서 <b>실제 결함을 잡아 고친</b> 외부검증(내 방식이 통용됨을 제3자가 인정).</li>
+      </ul>
+      <a href="https://github.com/Arize-ai/coding-harness-tracing/pull/84" target="_blank" style="display:inline-block;margin-top:8px;color:var(--primary);font-weight:700;text-decoration:none;font-size:11.5px">↳ PR: Arize-ai/coding-harness-tracing #84</a>
+    </div>
+
+    <div class="case">
+      <div class="q"><span class="lab">AX · 개인 R&amp;D</span>개인 지식그래프(PKG) + 에이전트 장기기억 — 자가호스팅 RAG · MCP (2026.07~)</div>
+      <ul>
+        <li><b>Problem:</b> 에이전트가 세션을 넘어 축적한 지식·판정을 재사용하려면, 노트가 아니라 <b>검색·주입 가능한 구조화된 장기기억</b>이 필요.</li>
+        <li><b>Approach:</b> <b>645노드 · 2단 택소노미 · 781 typed 엣지</b> 개념그래프 → 렉시컬 + 시맨틱(pgvector) + 그래프부스터 <b>3채널 RRF 검색(LLM 0콜)</b> + <b>LangGraph(StateGraph)</b> 기반 RAG 응답 + <b>HTTP MCP 서버</b>로 에이전트에 노출 · 증분 동기 훅 자동 적재 · 전량 자가호스팅(OCI)·사설망 격리 · 회귀 평가 하니스(<b>Recall@5 0.921</b>)로 검색품질 게이트.</li>
+        <li><b>Impact:</b> 에이전트 장기기억을 '노트정리'가 아닌 <b>검색가능 자산</b>으로 전환 — 퇴사 후 개인 R&amp;D로 하네스 엔지니어링을 이어감.</li>
+      </ul>
+      <a href="https://github.com/moongioh/agent-memory-llmops" target="_blank" style="display:inline-block;margin-top:8px;color:var(--primary);font-weight:700;text-decoration:none;font-size:11.5px">↳ 아키텍처 쇼케이스: agent-memory-llmops (구조도·방법론·발췌)</a>
+    </div>
+
+    <div class="case">
+      <div class="q"><span class="lab">AX · 개인 R&amp;D</span>LLM 게이트웨이 — 멀티프로바이더 라우팅 · 관측 · 예산통제 (LLMOps, 2026.07~)</div>
+      <ul>
+        <li><b>Problem:</b> 여러 LLM 프로바이더를 한 계층에서 라우팅하고 토큰/비용·트레이스를 <b>관측·통제</b>할 단일 백본이 필요.</li>
+        <li><b>Approach:</b> <b>LiteLLM 게이트웨이 + Phoenix 관측(OTLP 트레이싱)</b>을 자가 인프라(OCI)에 배포 · 스코프 <b>가상키 + 예산캡</b> · 멀티프로바이더(상용 LLM API + Voyage 임베딩) 통합 · 사설망 전용 · <b>$0 유휴</b>.</li>
+        <li><b>Impact:</b> 모든 LLM 호출이 단일 게이트웨이로 <b>계측·과금통제</b>되는 LLMOps 백본 — 위 PKG·문서허브 RAG가 이 위에서 동작. 남의 관측 도구 결함(Arize/Phoenix)을 잡은 감각으로 <b>내 관측 스택도 직접 운영</b>.</li>
+      </ul>
+      <a href="https://github.com/moongioh/agent-memory-llmops" target="_blank" style="display:inline-block;margin-top:8px;color:var(--primary);font-weight:700;text-decoration:none;font-size:11.5px">↳ 아키텍처 쇼케이스: agent-memory-llmops (PKG+게이트웨이 통합)</a>
+    </div>
   </section>
 
   <!-- 7. AI-Native Engineering -->
@@ -222,7 +252,7 @@
       <div class="pill-card"><h3>멀티에이전트 검증</h3><p>구현과 검증을 분리해 독립 에이전트가 diff를 적대적으로 리뷰 — 구현자의 자기확증 편향을 구조로 차단.</p></div>
       <div class="pill-card"><h3>온톨로지 = 에이전트 컨텍스트</h3><p>도메인 개념그래프를 에이전트의 코드 내비·정합 근거로 공급 — AI가 도메인을 "추측"하지 않고 정본에서 착지하게.</p></div>
     </div>
-    <div class="note info"><span class="mi">deployed_code</span><div>이 작업 규율 중 관측 가능한 부분은 도구로 만들어 공개했습니다 — 에이전트 세션을 턴 단위로 판정하는 <b>harness-scope</b>, <b>오픈소스</b>입니다(§6 케이스 참조 · <a href="https://github.com/moongioh/harness-scope" target="_blank" style="color:var(--primary);font-weight:700">GitHub</a> · <code>pip install hscope</code>).</div></div>
+    <div class="note info"><span class="mi">deployed_code</span><div>이 작업 규율 중 관측 가능한 부분은 도구로 만들어 공개했습니다 — 에이전트 세션을 턴 단위로 판정하는 <b>harness-scope</b>, <b>오픈소스</b>입니다(§6 케이스 참조 · <a href="https://github.com/moongioh/harness-scope" target="_blank" style="color:var(--primary);font-weight:700">GitHub</a> · <code>pip install hscope</code>). 이 방식은 외부에서도 검증됐습니다 — harness-scope가 자체 룰로 잡은 토큰 계측 결함이 <b>LLM 관측 대표 도구 Phoenix(Arize) 오픈소스</b>에도 실재함을 확인·수정해 <b>메인테이너가 채택</b>했습니다(§6).</div></div>
   </section>
 
   <!-- 8. Experience -->
@@ -234,10 +264,11 @@
       <ul>
         <li><b>주요 역할:</b> 요구사항 발굴 · 도메인 온톨로지 모델링 · 풀스택 설계·구축(React/FastAPI/PostgreSQL) · 정합성 검증 엔진 개발 · Cloud Run/Vercel 배포 자동화 · 현장 온보딩·변화관리</li>
         <li><b>핵심 성과 —</b> 입사 <b>4주 차</b> 데스크톱 프로토타입 첫 실가동 → 클라우드 풀스택 ERP로 기존 업무 중단 없이 전환, 실운영에 안착</li>
-        <li>발주·생산(APS)·재고·자금·관리회계 등 <b>14개 업무 도메인</b>을 단일 이벤트소싱 게이트로 통합</li>
+        <li>발주·생산(APS)·재고·자금·관리회계 등 <b>14개 업무 도메인</b>을 단일 이벤트소싱 게이트로 통합 — 가용재고 네팅·최적 생산 큐를 제안하는 <b>APS 엔진</b> · 현장 모바일 · RBAC·감사 로그</li>
         <li>분산 진실원천 <b>6~7곳 → 단일 백본</b> · 거래처 마스터 <b>973건</b> 정합 적재 · 생산지시서 작성 <b>건당 40분 → 1클릭</b> · 발주 정합 공수 <b>하루 2시간 → 실시간 보드</b>로 소멸</li>
         <li>18개월 이력 파싱·정합검증(분석 백본 구축) + 자금일보↔분개장 2경로 교차대조로 누계 정합오차 <b>총거래액 대비 0.0021%</b> · 도메인 온톨로지 <b>203개념·233엣지</b> 구축</li>
-        <li>비정형 문서 <b>16GB → 시멘틱 문서허브</b>(pgvector 임베딩 2,809문서·13,759청크 · RRF 하이브리드 검색 · 정본 레지스트리 · RAG 초안) 구축</li>
+        <li>비정형 문서 <b>16GB → 시멘틱 문서허브</b>(pgvector 임베딩 2,809문서·13,759청크 · RRF 하이브리드 검색 · 근거 인용 AI 질의응답 · 정본 레지스트리 · 인앱 문서 등록 · RAG 초안→docx) 구축 — 검색-질의응답-등록-작성 풀 플로우</li>
+        <li>카톡 납기·일정 문의 챗봇 — <b>LLM 구조화 + 3단 판정엔진</b>(재고→동승→신규배치) → 담당자 확인 → 카카오 알림톡 회신</li>
         <li>LLM 데이터 분류 파이프라인 및 <b>AI 개발 거버넌스</b>(계획 게이트 · pre-commit 훅 기계강제 · 멀티에이전트 적대적 검증) 설계 → 그 방법론을 <b>오픈소스 harness-scope</b>(PyPI/npm·3-OS CI)로 공개</li>
       </ul>
     </div>
@@ -266,7 +297,7 @@
       <div class="row"><span class="k">Backend</span><span class="v">Python · FastAPI · Pydantic · SQLAlchemy / Alembic</span></div>
       <div class="row"><span class="k">Data / Modeling</span><span class="v">PostgreSQL · pgvector (시멘틱 검색) · pandas · scipy · networkx (온톨로지 그래프)</span></div>
       <div class="row"><span class="k">Cloud / Infra</span><span class="v">Google Cloud Run · Cloud SQL · Cloudflare Access (Zero-Trust) · Vercel · Docker</span></div>
-      <div class="row"><span class="k">AX / AI</span><span class="v">Vertex AI (온디맨드·Read-only) · 임베딩 검색(RRF 하이브리드) · RAG 파이프라인 · MCP 서버 · LLM 기반 데이터 분류</span></div>
+      <div class="row"><span class="k">AX / AI</span><span class="v">RAG 파이프라인(RRF 하이브리드) · LangGraph(StateGraph) 오케스트레이션 · MCP 서버 구현·운영 · LLM 게이트웨이(LiteLLM)·관측(Phoenix/OTLP) = LLMOps · 에이전트 장기기억(개인 지식그래프) · 임베딩 검색 · LLM 기반 데이터 분류 · Vertex AI</span></div>
       <div class="row"><span class="k">Practice</span><span class="v">Git · Cloud Build CI/CD · GitHub Actions (3-OS 매트릭스) · 오픈소스 배포(PyPI/npm) · 계획(plan) 기반 개발 + 자동 핸드오버 문서화</span></div>
     </div>
   </section>
