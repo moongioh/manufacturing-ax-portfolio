@@ -225,7 +225,7 @@
       <ul>
         <li><b>Problem:</b> 에이전트가 세션을 넘어 축적한 지식·판정을 재사용하려면, 노트가 아니라 <b>검색·주입 가능한 구조화된 장기기억</b>이 필요.</li>
         <li><b>Approach:</b> <b>645노드 · 2단 택소노미 · 781 typed 엣지</b> 개념그래프 → 렉시컬 + 시맨틱(pgvector) + 그래프부스터 <b>3채널 RRF 검색(LLM 0콜)</b> + <b>LangGraph(StateGraph)</b> 기반 RAG 응답 + <b>HTTP MCP 서버</b>로 에이전트에 노출 · 증분 동기 훅 자동 적재 · 전량 자가호스팅(OCI)·사설망 격리 · 회귀 평가 하니스(<b>Recall@5 0.921</b>)로 검색품질 게이트.</li>
-        <li><b>Impact:</b> 에이전트 장기기억을 '노트정리'가 아닌 <b>검색가능 자산</b>으로 전환 — 퇴사 후 개인 R&amp;D로 하네스 엔지니어링을 이어감.</li>
+        <li><b>Impact:</b> 에이전트 장기기억을 '노트정리'가 아닌 <b>검색가능 자산</b>으로 전환 — 하네스 엔지니어링을 개인 R&amp;D로 계속 확장.</li>
       </ul>
       <a href="https://github.com/moongioh/agent-memory-llmops" target="_blank" style="display:inline-block;margin-top:8px;color:var(--primary);font-weight:700;text-decoration:none;font-size:11.5px">↳ 아키텍처 쇼케이스: agent-memory-llmops (구조도·방법론·발췌)</a>
     </div>

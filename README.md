@@ -18,7 +18,7 @@ adopted upstream by Arize, and a self-hosted AI stack ([agent-memory-llmops](htt
 
 ---
 
-## TL;DR — 30초 스캔
+## 한눈에 — 30초 스캔
 
 | | |
 |---|---|
@@ -97,7 +97,7 @@ flowchart LR
 
 ![harness-scope 데모](assets/harness-scope-demo.gif)
 
-**퇴사 후에도 이 하네스 엔지니어링을 개인 R&D로 이어갑니다** — 자가호스팅 AI 스택 하나로 응축:
+**이 하네스 엔지니어링은 개인 R&D로도 이어집니다** — 자가호스팅 AI 스택 하나로 응축:
 
 - **[agent-memory-llmops](https://github.com/moongioh/agent-memory-llmops)** (아키텍처 쇼케이스) — **에이전트 장기기억**(645노드 개념그래프 · 3채널 RRF 검색(LLM 0콜) · **LangGraph** RAG · **MCP 서버**)이 **LLMOps 백본**(LiteLLM 게이트웨이 · 가상키+예산캡 · Phoenix 관측·FinOps) 위에서 도는 개인 AI 플랫폼. 구조도·방법론·마스킹 발췌 공개(실코드/코퍼스 비공개).
 
