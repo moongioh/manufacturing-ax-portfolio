@@ -211,11 +211,11 @@
     </div>
 
     <div class="case">
-      <div class="q"><span class="lab">AI-Native · 외부검증</span>harness-scope 기여 — Phoenix(Arize) 오픈소스의 토큰 계측 결함 진단·수정</div>
+      <div class="q"><span class="lab">AI-Native · OSS 기여</span>harness-scope 기여 — Phoenix(Arize) 오픈소스의 토큰 계측 결함 진단·수정</div>
       <ul>
-        <li><b>Problem:</b> 자체 OSS 공개는 자기평가에 그친다 — 내 AI-native 방식이 통용되는지 <b>제3자 검증</b>이 필요.</li>
+        <li><b>Problem:</b> 자체 오픈소스 공개만으로는 "실전에서 통하는가"가 남는다 — 대표 프로젝트에서의 실증이 필요.</li>
         <li><b>Approach:</b> harness-scope가 <b>자체 룰로</b> 토큰 이중계산 버그 클래스(<code>requestId</code> last-record-wins)를 탐지 → 같은 결함이 <b>LLM 관측 분야 대표 도구 Phoenix를 만든 Arize의 오픈소스</b>(<code>coding-harness-tracing</code>)의 실제 Claude Code 어댑터에도 실재함을 재현·확인(<b>출력 2.79× · 프롬프트 2.37× 과다계산</b>) → 픽스 + 회귀 테스트 패치 제출.</li>
-        <li><b>Impact:</b> 해당 프로젝트 <b>메인테이너가 내 패치를 작성자 보존·크레딧과 함께 채택</b> — 내가 만든 도구가 대표 프로젝트에서 <b>실제 결함을 잡아 고친</b> 외부검증(내 방식이 통용됨을 제3자가 인정).</li>
+        <li><b>Impact:</b> 해당 프로젝트 <b>메인테이너가 내 패치를 작성자 보존·크레딧과 함께 채택해 메인 브랜치에 병합</b> — 내가 만든 도구가 대표 프로젝트에서 <b>실제 결함을 잡아 고쳐 업스트림에 반영</b>된 기여.</li>
       </ul>
       <a href="https://github.com/Arize-ai/coding-harness-tracing/pull/84" target="_blank" style="display:inline-block;margin-top:8px;color:var(--primary);font-weight:700;text-decoration:none;font-size:11.5px">↳ PR: Arize-ai/coding-harness-tracing #84</a>
     </div>
@@ -227,6 +227,7 @@
         <li><b>Approach:</b> <b>645노드 · 2단 택소노미 · 781 typed 엣지</b> 개념그래프 → 렉시컬 + 시맨틱(pgvector) + 그래프부스터 <b>3채널 RRF 검색(LLM 0콜)</b> + <b>LangGraph(StateGraph)</b> 기반 RAG 응답 + <b>HTTP MCP 서버</b>로 에이전트에 노출 · 증분 동기 훅 자동 적재 · 전량 자가호스팅(OCI)·사설망 격리 · 회귀 평가 하니스(<b>Recall@5 0.921</b>)로 검색품질 게이트.</li>
         <li><b>Impact:</b> 에이전트 장기기억을 '노트정리'가 아닌 <b>검색가능 자산</b>으로 전환 — 하네스 엔지니어링을 개인 R&amp;D로 계속 확장.</li>
       </ul>
+      <img src="assets/agent-memory-graph.png" alt="agent-memory-llmops — 개인 지식그래프 뷰어(645노드·1,528엣지, 민감값 마스킹)" style="width:100%;max-width:820px;display:block;margin:12px 0 2px;border:1px solid var(--outline-variant);border-radius:12px;" loading="lazy" />
       <a href="https://github.com/moongioh/agent-memory-llmops" target="_blank" style="display:inline-block;margin-top:8px;color:var(--primary);font-weight:700;text-decoration:none;font-size:11.5px">↳ 아키텍처 쇼케이스: agent-memory-llmops (구조도·방법론·발췌)</a>
     </div>
 

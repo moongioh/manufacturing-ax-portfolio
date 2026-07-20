@@ -25,7 +25,7 @@ adopted upstream by Arize, and a self-hosted AI stack ([agent-memory-llmops](htt
 | **실물 (프로덕션)** | 자체 SW 0 → **14도메인 웹 ERP 1인 구축** · 입사 4주 차 실가동 · 무중단 전환 · 실운영 안착. 진실원천 **6\~7곳 → 단일 이벤트소싱 백본** |
 | **AX-on-DX** | 데이터 정합(DX) 위에 AI(AX): 온톨로지 검증 레이어 · **시멘틱 문서허브**(RAG·pgvector·2,809문서) · LLM 문의 응답 에이전트 |
 | **AI-native 방식** | 개발을 AI 에이전트와 — 그 **작업 규율을 도구화**해 오픈소스 공개 ([harness-scope](https://github.com/moongioh/harness-scope)) |
-| **외부검증 (닫힌 고리)** | 그 도구가 잡은 토큰 계측 버그를 **LLM 관측 대표도구 Phoenix를 만든 Arize의 오픈소스에서 재현·수정 → 메인테이너가 내 패치를 작성자 보존·크레딧과 함께 채택** |
+| **OSS 업스트림 기여** | 그 도구가 잡은 토큰 계측 버그를 **LLM 관측 대표도구 Phoenix를 만든 Arize의 오픈소스에서 재현·수정 → 메인테이너가 내 패치를 작성자 보존·크레딧과 함께 채택해 메인 브랜치에 병합** |
 | **AI 인프라 깊이** | 자가호스팅 AI 스택 개인 R&D — 에이전트 장기기억(지식그래프·RAG·MCP) + LLMOps 게이트웨이 ([agent-memory-llmops](https://github.com/moongioh/agent-memory-llmops)) |
 
 > 지향 역할: 현장에 들어가 문제를 구조화하고 도는 시스템으로 안착까지 책임지는 **FDE형 엔지니어**. 목적지는 산업의 일하는 방식을 바꾸는 **AX**.
@@ -38,7 +38,7 @@ adopted upstream by Arize, and a self-hosted AI stack ([agent-memory-llmops](htt
 
 - 실제 운영 시스템의 **전체 소스는 NDA·보안 규정으로 비공개**입니다.
 - 이 저장소에는 **기밀·회사 식별정보가 제거된** (1) 화면 둘러보기(주요 화면 스크린샷), (2) 아키텍처 워크스루 23종, (3) 이력서를 담았습니다.
-- 화면은 **더미 데이터 + 백엔드 없는 정적 빌드**에서 캡처 — 영업비밀·회사 식별정보 노출 0. 커밋 히스토리는 익명화를 위해 스쿼시 후 재게시. 실제 개발 이력은 비공개 저장소에 있으며 면접 시 화면 공유로 열람 가능합니다.
+- 화면은 **더미 데이터 + 백엔드 없는 정적 빌드**에서 캡처 — 영업비밀·회사 식별정보 노출 0. 커밋 히스토리는 익명화를 위해 스쿼시 후 재게시했습니다. 동작하는 시스템은 **요청 시 라이브 데모 구동**으로 직접 확인하실 수 있습니다.
 
 ---
 
@@ -90,16 +90,18 @@ flowchart LR
 
 이 시스템은 대부분 **AI 코딩 에이전트와 함께** 개발했습니다. 1인이 이 범위를 이 기간에 다룬 것은 개인 코딩 속도가 아니라 **에이전트의 실수를 줄이는 작업 규율을 문서·훅으로 강제**했기 때문입니다 — 계획 게이트 · pre-commit 기계강제 · 구현/검증 에이전트 분리 · 온톨로지를 에이전트 컨텍스트로 공급.
 
-**이 방식을 도구화·외부검증까지 닫았습니다:**
+**이 방식을 도구화하고, 업스트림 OSS에도 기여했습니다:**
 
 - **[harness-scope](https://github.com/moongioh/harness-scope)** — 에이전트 세션 로그를 턴 단위로 판정하는 거버넌스 관측 도구. **Apache-2.0 오픈소스**(`pip install hscope` · npm `hscope` · 3-OS CI · MCP 서버 10툴).
-- **외부검증 (닫힌 고리)** — harness-scope가 **자체 룰로** 토큰 이중계산 버그를 탐지 → 같은 결함이 **LLM 관측 분야 대표 도구 Phoenix를 만든 Arize의 오픈소스**에도 실재함을 재현·확인(출력 2.79× 과다계산) → 패치 제출 → **메인테이너가 내 패치를 작성자 보존·크레딧과 함께 채택** ([PR](https://github.com/Arize-ai/coding-harness-tracing/pull/84)). *내가 만든 도구가 대표 프로젝트에서 실제 결함을 잡아 고친, 제3자가 인정한 외부검증.*
+- **OSS 업스트림 기여** — harness-scope가 **자체 룰로** 토큰 이중계산 버그를 탐지 → 같은 결함이 **LLM 관측 분야 대표 도구 Phoenix를 만든 Arize의 오픈소스**에도 실재함을 재현·확인(출력 2.79× 과다계산) → 패치 제출 → **메인테이너가 내 패치를 작성자 보존·크레딧과 함께 채택해 메인 브랜치에 병합** ([PR #84](https://github.com/Arize-ai/coding-harness-tracing/pull/84)). *내가 만든 도구가 대표 프로젝트에서 실제 결함을 잡아 고쳐 업스트림에 반영된 기여.*
 
 ![harness-scope 데모](assets/harness-scope-demo.gif)
 
 **이 하네스 엔지니어링은 개인 R&D로도 이어집니다** — 자가호스팅 AI 스택 하나로 응축:
 
 - **[agent-memory-llmops](https://github.com/moongioh/agent-memory-llmops)** (아키텍처 쇼케이스) — **에이전트 장기기억**(645노드 개념그래프 · 3채널 RRF 검색(LLM 0콜) · **LangGraph** RAG · **MCP 서버**)이 **LLMOps 백본**(LiteLLM 게이트웨이 · 가상키+예산캡 · Phoenix 관측·FinOps) 위에서 도는 개인 AI 플랫폼. 구조도·방법론·마스킹 발췌 공개(실코드/코퍼스 비공개).
+
+![agent-memory-llmops — 개인 지식그래프 뷰어(645노드·1,528엣지, 민감값 마스킹)](assets/agent-memory-graph.png)
 
 ---
 
