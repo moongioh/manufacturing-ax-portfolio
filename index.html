@@ -13,132 +13,276 @@
 <meta property="og:site_name" content="Manufacturing AX Portfolio" />
 <meta property="og:locale" content="ko_KR" />
 <meta name="twitter:card" content="summary" />
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebSite", "name": "Manufacturing AX Portfolio", "url": "https://moongioh.github.io/manufacturing-ax-portfolio/", "description": "18인 제조·화학 중소기업의 웹 ERP를 1인으로 설계·구축해 운영한 프로젝트(재직 2026.04~2026.07). 자체 소프트웨어가 없고 데이터가 6~7곳에 흩어져 있던 환경에서, 데이터를 단일 정합 구조로 옮기고 그 위에 웹 ERP를 만들었습니다 (입사 4주 차 첫 실가동 → 약 2개월에 걸쳐 확장). 비정…", "inLanguage": "ko", "author": {"@type": "Person", "name": "moongioh", "email": "awsgioh@gmail.com", "url": "https://moongioh.github.io/manufacturing-ax-portfolio/", "sameAs": ["https://github.com/moongioh", "https://github.com/moongioh/harness-scope"]}}</script>
-<link rel="stylesheet" href="assets/creative.css" />
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebSite", "name": "Manufacturing AX Portfolio", "url": "https://moongioh.github.io/manufacturing-ax-portfolio/", "description": "18인 제조·화학 중소기업의 웹 ERP를 1인으로 설계·구축해 운영한 프로젝트(재직 2026.04~2026.07). 자체 소프트웨어가 없고 데이터가 6~7곳에 흩어져 있던 환경에서, 데이터를 단일 정합 구조로 옮기고 그 위에 웹 ERP를 만들었습니다 (입사 4주 차 첫 실가동 → 약 2개월에 걸쳐 확장). 비정…", "inLanguage": "ko", "author": {"@type": "Person", "name": "moongioh", "email": "awsgioh@gmail.com", "url": "https://moongioh.github.io/manufacturing-ax-portfolio/", "sameAs": ["https://github.com/moongioh", "https://github.com/moongioh/harness-scope", "https://github.com/moongioh/agent-memory-llmops"]}}</script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..600,0..1,0" rel="stylesheet">
+<link rel="stylesheet" href="assets/canon-v2.css" />
 <style>
-  body.creative-theme { padding-left: 28px; }
-  @media (max-width: 900px) { body.creative-theme { padding-left: 0; } }
-  .wrap { width: min(100%, 1080px); }
-  .cta-row { display:flex; flex-wrap:wrap; gap:10px; margin-top:16px; }
-  .cta { display:inline-flex; align-items:center; gap:7px; padding:11px 20px; border-radius:9999px; font-size:13.5px; font-weight:800; text-decoration:none; transition:transform .18s, box-shadow .18s; }
-  .cta.primary { background:linear-gradient(135deg,#3B82F6,#2563EB); color:#fff; box-shadow:0 8px 22px rgba(59,130,246,.3); }
-  .cta.ghost { background:var(--surface-lowest); color:var(--primary); border:1px solid var(--outline-variant); }
-  .cta:hover { transform:translateY(-2px); box-shadow:0 12px 28px rgba(59,130,246,.28); }
-  .cta .mi { font-size:19px; }
-  .grp-label { font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--on-surface-variant); margin:18px 0 8px; }
-  .lead-note { font-size:12.5px; color:var(--on-surface-variant); line-height:1.6; }
+html,body{margin:0;padding:0}
+.wrap{width:min(100%,1080px);margin:0 auto;padding:40px 24px 72px;box-sizing:border-box}
+.mono{font-family:'JetBrains Mono',monospace}
+
+/* 히어로 */
+.hero{position:relative;overflow:hidden;border-radius:18px;padding:34px 36px;background:linear-gradient(120deg,var(--cn-tint) 0%,var(--cn-bg) 70%);border:1px solid var(--cn-line);box-shadow:var(--cn-shadow-1)}
+.hero .bar{position:absolute;inset:0 0 auto 0;height:3px;background:linear-gradient(90deg,var(--cn-primary),var(--cn-purple),var(--cn-teal))}
+.hero .eyebrow{font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:600;color:var(--cn-primary-deep);letter-spacing:.04em;margin-bottom:10px}
+.hero h1{margin:0 0 10px;font-size:32px;font-weight:800;letter-spacing:-.025em;line-height:1.25}
+.hero .hook{margin:0;max-width:720px;font-size:15.5px;color:var(--cn-ink);line-height:1.75}
+.hero .hook b{color:var(--cn-primary-deep)}
+.hero .sub{margin:8px 0 0;max-width:720px;font-size:13.5px;color:var(--cn-muted)}
+
+/* KPI */
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:22px}
+.kpi{background:var(--cn-card);border:1px solid var(--cn-line);border-radius:14px;padding:16px 20px;box-shadow:var(--cn-shadow-1)}
+.kpi .label{font-size:11px;font-weight:700;color:var(--cn-faint);letter-spacing:.03em;margin-bottom:6px}
+.kpi .value{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-size:21px;font-weight:700;letter-spacing:-.02em;color:var(--cn-ink)}
+@media (max-width:720px){.kpis{grid-template-columns:1fr}}
+
+/* CTA — 알약 */
+.cta-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;align-items:center}
+.cta{display:inline-flex;align-items:center;gap:7px;padding:10px 22px;border-radius:999px;font-size:13px;font-weight:700;text-decoration:none;cursor:pointer;transition:background .18s,color .18s,border-color .18s,box-shadow .18s}
+.cta.primary{background:var(--cn-primary);color:#fff;box-shadow:0 2px 8px rgba(59,130,246,.25)}
+.cta.primary:hover{background:var(--cn-primary-deep);color:#fff}
+.cta.tone{background:var(--cn-tint);color:var(--cn-primary-deep)}
+.cta.tone:hover{background:var(--cn-tint-deep);color:var(--cn-primary-deep)}
+.cta.ghost{background:var(--cn-card);color:var(--cn-ink);border:1px solid var(--cn-line-strong)}
+.cta.ghost:hover{border-color:var(--cn-primary);color:var(--cn-primary-deep)}
+.cta .mi{font-size:17px}
+.theme-btn{margin-left:auto;border:1px solid var(--cn-line-strong);border-radius:999px;background:var(--cn-card);color:var(--cn-ink);font-family:inherit;font-size:12px;font-weight:700;padding:9px 14px;display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.theme-btn:hover{border-color:var(--cn-primary)}
+
+/* 섹션 */
+section{margin-top:48px}
+.sec-head{display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.sec-head .no{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:#fff;font-size:13px;font-weight:800;flex:none}
+.sec-head h2{margin:0;font-size:21px;font-weight:800;letter-spacing:-.02em}
+.sec-head .sub{font-size:12px;color:var(--cn-faint)}
+.no.g1{background:linear-gradient(135deg,var(--cn-primary),var(--cn-primary-deep))}
+.no.g2{background:linear-gradient(135deg,var(--cn-purple),var(--cn-primary))}
+.no.g3{background:linear-gradient(135deg,var(--cn-teal),var(--cn-primary))}
+.no.g4{background:linear-gradient(135deg,var(--cn-amber),var(--cn-rose))}
+
+/* 코스 카드 */
+.courses{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.course{background:var(--cn-card);border:1px solid var(--cn-line);border-radius:14px;padding:20px;box-shadow:var(--cn-shadow-1);display:flex;flex-direction:column;gap:12px}
+.course .head{display:flex;align-items:center;gap:9px}
+.course .head .mi{font-size:20px;color:var(--cn-primary)}
+.course .head b{font-size:14.5px}
+.course .time{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;padding:3px 10px;border-radius:999px;background:var(--cn-tint-deep);color:var(--cn-primary-deep)}
+.course ol{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.course ol a{display:flex;gap:9px;align-items:flex-start;font-size:13px;line-height:1.55;color:var(--cn-ink);border-radius:8px;padding:6px 8px}
+.course ol a:hover{background:var(--cn-tint);color:var(--cn-primary-deep)}
+.course ol .step{flex:none;width:20px;height:20px;border-radius:999px;display:grid;place-items:center;font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:700;background:var(--cn-tint-deep);color:var(--cn-primary-deep);margin-top:1px}
+.course .why{font-size:12px;color:var(--cn-muted);line-height:1.6;margin:0}
+
+/* 콜아웃 */
+.callout{border-radius:12px;border:1px solid var(--cn-line);border-left:4px solid var(--cn-primary);background:var(--cn-card);padding:14px 17px;box-shadow:var(--cn-shadow-1);display:flex;gap:11px;align-items:flex-start;margin-top:14px}
+.callout .mi{font-size:19px;color:var(--cn-primary);flex:none;margin-top:1px}
+.callout div{font-size:12.5px;line-height:1.6;color:var(--cn-muted)}
+.callout b{color:var(--cn-ink)}
+
+/* 카드 그리드 (R&D · 워크스루) */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.card{background:var(--cn-card);border:1px solid var(--cn-line);border-radius:14px;padding:20px;box-shadow:var(--cn-shadow-1);text-decoration:none;color:var(--cn-ink);display:block;transition:transform .2s var(--cn-ease),box-shadow .2s}
+.card:hover{transform:translateY(-2px);box-shadow:var(--cn-shadow-2);color:var(--cn-ink)}
+.card h3{margin:8px 0 6px;font-size:14.5px;font-weight:800;letter-spacing:-.01em}
+.card p{margin:0;font-size:12.5px;color:var(--cn-muted);line-height:1.65}
+.badge{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.05em;padding:3px 10px;border-radius:999px;background:var(--cn-tint-deep);color:var(--cn-primary-deep)}
+.badge.soft-p{background:var(--cn-tint);color:var(--cn-primary-deep)}
+.badge.entry{background:var(--cn-primary);color:#fff}
+.lead-note{font-size:13px;color:var(--cn-muted);line-height:1.7;max-width:760px;margin:0 0 16px}
+
+/* 서랍(전체 인덱스) */
+details.drawer{margin-top:14px}
+details.drawer>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;background:var(--cn-card);border:1px solid var(--cn-line);border-radius:14px;padding:16px 20px;box-shadow:var(--cn-shadow-1);font-size:14px;font-weight:700}
+details.drawer>summary::-webkit-details-marker{display:none}
+details.drawer>summary .mi{font-size:19px;color:var(--cn-primary);transition:transform .2s}
+details.drawer[open]>summary .mi.chev{transform:rotate(180deg)}
+details.drawer>summary:hover{border-color:var(--cn-primary)}
+details.drawer .inner{padding:18px 2px 0}
+.grp-label{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--cn-faint);margin:18px 0 8px}
+.grp-label:first-child{margin-top:0}
+
+/* 이미지 · 푸터 */
+.shot{width:100%;max-width:880px;display:block;margin:14px 0;border:1px solid var(--cn-line);border-radius:16px}
+.foot{margin-top:56px;padding-top:20px;border-top:1px solid var(--cn-line);font-size:12.5px;color:var(--cn-muted);line-height:1.8}
+.foot a{font-weight:700}
+@media print{.card,.kpi,.course{break-inside:avoid}}
 </style>
 </head>
-<body class="creative-theme">
+<body>
+<div class="canon" id="top">
 <div class="wrap">
 
   <header class="hero">
-    <div class="crest"><span class="mi">deployed_code</span></div>
-    <div>
-      <h1>제조 중소기업 웹 ERP 1인 구축</h1>
-      <p class="lead">18인 제조·화학 중소기업의 웹 ERP를 <b>1인으로 설계·구축</b>해 운영한 프로젝트(재직 2026.04~2026.07) —
-        입사 4주 차에 첫 실가동을 시작해 약 2개월에 걸쳐 주요 업무 도메인으로 확장했습니다.
-        자체 소프트웨어가 없고 데이터가 6~7곳에 흩어져 있던 환경에서, 데이터를 단일 정합 구조로 옮기고 그 위에 웹 ERP를 만들었습니다.
-        비정형 문서 16GB는 <b>시멘틱 문서허브</b>로 검색 가능하게 만들었고, 개발에 사용한 AI 에이전트 작업 규율은 <b>오픈소스 harness-scope</b>로 공개했습니다.</p>
-      <p class="lead-note" lang="en"><b>In English:</b> Solo design, build and operation of a cloud full-stack ERP
-        (FastAPI · React · PostgreSQL · Cloud Run) for an 18-person manufacturing/chemical SME in Korea — first production
-        use four weeks in, expanded over about two months. Unified 6–7 scattered sources of truth into a single event-sourced
-        data backbone with domain-ontology validation, added a semantic document hub over 16GB of unstructured files, and
-        open-sourced the AI-agent workflow tooling used to build it as <a href="https://github.com/moongioh/harness-scope">harness-scope</a>.</p>
-      <div class="cta-row">
-        <a class="cta primary" href="resume.html"><span class="mi">badge</span>이력서 보기</a>
-        <a class="cta ghost" href="slides.html"><span class="mi">slideshow</span>화면 둘러보기</a>
-        <a class="cta ghost" href="mailto:awsgioh@gmail.com"><span class="mi">mail</span>awsgioh@gmail.com</a>
-        <a class="cta ghost" href="https://github.com/moongioh/harness-scope" target="_blank"><span class="mi">deployed_code</span>오픈소스 harness-scope</a>
-      </div>
+    <div class="bar"></div>
+    <div class="eyebrow">MANUFACTURING AX · SOLO BUILD · 2026.04–2026.07</div>
+    <h1>제조 중소기업 웹 ERP 1인 구축</h1>
+    <p class="hook">자체 소프트웨어가 <b>하나도 없던</b> 18인 제조·화학 중소기업 —
+      입사 <b>4주 차</b>, 혼자 만든 첫 시스템이 실제 업무에 투입됐습니다.
+      이후 약 2개월간 <b>14개 업무 도메인</b>으로 확장해 실운영에 안착시켰고,
+      그 위에 온톨로지·시멘틱 검색·RAG의 AI 레이어를 얹었습니다.</p>
+    <p class="sub">데이터가 6~7곳에 흩어져 있던 환경을 단일 정합 구조로 통합한 기록 —
+      화면·설계·검증 과정 전체를 이 사이트에 문서화해 두었습니다.</p>
+    <div class="kpis">
+      <div class="kpi"><div class="label">첫 실가동</div><div class="value">입사 4주 차</div></div>
+      <div class="kpi"><div class="label">업무 도메인</div><div class="value">14개</div></div>
+      <div class="kpi"><div class="label">생산지시서 작성</div><div class="value">40분 → 1클릭</div></div>
+    </div>
+    <div class="cta-row">
+      <a class="cta primary" href="resume.html"><span class="mi">badge</span>이력서 보기</a>
+      <a class="cta tone" href="#course"><span class="mi">timer</span>5분 코스로 시작</a>
+      <a class="cta ghost" href="https://github.com/moongioh/manufacturing-ax-portfolio" target="_blank"><span class="mi">code</span>GitHub repo</a>
+      <button class="theme-btn" id="themeBtn" type="button"><span class="mi" id="themeIcon">dark_mode</span><span id="themeLabel">다크</span></button>
     </div>
   </header>
 
-  <div class="note info" style="margin-top:20px">
-    <span class="mi">person</span>
-    <div><b>만든 사람 —</b> 저는 비효율을 진단하고 개선하는 엔지니어링 자체에 재미를 느끼는 사람입니다.
-      미국 구매대행 이커머스를 6년간 1인 운영하며 주문~정산 전 사이클을 직접 자동화한 경험이 있고, 제조 회사에 관리직으로 입사한 뒤 이 시스템을 1인으로 만들었습니다.
-      결과물은 감가되지만 경험과 지식은 남는다고 믿기에, 가치 중심(ROI)으로 설계합니다.
-      <a href="resume.html" style="color:var(--primary);font-weight:700">이력서에서 더 보기 →</a></div>
-  </div>
-
-  <section>
-    <div class="sec-head"><span class="no">1</span><h2>이 포트폴리오는</h2></div>
-    <p class="lead-note">실제 운영 시스템의 전체 소스는 NDA·보안 규정으로 비공개입니다. 이곳에는 <b>기밀·회사 식별 정보가 제거된
-      (1) 화면 둘러보기(주요 화면 스크린샷 슬라이드), (2) 아키텍처 워크스루 문서, (3) 이력서</b>를 담았습니다. 화면은 더미 데이터 +
-      백엔드 없는 정적 빌드에서 캡처한 것이라 영업비밀·회사 식별정보 노출이 0이며, 라이브 데모는 요청 시 안내드립니다.</p>
-    <div class="note info"><span class="mi">lightbulb</span><div>시스템을 떠받치는 한 가지 생각: <b>「모든 변화는 사건으로 기록하고, 숫자는 그 사건들에서 파생한다」</b>
-      — 재고도·매출도·자금도 저장된 "현재값"이 아니라 이력의 합입니다. 아래 워크스루가 그 설계를 다이어그램으로 설명합니다.</div></div>
+  <section id="course">
+    <div class="sec-head"><span class="no g1">1</span><h2>시간 예산별 추천 코스</h2><span class="sub">검토 시간에 맞는 문만 여세요 — 나머지는 아래 서랍에 있습니다</span></div>
+    <div class="courses">
+      <div class="course">
+        <div class="head"><span class="mi">bolt</span><b>훑어보기</b><span class="time">⏱ 5분</span></div>
+        <ol>
+          <li><a href="slides.html"><span class="step">1</span>화면 둘러보기 — 주요 화면 스크린샷 슬라이드</a></li>
+          <li><a href="walkthroughs/워크스루-시스템오버뷰.html"><span class="step">2</span>시스템 오버뷰 — 전체가 어떻게 맞물리는가</a></li>
+        </ol>
+        <p class="why">무엇이 실제로 돌아가는지, 화면과 전체 구조만 봅니다.</p>
+      </div>
+      <div class="course">
+        <div class="head"><span class="mi">target</span><b>직무 검증</b><span class="time">⏱ 15분</span></div>
+        <ol>
+          <li><a href="walkthroughs/워크스루-문서허브.html"><span class="step">＋</span>AI·데이터 직무라면 — 문서허브 (pgvector·RAG·하이브리드 검색)</a></li>
+          <li><a href="walkthroughs/워크스루-재고이벤트소싱.html"><span class="step">＋</span>백엔드·설계 직무라면 — 재고 이벤트 소싱 코어</a></li>
+        </ol>
+        <p class="why">5분 코스에 더해, 직무와 맞닿은 심화 1편으로 설계 깊이를 확인합니다.</p>
+      </div>
+      <div class="course">
+        <div class="head"><span class="mi">library_books</span><b>전체 검토</b><span class="time">전부</span></div>
+        <ol>
+          <li><a href="#all"><span class="step">→</span>아키텍처 워크스루 전체 인덱스 (23편)</a></li>
+          <li><a href="resume.html"><span class="step">→</span>이력서 — 케이스 스터디 포함</a></li>
+        </ol>
+        <p class="why">설계 결정·트레이드오프·검증까지 전 과정이 문서화되어 있습니다.</p>
+      </div>
+    </div>
+    <div class="callout"><span class="mi">lock</span>
+      <div><b>소스 공개 범위</b> — 실제 운영 시스템의 전체 소스는 NDA·보안 규정으로 비공개입니다.
+        이곳의 화면은 더미 데이터 + 백엔드 없는 정적 빌드에서 캡처한 것으로 회사 식별정보 노출이 0이며, 라이브 데모는 요청 시 안내드립니다.</div>
+    </div>
   </section>
 
-  <section>
-    <div class="sec-head"><span class="no">2</span><h2>오픈소스 — harness-scope</h2><span class="sub">설치해서 직접 확인할 수 있는 공개 산출물</span></div>
-    <p class="lead-note">위 ERP 개발에 사용한 <b>AI 에이전트 작업 규율</b>을 관측 도구로 만들어
-      <b>Apache-2.0 오픈소스로 공개</b>했습니다. 에이전트 세션 로그(JSONL)를 파싱해 <b>선언적 룰(R1~R13)</b>로 턴 단위 판정하고,
-      Session Replay · Rule Health · 토큰 손실 핀포인트 뷰어와 MCP 서버(10툴)를 제공합니다. 검증 하니스 16종 · 3-OS CI로 상시 검증됩니다.</p>
-    <img src="assets/harness-scope-demo.gif" alt="harness-scope 데모 — Session Replay·Circuit·Rule Health·Token Loss 화면"
-         style="width:100%;max-width:880px;display:block;margin:14px 0;border:1px solid var(--outline-variant);border-radius:16px;" loading="lazy" />
-    <div class="cta-row">
+  <section id="oss">
+    <div class="sec-head"><span class="no g2">2</span><h2>오픈소스 — harness-scope</h2><span class="sub">설치해서 직접 확인할 수 있는 공개 산출물</span></div>
+    <p class="lead-note">위 ERP 개발에 사용한 <b>AI 에이전트 작업 규율</b>을 관측 도구로 만들어 <b>Apache-2.0으로 공개</b>했습니다 —
+      세션 로그를 선언적 룰(R1~R13)로 턴 단위 판정하고, Session Replay·Rule Health·토큰 손실 뷰어와 MCP 서버(10툴)를 제공합니다.
+      이 도구가 탐지한 토큰 이중계산 버그를 LLM 관측 분야 Phoenix 개발사 Arize의 오픈소스에서 재현·수정해 제출했고,
+      메인테이너가 패치를 그대로 채택해 메인 브랜치에 병합했습니다.</p>
+    <img class="shot" src="assets/harness-scope-demo.gif" alt="harness-scope 데모 — Session Replay·Circuit·Rule Health·Token Loss 화면" loading="lazy" />
+    <div class="cta-row" style="margin-top:14px">
       <a class="cta ghost" href="https://github.com/moongioh/harness-scope" target="_blank"><span class="mi">code</span>GitHub: moongioh/harness-scope</a>
       <a class="cta ghost" href="https://pypi.org/project/hscope/" target="_blank"><span class="mi">terminal</span>pip install hscope</a>
       <a class="cta ghost" href="https://www.npmjs.com/package/hscope" target="_blank"><span class="mi">terminal</span>npx -y hscope</a>
     </div>
   </section>
 
-  <section>
-    <div class="sec-head"><span class="no">3</span><h2>시멘틱 문서허브 — 비정형 16GB를 검색 가능하게</h2><span class="sub">정형(온톨로지) + 비정형(문서허브) 검색</span></div>
-    <p class="lead-note">ERP가 정형 데이터를 닫았다면, 문서허브는 <b>비정형을 닫은 두 번째 축</b>입니다 — 폴더와 개인 PC에 흩어져
-      검색조차 어렵던 수년치 문서 16GB를 정제(2,809문서)해 <b>pgvector 임베딩(13,759청크·적재 에러 0)</b>으로 올리고,
-      키워드+벡터 <b>RRF 융합에 온톨로지 개념 채널</b>을 더한 하이브리드 검색, "최신 정본이 어느 파일인가"를 <b>DB UNIQUE 제약으로
-      강제하는 정본 레지스트리</b>, d3-force 의미지도, 근거 문서를 인용하는 <b>RAG 초안 생성</b>까지 하나의 파이프라인으로 만들었습니다.</p>
-    <div class="cta-row">
-      <a class="cta primary" href="walkthroughs/워크스루-문서허브.html"><span class="mi">travel_explore</span>워크스루로 파이프라인 보기</a>
-      <a class="cta ghost" href="resume.html"><span class="mi">badge</span>이력서 케이스 스터디</a>
+  <section id="rnd">
+    <div class="sec-head"><span class="no g3">3</span><h2>개인 R&amp;D</h2><span class="sub">재직 중 실운영에 쓴 축(RAG·관측·에이전트 규율)의 연장 · 2026.07~</span></div>
+    <div class="cards">
+      <a class="card" href="https://github.com/moongioh/agent-memory-llmops" target="_blank">
+        <span class="badge">개인 R&amp;D · 2026.07~</span>
+        <h3>LLM 게이트웨이 — 라우팅·관측·예산통제</h3>
+        <p>여러 LLM 프로바이더를 단일 계층에서 라우팅하는 LiteLLM 게이트웨이 + Phoenix(OTLP) 관측을
+          자가 인프라에 직접 배포 — 스코프 가상키·예산 캡·모델 티어별 비용 롤업까지, 모든 LLM 호출이
+          한 곳에서 계측·통제되는 LLMOps 백본.</p>
+      </a>
+      <a class="card" href="https://github.com/moongioh/agent-memory-llmops" target="_blank">
+        <span class="badge soft-p">개인 R&amp;D · 2026.07~</span>
+        <h3>개인 지식그래프(PKG) — 에이전트 장기기억</h3>
+        <p>645노드·781 typed 엣지 개념그래프에 렉시컬+시맨틱(pgvector)+그래프 3채널 하이브리드 검색(검색 자체는 LLM 0콜),
+          LangGraph 기반 RAG와 MCP 서버로 에이전트에 노출. 회귀 평가 하네스(Recall@5 0.921)로 검색 품질을 게이트.</p>
+      </a>
+    </div>
+    <div class="callout"><span class="mi">hub</span>
+      <div><b>두 프로젝트의 아키텍처·설계 방법론</b>은 하나의 공개 저장소로 정리했습니다(구조도·핵심 코드 발췌·데모 — 실코드·개인 데이터는 비공개):
+        <a href="https://github.com/moongioh/agent-memory-llmops" target="_blank">github.com/moongioh/agent-memory-llmops</a></div>
     </div>
   </section>
 
-  <section>
-    <div class="sec-head"><span class="no">4</span><h2>아키텍처 워크스루</h2><span class="sub">카드를 눌러 브라우저에서 바로 열기</span></div>
-
-    <div class="grp-label">여기서 시작</div>
-    <div class="wt-cards">
-      <a class="wt-card" href="walkthroughs/워크스루-시스템오버뷰.html"><div class="top"><span class="wt-tier a">진입점</span></div><h3>시스템 오버뷰</h3><p>전체가 어떻게 맞물리나 — 업무 한 바퀴 + 사건→파생 원리 + 설계 결정 지도.</p></a>
-      <a class="wt-card" href="walkthroughs/워크스루.html"><div class="top"><span class="wt-tier c">허브</span></div><h3>교육문서 허브</h3><p>전 워크스루 인덱스.</p></a>
-    </div>
-
-    <div class="grp-label">기초·핵심</div>
-    <div class="wt-cards">
-      <a class="wt-card" href="walkthroughs/워크스루-재고이벤트소싱.html"><div class="top"><span class="wt-tier a">Tier A</span></div><h3>재고 이벤트 소싱 코어</h3><p>모든 도메인이 모이는 심장 — record_movement 단일 게이트와 SUM 파생.</p></a>
-      <a class="wt-card" href="walkthroughs/워크스루-생산일지분해.html"><div class="top"><span class="wt-tier a">Tier A</span></div><h3>생산일지 분해 (BOM)</h3><p>생산 1행이 양품·원료 사건으로 쪼개져 게이트로 들어가는 길.</p></a>
-    </div>
-
-    <div class="grp-label">도메인 주제</div>
-    <div class="wt-cards">
-      <a class="wt-card" href="walkthroughs/워크스루-발주출고-SSoT.html"><div class="top"><span class="wt-tier a">Tier A</span></div><h3>발주·출고 SSoT</h3><p>발주 보드 + 출고 이벤트 운임 SSoT + 개별법 COGS.</p></a>
-      <a class="wt-card" href="walkthroughs/워크스루-생산로스율.html"><div class="top"><span class="wt-tier a">Tier A</span></div><h3>생산·로스율</h3><p>소요시간 자동계산 → 유량계 실측 로스 → 귀속 추적 → 생산계획 네팅.</p></a>
-      <a class="wt-card" href="walkthroughs/워크스루-일정문의챗봇.html"><div class="top"><span class="wt-tier a">Tier A</span></div><h3>일정문의·챗봇</h3><p>카톡 인테이크 → 3단 판정엔진 → 인박스 → 발주/조율/반려.</p></a>
-      <a class="wt-card" href="walkthroughs/워크스루-자금채권.html"><div class="top"><span class="wt-tier a">Tier A</span></div><h3>자금·채권</h3><p>AR/AP 원장 → 통장·마감잔액 → 받을어음 → 자금일보.</p></a>
-      <a class="wt-card" href="walkthroughs/워크스루-샘플관리.html"><div class="top"><span class="wt-tier a">Tier A</span></div><h3>샘플관리 saga</h3><p>원장 절단 샘플 칸반의 진화 — 거래처 연동·부분출고·라벨·재고풀.</p></a>
-      <a class="wt-card" href="walkthroughs/워크스루-거래처마스터.html"><div class="top"><span class="wt-tier b">Tier B</span></div><h3>거래처 마스터</h3><p>거래처 정제·매칭·마스터 관리.</p></a>
-      <a class="wt-card" href="walkthroughs/워크스루-협업보드.html"><div class="top"><span class="wt-tier b">Tier B</span></div><h3>협업보드</h3><p>한 테이블 위 다섯 레이어 — 세 뷰 + silent 폴링 + 비공개 메모.</p></a>
-      <a class="wt-card" href="walkthroughs/워크스루-마이그레이션.html"><div class="top"><span class="wt-tier a">Tier A</span></div><h3>마이그레이션</h3><p>이카운트 점진 탈피 · 은행 대사 · 데이터 계보 재구성.</p></a>
-      <a class="wt-card" href="walkthroughs/워크스루-온톨로지.html"><div class="top"><span class="wt-tier a">Tier A</span></div><h3>온톨로지</h3><p>용어사전을 PG 개념그래프로 승격한 정합 레이어.</p></a>
-      <a class="wt-card" href="walkthroughs/워크스루-문서허브.html"><div class="top"><span class="wt-tier a">Tier A</span></div><h3>문서허브 (시멘틱 검색·RAG)</h3><p>비정형 16GB → pgvector 임베딩 · RRF 하이브리드 검색 · 정본 레지스트리 · 의미지도 · RAG 초안.</p></a>
-      <a class="wt-card" href="walkthroughs/워크스루-코퍼스적재.html"><div class="top"><span class="wt-tier b">Tier B</span></div><h3>코퍼스 적재</h3><p>비정형 자료의 구조화 적재 — 문서허브의 전신.</p></a>
-    </div>
-
-    <div class="grp-label">거버넌스·운영</div>
-    <div class="wt-cards">
-      <a class="wt-card" href="walkthroughs/워크스루-권한감사.html"><div class="top"><span class="wt-tier b">Tier B</span></div><h3>권한·감사</h3><p>RBAC + 감사 로그.</p></a>
-      <a class="wt-card" href="walkthroughs/워크스루-거버넌스.html"><div class="top"><span class="wt-tier b">Tier B</span></div><h3>거버넌스 체계</h3><p>산문 규율 → 기계 강제 → 검증단. plan 승인 게이트·자동 핸드오버.</p></a>
-      <a class="wt-card" href="walkthroughs/워크스루-기타요약.html"><div class="top"><span class="wt-tier c">요약</span></div><h3>그 외 요약</h3><p>부대비용·현금흐름 등 나머지 도메인 요약.</p></a>
-    </div>
+  <section id="all">
+    <div class="sec-head"><span class="no g4">4</span><h2>아키텍처 워크스루 전체 인덱스</h2><span class="sub">23편 — 필요한 편만 골라 여세요</span></div>
+    <details class="drawer">
+      <summary><span class="mi">travel_explore</span>전체 워크스루 펼치기<span class="mi chev" style="margin-left:auto">expand_more</span></summary>
+      <div class="inner">
+        <div class="grp-label">여기서 시작</div>
+        <div class="cards">
+          <a class="card" href="walkthroughs/워크스루-시스템오버뷰.html"><span class="badge entry">진입점</span><h3>시스템 오버뷰</h3><p>전체가 어떻게 맞물리나 — 업무 한 바퀴 + 사건→파생 원리 + 설계 결정 지도.</p></a>
+          <a class="card" href="walkthroughs/워크스루.html"><span class="badge">허브</span><h3>교육문서 허브</h3><p>전 워크스루 인덱스.</p></a>
+        </div>
+        <div class="grp-label">기초·핵심</div>
+        <div class="cards">
+          <a class="card" href="walkthroughs/워크스루-재고이벤트소싱.html"><span class="badge">Tier A</span><h3>재고 이벤트 소싱 코어</h3><p>모든 도메인이 모이는 심장 — record_movement 단일 게이트와 SUM 파생.</p></a>
+          <a class="card" href="walkthroughs/워크스루-생산일지분해.html"><span class="badge">Tier A</span><h3>생산일지 분해 (BOM)</h3><p>생산 1행이 양품·원료 사건으로 쪼개져 게이트로 들어가는 길.</p></a>
+        </div>
+        <div class="grp-label">도메인 주제</div>
+        <div class="cards">
+          <a class="card" href="walkthroughs/워크스루-발주출고-SSoT.html"><span class="badge">Tier A</span><h3>발주·출고 SSoT</h3><p>발주 보드 + 출고 이벤트 운임 SSoT + 개별법 COGS.</p></a>
+          <a class="card" href="walkthroughs/워크스루-생산로스율.html"><span class="badge">Tier A</span><h3>생산·로스율</h3><p>소요시간 자동계산 → 유량계 실측 로스 → 귀속 추적 → 생산계획 네팅.</p></a>
+          <a class="card" href="walkthroughs/워크스루-일정문의챗봇.html"><span class="badge">Tier A</span><h3>일정문의·챗봇</h3><p>카톡 인테이크 → 3단 판정엔진 → 인박스 → 발주/조율/반려.</p></a>
+          <a class="card" href="walkthroughs/워크스루-자금채권.html"><span class="badge">Tier A</span><h3>자금·채권</h3><p>AR/AP 원장 → 통장·마감잔액 → 받을어음 → 자금일보.</p></a>
+          <a class="card" href="walkthroughs/워크스루-샘플관리.html"><span class="badge">Tier A</span><h3>샘플관리 saga</h3><p>원장 절단 샘플 칸반의 진화 — 거래처 연동·부분출고·라벨·재고풀.</p></a>
+          <a class="card" href="walkthroughs/워크스루-거래처마스터.html"><span class="badge soft-p">Tier B</span><h3>거래처 마스터</h3><p>거래처 정제·매칭·마스터 관리.</p></a>
+          <a class="card" href="walkthroughs/워크스루-협업보드.html"><span class="badge soft-p">Tier B</span><h3>협업보드</h3><p>한 테이블 위 다섯 레이어 — 세 뷰 + silent 폴링 + 비공개 메모.</p></a>
+          <a class="card" href="walkthroughs/워크스루-마이그레이션.html"><span class="badge">Tier A</span><h3>마이그레이션</h3><p>이카운트 점진 탈피 · 은행 대사 · 데이터 계보 재구성.</p></a>
+          <a class="card" href="walkthroughs/워크스루-온톨로지.html"><span class="badge">Tier A</span><h3>온톨로지</h3><p>용어사전을 PG 개념그래프로 승격한 정합 레이어.</p></a>
+          <a class="card" href="walkthroughs/워크스루-문서허브.html"><span class="badge">Tier A</span><h3>문서허브 (시멘틱 검색·RAG)</h3><p>비정형 16GB → pgvector 임베딩 · RRF 하이브리드 검색 · 정본 레지스트리 · 의미지도 · RAG 초안.</p></a>
+          <a class="card" href="walkthroughs/워크스루-코퍼스적재.html"><span class="badge soft-p">Tier B</span><h3>코퍼스 적재</h3><p>비정형 자료의 구조화 적재 — 문서허브의 전신.</p></a>
+        </div>
+        <div class="grp-label">거버넌스·운영</div>
+        <div class="cards">
+          <a class="card" href="walkthroughs/워크스루-권한감사.html"><span class="badge soft-p">Tier B</span><h3>권한·감사</h3><p>RBAC + 감사 로그.</p></a>
+          <a class="card" href="walkthroughs/워크스루-거버넌스.html"><span class="badge soft-p">Tier B</span><h3>거버넌스 체계</h3><p>산문 규율 → 기계 강제 → 검증단. plan 승인 게이트·자동 핸드오버.</p></a>
+          <a class="card" href="walkthroughs/워크스루-기타요약.html"><span class="badge soft-p">요약</span><h3>그 외 요약</h3><p>부대비용·현금흐름 등 나머지 도메인 요약.</p></a>
+        </div>
+      </div>
+    </details>
   </section>
 
   <div class="foot">
-    제조 ERP 1인 구축 포트폴리오 · <a href="resume.html">이력서</a> · <a href="slides.html">화면 둘러보기</a> · awsgioh@gmail.com
+    <p><b>만든 사람</b> — 비효율을 진단해 도는 시스템으로 만드는 일을 좋아합니다.
+      6년간 1인 이커머스(주문~정산 자동화)를 운영했고, 제조 회사 관리직으로 입사해 이 시스템을 만들었습니다.
+      <a href="resume.html">이력서에서 더 보기 →</a></p>
+    <p lang="en"><b>In English:</b> Solo design, build and operation of a cloud full-stack ERP
+      (FastAPI · React · PostgreSQL · Cloud Run) for an 18-person manufacturing/chemical SME in Korea — first production
+      use four weeks in. Unified 6–7 scattered sources of truth into a single event-sourced backbone with domain-ontology
+      validation, added a semantic document hub over 16GB of unstructured files, and open-sourced the AI-agent workflow
+      tooling as <a href="https://github.com/moongioh/harness-scope">harness-scope</a>.</p>
+    <p><a href="resume.html">이력서</a> · <a href="slides.html">화면 둘러보기</a> ·
+      <a href="https://github.com/moongioh/manufacturing-ax-portfolio">GitHub repo</a> ·
+      <a href="https://github.com/moongioh/agent-memory-llmops">agent-memory-llmops</a> ·
+      <a href="mailto:awsgioh@gmail.com">awsgioh@gmail.com</a></p>
   </div>
 
 </div>
+</div>
+<script>
+(function(){
+  var root=document.querySelector('.canon');
+  var btn=document.getElementById('themeBtn');
+  var icon=document.getElementById('themeIcon');
+  var label=document.getElementById('themeLabel');
+  function apply(dark){
+    if(dark){root.setAttribute('data-theme','dark');icon.textContent='light_mode';label.textContent='라이트';}
+    else{root.removeAttribute('data-theme');icon.textContent='dark_mode';label.textContent='다크';}
+  }
+  var saved=null;
+  try{saved=localStorage.getItem('cn-theme');}catch(e){}
+  apply(saved==='dark'||(!saved&&window.matchMedia('(prefers-color-scheme: dark)').matches));
+  btn.addEventListener('click',function(){
+    var dark=root.getAttribute('data-theme')!=='dark';
+    apply(dark);
+    try{localStorage.setItem('cn-theme',dark?'dark':'light');}catch(e){}
+  });
+})();
+</script>
 </body>
 </html>
