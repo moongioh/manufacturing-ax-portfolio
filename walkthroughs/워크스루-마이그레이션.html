@@ -1,963 +1,810 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>워크스루 — 데이터 마이그레이션·이카운트 탈피 역사</title>
-<meta name="description" content="시스템을 인수하면 가장 먼저 흔들리는 질문 — &quot;이 재고/잔액의 출처가 뭐냐?&quot;의 풀버전입니다. 자사의 데이터는 한때 6~7곳에 흩어진 다중 진실(이카운트·종이발주·카톡·수기노트·사진·엑셀)이었어요. 그걸 원점 기록 → 기초 시드 → 파싱·오염조사 → 은행 대사 → cutover로…" />
-<link rel="canonical" href="https://moongioh.github.io/manufacturing-ax-portfolio/walkthroughs/%EC%9B%8C%ED%81%AC%EC%8A%A4%EB%A3%A8-%EB%A7%88%EC%9D%B4%EA%B7%B8%EB%A0%88%EC%9D%B4%EC%85%98.html" />
-<meta property="og:type" content="article" />
-<meta property="og:title" content="워크스루 — 데이터 마이그레이션·이카운트 탈피 역사" />
-<meta property="og:description" content="시스템을 인수하면 가장 먼저 흔들리는 질문 — &quot;이 재고/잔액의 출처가 뭐냐?&quot;의 풀버전입니다. 자사의 데이터는 한때 6~7곳에 흩어진 다중 진실(이카운트·종이발주·카톡·수기노트·사진·엑셀)이었어요. 그걸 원점 기록 → 기초 시드 → 파싱·오염조사 → 은행 대사 → cutover로…" />
-<meta property="og:url" content="https://moongioh.github.io/manufacturing-ax-portfolio/walkthroughs/%EC%9B%8C%ED%81%AC%EC%8A%A4%EB%A3%A8-%EB%A7%88%EC%9D%B4%EA%B7%B8%EB%A0%88%EC%9D%B4%EC%85%98.html" />
-<meta property="og:site_name" content="Manufacturing AX Portfolio" />
-<meta property="og:locale" content="ko_KR" />
-<meta name="twitter:card" content="summary" />
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "TechArticle", "headline": "워크스루 — 데이터 마이그레이션·이카운트 탈피 역사", "url": "https://moongioh.github.io/manufacturing-ax-portfolio/walkthroughs/%EC%9B%8C%ED%81%AC%EC%8A%A4%EB%A3%A8-%EB%A7%88%EC%9D%B4%EA%B7%B8%EB%A0%88%EC%9D%B4%EC%85%98.html", "description": "시스템을 인수하면 가장 먼저 흔들리는 질문 — \"이 재고/잔액의 출처가 뭐냐?\"의 풀버전입니다. 자사의 데이터는 한때 6~7곳에 흩어진 다중 진실(이카운트·종이발주·카톡·수기노트·사진·엑셀)이었어요. 그걸 원점 기록 → 기초 시드 → 파싱·오염조사 → 은행 대사 → cutover로…", "inLanguage": "ko", "dateModified": "2026-07-10", "author": {"@type": "Person", "name": "moongioh", "email": "awsgioh@gmail.com", "url": "https://moongioh.github.io/manufacturing-ax-portfolio/", "sameAs": ["https://github.com/moongioh", "https://github.com/moongioh/harness-scope"]}, "isPartOf": {"@type": "WebSite", "name": "Manufacturing AX Portfolio", "url": "https://moongioh.github.io/manufacturing-ax-portfolio/"}}</script>
-<style>/* inlined from ../tech-specs/techspec.css */
+<title>워크스루 — 데이터 마이그레이션 · 이카운트 탈피 역사</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..600,0..1,0" rel="stylesheet">
+<style>
+/* inlined: assets/canon-tokens.css */
+/* canon-tokens.css — Claude Design 템플릿(.dc)이 기대하는 토큰 파일명.
+   실체는 워크스페이스 SSoT 포인터 (plan workspace/0025 D5 — 값 복제 금지).
+   raw .dc 라이브 프리뷰(http 서빙)가 이 상대경로를 로드하고,
+   dc-compile.mjs는 @import를 따라가 최종 값을 번들에 인라인한다. */
 /* =============================================================
-   기술명세서 전용 시각 양식 (techspec) — 관리부 전용.
-   매뉴얼(manual.css)과 분리된 별도 계열: 글 최소 · 도식 최대.
-   전체화면 폭. Material 3 seed #1A5FBA(DESIGN.md) 색 토큰 공유.
-   Mermaid.js 다이어그램 + 커스텀 비주얼(이벤트 카드·계산식·권한 매트릭스).
-   ============================================================= */
-@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
-@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0');
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&display=swap');
+   DESIGN CANON v2 — 문서 양식 공용 토큰 SSoT (plan workspace/0025)
+   원본: 사용자 제작 Claude Design 템플릿 assets/템플릿/정본 쇼케이스.dc.html
+   적용 대상: 모든 문서 산출물(교육·워크스루·이력서·보고서·기술문서).
+   ERP React 앱(카테고리 1)은 대상 아님 — M3 --md-sys-* 체계 유지.
 
-:root {
-  --primary:#145cb7;            --on-primary:#ffffff;
-  --primary-container:#d7e2ff;  --on-primary-container:#001b40;
-  --secondary-container:#dae2f9;--on-secondary-container:#131c2c;
-  --tertiary:#705574;          --tertiary-container:#fad7fc; --on-tertiary-container:#29132e;
-  --surface:#faf9fd;           --on-surface:#1a1b1f;
-  --surface-lowest:#ffffff;    --surface-low:#f4f3f7;
-  --surface-container:#efedf1; --surface-high:#e9e7ec;
-  --on-surface-variant:#44474e;
-  --outline:#74777f;           --outline-variant:#c4c6d0;
-  --ok:#2E7D32; --ok-bg:#e6f4e6;
-  --warn:#9a6700; --warn-bg:#fdf0d5;
-  --alert:#ba1a1a; --alert-bg:#ffdad6;
-  --plus:#1565c0; --plus-bg:#e3f0fd;
-  --minus:#c62828; --minus-bg:#fdeaea;
-  --radius:16px;
+   사용법(Track B 자유양식):
+     <link rel="stylesheet" href=".../design-tokens-canon-v2.css">
+     <body> 안 최상위 래퍼에 class="canon" (+ data-theme="dark" 선택)
+   Raw hex는 이 파일(토큰 정의부)에서만 허용 — 소비측은 var(--cn-*)만.
+   v1(design-tokens-creative.css)·techspec.css는 legacy — 신규 사용 금지.
+   ============================================================= */
+
+.canon{
+  --cn-primary:#3B82F6; --cn-primary-deep:#2563EB; --cn-link:#2563EB;
+  --cn-bg:#f5f8fc; --cn-card:#ffffff; --cn-card-glass:rgba(255,255,255,.82);
+  --cn-line:#e2e9f2; --cn-line-strong:#cbd7e4;
+  --cn-ink:#1c2a3d; --cn-muted:#5b6b80; --cn-faint:#8b99ac;
+  --cn-tint:#eaf1fb; --cn-tint-deep:#dbe7f9;
+  --cn-purple:#8B5CF6; --cn-teal:#14B8A6; --cn-amber:#F59E0B; --cn-rose:#F43F5E; --cn-green:#10B981;
+  --cn-code-bg:#f1f5fa; --cn-code-ink:#334155;
+  --cn-shadow-1:0 1px 2px rgba(28,42,61,.05),0 2px 8px rgba(28,42,61,.04);
+  --cn-shadow-2:0 2px 4px rgba(28,42,61,.05),0 10px 28px rgba(37,99,235,.08);
+  --cn-mesh:radial-gradient(at 90% -4%,rgba(59,130,246,.09) 0,transparent 50%),radial-gradient(at 2% 100%,rgba(139,92,246,.08) 0,transparent 46%),#f5f8fc;
+  --cn-ease:cubic-bezier(.2,0,0,1);
+  --cn-grad-id:linear-gradient(135deg,#3B82F6,#7C3AED);
+}
+.canon[data-theme="dark"]{
+  --cn-primary:#6EA3F7; --cn-primary-deep:#8AB4F8; --cn-link:#8AB4F8;
+  --cn-bg:#0e1420; --cn-card:#161e2e; --cn-card-glass:rgba(22,30,46,.82);
+  --cn-line:#243146; --cn-line-strong:#31415c;
+  --cn-ink:#e8edf6; --cn-muted:#98a8bf; --cn-faint:#67788f;
+  --cn-tint:#1a2740; --cn-tint-deep:#20304f;
+  --cn-code-bg:#111a2a; --cn-code-ink:#b7c5da;
+  --cn-shadow-1:0 1px 2px rgba(0,0,0,.3),0 2px 8px rgba(0,0,0,.25);
+  --cn-shadow-2:0 2px 4px rgba(0,0,0,.3),0 12px 30px rgba(0,0,0,.4);
+  --cn-mesh:radial-gradient(at 90% -4%,rgba(59,130,246,.12) 0,transparent 50%),radial-gradient(at 2% 100%,rgba(139,92,246,.1) 0,transparent 46%),#0e1420;
 }
 
-* { box-sizing:border-box; margin:0; padding:0; }
-
-body {
-  background:
-    radial-gradient(1200px 480px at 90% -10%, rgba(20,92,183,.06), transparent),
-    var(--surface);
-  color:var(--on-surface);
-  font-family:'Pretendard','Pretendard Variable',-apple-system,system-ui,sans-serif;
-  font-size:14px; line-height:1.65;
-  padding:40px 28px 80px;
+/* ── 베이스 (쇼케이스 helmet 규칙 승계) ── */
+.canon{
+  min-height:100vh;background:var(--cn-mesh);background-attachment:fixed;
+  color:var(--cn-ink);font-size:15px;line-height:1.7;
+  font-family:'Pretendard Variable',Pretendard,'Noto Sans KR',sans-serif;
   -webkit-font-smoothing:antialiased;
+  transition:background .25s,color .25s;
 }
-.wrap { width:min(100%, 1280px); margin:0 auto; }
+.canon a{color:var(--cn-link);text-decoration:none}
+.canon a:hover{color:var(--cn-primary)}
+.canon .mi{font-family:'Material Symbols Outlined';font-weight:normal;font-style:normal;line-height:1;display:inline-block;vertical-align:-0.15em;font-variation-settings:'FILL' 0,'wght' 400}
 
-.mi { font-family:'Material Symbols Outlined'; font-weight:400; font-style:normal;
-  line-height:1; vertical-align:-4px; -webkit-font-feature-settings:'liga'; display:inline-block; }
-
-/* ── Hero ─────────────────────────────────────────────── */
-.hero { display:flex; align-items:flex-start; gap:18px; padding-bottom:24px; margin-bottom:8px;
-  border-bottom:2px solid var(--outline-variant); }
-.hero .crest { flex:none; width:60px; height:60px; border-radius:18px; display:grid; place-items:center;
-  background:linear-gradient(135deg, var(--primary), #0c3d80); color:#fff; box-shadow:0 6px 18px rgba(20,92,183,.28); }
-.hero .crest .mi { font-size:34px; }
-.hero h1 { font-size:27px; font-weight:800; letter-spacing:-.4px; }
-.hero .tag { display:inline-flex; align-items:center; gap:6px; margin-top:7px; font-size:11px; font-weight:800;
-  letter-spacing:.1em; text-transform:uppercase; color:var(--alert); background:var(--alert-bg);
-  border-radius:999px; padding:4px 12px; }
-.hero .tag .mi { font-size:15px; }
-.hero .lead { margin-top:9px; font-size:13.5px; color:var(--on-surface-variant); max-width:680px; }
-
-/* ── Section ──────────────────────────────────────────── */
-section { margin-top:40px; }
-.sec-head { display:flex; align-items:center; gap:13px; margin-bottom:16px; }
-.sec-head .no { flex:none; width:30px; height:30px; border-radius:9px; display:grid; place-items:center;
-  background:var(--primary); color:#fff; font-weight:800; font-size:14px; font-family:'JetBrains Mono',monospace; }
-.sec-head h2 { font-size:18px; font-weight:800; letter-spacing:-.2px; }
-.sec-head .sub { font-size:12.5px; color:var(--on-surface-variant); margin-left:auto; }
-
-/* ── Diagram card (holds Mermaid) ─────────────────────── */
-.diagram { background:var(--surface-lowest); border:1px solid var(--outline-variant);
-  border-radius:var(--radius); padding:24px; box-shadow:0 1px 2px rgba(26,27,31,.05), 0 8px 24px rgba(26,27,31,.06);
-  overflow-x:auto; }
-.diagram .mermaid { display:flex; justify-content:center; min-width:min-content; }
-.cap { margin-top:12px; font-size:12px; color:var(--on-surface-variant); text-align:center; }
-.cap b { color:var(--on-surface); }
-
-/* ── Event-sourcing flow (custom pipeline diagram) ────── */
-.esflow {
-  display:flex; align-items:stretch; gap:0;
-  background:
-    radial-gradient(620px 220px at 28% 18%, rgba(20,92,183,.05), transparent),
-    linear-gradient(180deg, var(--surface-lowest), var(--surface-low));
-  border:1px solid var(--outline-variant); border-radius:var(--radius);
-  padding:26px 22px; overflow-x:auto;
-  box-shadow:0 1px 2px rgba(26,27,31,.05), 0 10px 28px rgba(26,27,31,.06);
+/* ── 인쇄 (DESIGN.md §3E) — 다크로 보던 중 인쇄해도 종이는 라이트 ── */
+@media print{
+  .canon,.canon[data-theme="dark"]{
+    --cn-primary:#3B82F6; --cn-primary-deep:#2563EB; --cn-link:#2563EB;
+    --cn-bg:#ffffff; --cn-card:#ffffff; --cn-card-glass:#ffffff;
+    /* 그림자 소실 → 보더가 경계 승계(한 단계 진하게) */
+    --cn-line:#cbd7e4; --cn-line-strong:#9fb1c5;
+    --cn-ink:#1c2a3d; --cn-muted:#5b6b80; --cn-faint:#8b99ac;
+    --cn-tint:#eaf1fb; --cn-tint-deep:#dbe7f9;
+    --cn-code-bg:#f1f5fa; --cn-code-ink:#334155;
+    --cn-shadow-1:none; --cn-shadow-2:none;
+    --cn-mesh:#ffffff;
+    background:#fff;
+  }
 }
-.es-stage { display:flex; flex-direction:column; align-items:center; gap:10px; flex:none; }
-.es-stage > .lbl { font-size:9.5px; font-weight:800; letter-spacing:.14em; text-transform:uppercase;
-  color:var(--on-surface-variant); opacity:.7; }
 
-/* source column — stacked chips */
-.es-src { display:flex; flex-direction:column; gap:8px; }
-.es-chip { display:flex; align-items:center; gap:9px; background:var(--surface-lowest);
-  border:1px solid var(--outline-variant); border-radius:11px; padding:9px 13px 9px 10px;
-  box-shadow:0 1px 2px rgba(26,27,31,.05); min-width:128px; }
-.es-chip .ic { flex:none; width:28px; height:28px; border-radius:8px; display:grid; place-items:center;
-  background:var(--secondary-container); color:var(--on-secondary-container); }
-.es-chip .ic .mi { font-size:17px; }
-.es-chip span { font-size:12px; font-weight:700; color:var(--on-surface); }
-
-/* node card (store / view / ui) */
-.es-card { background:var(--surface-lowest); border:1px solid var(--outline-variant); border-radius:15px;
-  padding:15px 16px; width:150px; box-shadow:0 2px 6px rgba(26,27,31,.07); position:relative; }
-.es-card .ic { width:34px; height:34px; border-radius:10px; display:grid; place-items:center; margin-bottom:9px; }
-.es-card .ic .mi { font-size:20px; }
-.es-card h4 { font-size:13px; font-weight:800; line-height:1.3; }
-.es-card p { font-size:10.5px; color:var(--on-surface-variant); margin-top:3px; line-height:1.45; }
-.es-card .pill { display:inline-flex; align-items:center; gap:4px; margin-top:9px; font-size:9.5px; font-weight:800;
-  letter-spacing:.04em; padding:3px 8px; border-radius:999px; }
-.es-card .pill .mi { font-size:12px; }
-/* variants */
-.es-card.store { border-color:var(--primary); box-shadow:0 4px 16px rgba(20,92,183,.16); }
-.es-card.store .ic { background:var(--primary-container); color:var(--primary); }
-.es-card.store .pill { background:var(--primary); color:#fff; }
-.es-card.view .ic { background:var(--tertiary-container); color:var(--on-tertiary-container); }
-.es-card.view .pill { background:var(--tertiary-container); color:var(--on-tertiary-container); }
-.es-card.ui .ic { background:var(--ok-bg); color:var(--ok); }
-.es-card.ui .pill { background:var(--ok-bg); color:var(--ok); }
-
-/* central write gate */
-.es-gate { display:flex; flex-direction:column; align-items:center; justify-content:center;
-  min-width:120px; max-width:180px; padding:16px 12px; border-radius:16px; text-align:center;
-  background:linear-gradient(150deg, var(--primary), #0c3d80); color:#fff;
-  box-shadow:0 8px 22px rgba(20,92,183,.30); }
-.es-gate .ic .mi { font-size:24px; }
-.es-gate code { display:block; font-family:'JetBrains Mono',monospace; font-size:11.5px; font-weight:700;
-  margin-top:6px; line-height:1.3; word-break:break-all; }
-.es-gate small { font-size:9.5px; opacity:.85; margin-top:4px; }
-
-/* connectors */
-.es-conn { flex:none; align-self:center; display:flex; flex-direction:column; align-items:center; gap:3px;
-  padding:0 8px; }
-.es-conn .line { width:34px; height:2px; border-radius:2px;
-  background:linear-gradient(90deg, var(--outline-variant), var(--primary)); position:relative; }
-.es-conn .line::after { content:''; position:absolute; right:-1px; top:-3px;
-  border-left:7px solid var(--primary); border-top:4px solid transparent; border-bottom:4px solid transparent; }
-.es-conn .tag { font-size:9px; font-weight:800; letter-spacing:.03em; color:var(--primary); white-space:nowrap; }
-@media (max-width:900px){ .esflow{ gap:4px; } }
-
-/* multi-lane variant (분기 흐름 — 자재/운임 등) */
-.esflow.lanes { flex-direction:column; gap:14px; align-items:stretch; }
-.es-lane { display:flex; align-items:stretch; gap:0; min-width:min-content; }
-.es-lane + .es-lane { padding-top:14px; border-top:1px dashed var(--outline-variant); }
-.lane-tag { flex:none; align-self:center; margin-right:12px; writing-mode:vertical-rl; text-orientation:mixed;
-  font-size:10px; font-weight:800; letter-spacing:.12em; padding:8px 5px; border-radius:9px;
-  background:var(--primary-container); color:var(--on-primary-container); }
-.es-card.file { border-color:var(--tertiary); }
-.es-card.file .ic { background:var(--tertiary-container); color:var(--on-tertiary-container); }
-.es-card.file .pill { background:var(--tertiary-container); color:var(--on-tertiary-container); }
-
-/* ── Event cards grid ─────────────────────────────────── */
-.events { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
-@media (max-width:820px){ .events{ grid-template-columns:repeat(2,1fr);} }
-.evt { background:var(--surface-lowest); border:1px solid var(--outline-variant); border-radius:14px;
-  padding:16px; position:relative; box-shadow:0 1px 2px rgba(26,27,31,.04); }
-.evt .sign { position:absolute; top:14px; right:14px; width:30px; height:30px; border-radius:9px;
-  display:grid; place-items:center; font-weight:800; font-size:18px; }
-.evt .sign.p { background:var(--plus-bg); color:var(--plus); }
-.evt .sign.m { background:var(--minus-bg); color:var(--minus); }
-.evt .sign.z { background:var(--surface-container); color:var(--on-surface-variant); }
-.evt code { font-family:'JetBrains Mono',monospace; font-weight:700; font-size:13px; color:var(--primary); }
-.evt h3 { font-size:14.5px; font-weight:800; margin:3px 0 6px; }
-.evt p { font-size:12px; color:var(--on-surface-variant); }
-.evt .src { display:inline-block; margin-top:9px; font-size:10.5px; font-weight:700; color:var(--on-surface-variant);
-  background:var(--surface-low); border:1px solid var(--outline-variant); border-radius:7px; padding:3px 8px; }
-
-/* ── Formula / calc ───────────────────────────────────── */
-.calc { display:flex; flex-direction:column; gap:12px; }
-.formula { background:var(--surface-lowest); border:1px solid var(--outline-variant);
-  border-left:4px solid var(--primary); border-radius:0 14px 14px 0; padding:16px 20px; }
-.formula .eq { font-family:'JetBrains Mono',monospace; font-size:16px; font-weight:700; color:var(--on-surface); }
-.formula .eq .res { color:var(--ok); }
-.formula .eq .op  { color:var(--primary); }
-.formula .desc { font-size:12px; color:var(--on-surface-variant); margin-top:6px; }
-
-/* running balance visual */
-.run { display:flex; align-items:stretch; gap:0; flex-wrap:wrap; background:var(--surface-lowest);
-  border:1px solid var(--outline-variant); border-radius:14px; padding:18px; overflow-x:auto; }
-.run .node { flex:none; min-width:96px; text-align:center; padding:0 6px; }
-.run .node .ev { font-size:10.5px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:var(--on-surface-variant); }
-.run .node .dl { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; margin:4px 0; }
-.run .node .dl.p { color:var(--plus); } .run .node .dl.m { color:var(--minus); }
-.run .node .bal { font-family:'JetBrains Mono',monospace; font-size:17px; font-weight:800; color:var(--primary); }
-.run .arrow { flex:none; align-self:center; color:var(--outline); font-size:22px; padding:0 2px; }
-
-/* ── Permission matrix ────────────────────────────────── */
-.matrix { width:100%; border-collapse:separate; border-spacing:0; font-size:13px;
-  background:var(--surface-lowest); border:1px solid var(--outline-variant); border-radius:14px; overflow:hidden; }
-.matrix th, .matrix td { padding:11px 14px; text-align:center; border-bottom:1px solid var(--outline-variant); }
-.matrix thead th { background:var(--primary); color:#fff; font-size:12px; font-weight:800; letter-spacing:.03em; }
-.matrix tbody th { text-align:left; font-weight:800; background:var(--surface-low); color:var(--on-surface); }
-.matrix tbody tr:last-child th, .matrix tbody tr:last-child td { border-bottom:none; }
-.matrix .y { color:var(--ok); font-weight:800; }
-.matrix .n { color:var(--outline); }
-.matrix .adm { color:var(--primary); font-weight:800; }
-.mi.tiny { font-size:17px; vertical-align:-3px; }
-
-/* ── Note ─────────────────────────────────────────────── */
-.note { display:flex; gap:11px; background:var(--warn-bg); border:1px solid rgba(154,103,0,.3);
-  border-radius:12px; padding:13px 16px; margin-top:14px; font-size:12.5px; color:#7a5200; }
-.note .mi { flex:none; color:var(--warn); font-size:19px; }
-.note b { color:#5e3f00; }
-.note.info { background:var(--primary-container); border-color:rgba(20,92,183,.25); color:var(--on-primary-container); }
-.note.info .mi { color:var(--primary); }
-.note.info b { color:var(--on-primary-container); }
-
-.foot { margin-top:50px; padding-top:18px; border-top:1px solid var(--outline-variant);
-  text-align:center; font-size:11.5px; color:var(--on-surface-variant); }
-.foot code { font-family:'JetBrains Mono',monospace; color:var(--primary); }
 
 </style>
-<style>/* inlined from walkthrough.css */
-/* @import inlined: ../../assets/design-tokens-creative.css */
-/* =============================================================
-   CATEGORY 3 (CREATIVE / GENERAL / ONBOARDING / RESUME)
-   Soft Pastel Mesh Gradient & True Glassmorphism Styling
-   Seed: Soft Blue (#3B82F6) — 레퍼런스: JLPT 어휘 마스터(부드러운 로열 블루)
-   ============================================================= */
-
-/* 카테고리 3 테마 활성화 시 세맨틱 토큰 오버라이드 */
-body.creative-theme {
-  --md-sys-color-primary: #3B82F6;
-  --md-sys-color-on-primary: #ffffff;
-  --md-sys-color-primary-container: #e0ebfd;
-  --md-sys-color-on-primary-container: #173a5e;
-  --md-sys-color-secondary: #5c6e82;
-  --md-sys-color-on-secondary: #ffffff;
-  --md-sys-color-secondary-container: #ebf1f7;
-  --md-sys-color-on-secondary-container: #222c38;
-  
-  --md-sys-color-surface: #f4f8fc;
-  --md-sys-color-on-surface: #1e293b;
-  --md-sys-color-surface-container-lowest: #ffffff;
-  --md-sys-color-surface-container-low: #ebf2f7;
-  --md-sys-color-surface-container: #dfe8f0;
-  --md-sys-color-surface-container-high: #d4dfea;
-  
-  --md-sys-color-outline: #7c8d9e;
-  --md-sys-color-outline-variant: #cbd6e2;
-
-  /* techspec 토큰 미러 (대시보드/워크스루·온보딩·이력서 — techspec.css의 bare 토큰을 소비하므로
-     creative 적용 시 이 이름들도 반드시 remap해야 키 색상이 실제로 바뀐다. md-sys 토큰만 덮으면 무효과) */
-  --primary: #3B82F6;
-  --on-primary: #ffffff;
-  --primary-container: #e0ebfd;
-  --on-primary-container: #173a5e;
-  --secondary-container: #ebf1f7;
-  --on-secondary-container: #222c38;
-  --surface: #eef4fc;
-  --surface-lowest: #ffffff;
-  --surface-low: #eef4fb;
-  --surface-container: #e3edf7;
-  --on-surface: #1e293b;
-  --on-surface-variant: #5a6b7d;
-  --outline-variant: #cdd9e6;
-  --ok: #10b981;       --ok-bg: #e3f7ef;
-
-  /* 액센트 (레퍼런스 급수 배지 — 민트/그린/퍼플; 소비 시 var로 참조) */
-  --creative-accent-mint: #2bb8a3;
-  --creative-accent-green: #10b981;
-  --creative-accent-purple: #8b5cf6;
-
-  /* 모서리 토큰 매핑 */
-  --md-sys-shape-corner-small: 16px; /* 카테고리 3 카드는 16px를 기본으로 소비 */
-
-  /* 배경 — 가시적인 소프트 파스텔 메시(레퍼런스 감성; 4% 알파는 사실상 안 보였음 → 가시화) */
-  background:
-    radial-gradient(at 88% 0%, rgba(59, 130, 246, 0.1) 0px, transparent 52%),
-    radial-gradient(at 3% 99%, rgba(139, 92, 246, 0.1) 0px, transparent 50%),
-    radial-gradient(at 99% 97%, rgba(45, 212, 191, 0.06) 0px, transparent 46%),
-    #f4f8fe;
-  background-attachment: fixed;
-  font-size: 15px;
-  line-height: 1.7;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* ── 글래스모피즘 카드 (Glassmorphism Card) ── */
-.glass-card {
-  background: rgba(255, 255, 255, 0.78);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  box-shadow: 
-    0 4px 30px rgba(59, 130, 246, 0.02),
-    0 1px 3px rgba(0, 0, 0, 0.01),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  border-radius: var(--md-sys-shape-corner-large, 16px);
-  transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1),
-              box-shadow 0.25s cubic-bezier(0.2, 0, 0, 1),
-              border-color 0.25s cubic-bezier(0.2, 0, 0, 1);
-}
-
-.glass-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 
-    0 20px 40px rgba(59, 130, 246, 0.06),
-    0 1px 10px rgba(59, 130, 246, 0.03);
-  border-color: rgba(59, 130, 246, 0.25);
-}
-
-/* ── 카테고리 3 전용 알약형 버튼 (Stadium Button) ── */
-.creative-btn {
-  border-radius: 9999px !important;
-  padding: 8px 18px !important;
-  font-weight: 700;
-  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
-}
-
-.creative-btn:hover {
-  transform: translateY(-1px);
-}
-
-
-/* =============================================================
-   워크스루 인터랙티브 컴포넌트 (plan workspace/0007)
-   techspec.css 토큰 위에서만 동작 — raw hex 금지, var(--*)만.
-   techspec.css 다음에 로드한다.
-   ============================================================= */
-
-/* ── 상단 툴바 ─────────────────────────────────────────── */
-.wt-toolbar { display:flex; gap:8px; align-items:center; justify-content:flex-end; margin:-8px 0 18px; }
-.wt-hint { margin-right:auto; font-size:11.5px; color:var(--on-surface-variant); display:inline-flex; align-items:center; gap:6px; }
-.wt-hint .mi { font-size:15px; color:var(--primary); }
-
-/* ── 스텝 플레이어 ────────────────────────────────────── */
-.wt-controls { display:flex; align-items:center; gap:9px; margin-bottom:12px; }
-.wt-btn { font-family:inherit; font-size:12px; font-weight:700; cursor:pointer;
-  border:1px solid var(--outline-variant); background:var(--surface-lowest); color:var(--on-surface);
-  border-radius:8px; padding:7px 13px; display:inline-flex; align-items:center; gap:6px; transition:background .15s, border-color .15s; }
-.wt-btn:hover { background:var(--surface-low); }
-.wt-btn .mi { font-size:16px; }
-.wt-btn.primary { background:var(--primary); color:var(--on-primary); border-color:var(--primary); }
-.wt-btn.primary:hover { background:#0c3d80; }
-.wt-step { font-family:'JetBrains Mono',monospace; font-size:12.5px; font-weight:700; color:var(--on-surface-variant); margin-left:2px; }
-
-/* stepped run: 공개 전 노드/화살표 숨김 → 재생하며 등장 */
-.run.stepped .node, .run.stepped .arrow { opacity:0; transform:translateY(7px);
-  transition:opacity .35s ease, transform .35s ease; }
-.run.stepped .node.shown, .run.stepped .arrow.shown { opacity:1; transform:none; }
-.run.stepped .node .bal { display:inline-block; transition:color .2s; }
-.run.stepped .node.pulse .bal { animation:wtPulse .5s ease; }
-@keyframes wtPulse { 0%{ transform:scale(1);} 38%{ transform:scale(1.22); color:var(--ok);} 100%{ transform:scale(1);} }
-
-/* ── "왜?" 토글 (채택 vs 기각 + 근거) ─────────────────── */
-.why-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:start; }
-@media (max-width:820px){ .why-grid{ grid-template-columns:1fr; } }
-.why { border:1px solid var(--outline-variant); border-radius:13px; background:var(--surface-lowest); overflow:hidden;
-  box-shadow:0 1px 2px rgba(26,27,31,.04); }
-.why-q { width:100%; text-align:left; cursor:pointer; font-family:inherit; font-size:13px; font-weight:800;
-  color:var(--on-surface); background:var(--surface-low); border:0; padding:13px 15px;
-  display:flex; align-items:center; justify-content:space-between; gap:10px; transition:background .15s; }
-.why-q:hover { background:var(--surface-container); }
-.why-q .why-ic { flex:none; font-family:'Material Symbols Outlined'; font-size:20px; color:var(--primary); transition:transform .25s; }
-.why.open .why-q .why-ic { transform:rotate(180deg); }
-.why-a { max-height:0; overflow:hidden; transition:max-height .3s ease; }
-.why.open .why-a { max-height:460px; }
-.why-a .inner { padding:13px 15px; font-size:12.5px; line-height:1.62; color:var(--on-surface-variant); }
-.why-a .row { display:flex; gap:8px; margin-bottom:7px; }
-.why-a .row:last-child { margin-bottom:0; }
-.why-a .k { flex:none; width:42px; font-weight:800; font-size:11px; padding-top:1px; }
-.why-a .k.pick { color:var(--ok); } .why-a .k.drop { color:var(--minus); } .why-a .k.rsn { color:var(--primary); }
-.why-a code { font-family:'JetBrains Mono',monospace; color:var(--primary); font-size:11.5px; }
-
-/* ── 허브 인덱스 ──────────────────────────────────────── */
-.wt-tier { display:inline-flex; align-items:center; gap:5px; font-size:10px; font-weight:800; letter-spacing:.05em;
-  padding:2px 8px; border-radius:999px; text-transform:uppercase; }
-.wt-tier.a { background:var(--primary-container); color:var(--on-primary-container); }
-.wt-tier.b { background:var(--secondary-container); color:var(--on-secondary-container); }
-.wt-tier.c { background:var(--surface-container); color:var(--on-surface-variant); }
-.wt-cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px,1fr)); gap:14px; }
-.wt-card { display:flex; flex-direction:column; gap:8px; background:var(--surface-lowest); border:1px solid var(--outline-variant);
-  border-radius:14px; padding:16px 17px; box-shadow:0 1px 2px rgba(26,27,31,.05); text-decoration:none; color:inherit;
-  transition:box-shadow .15s, border-color .15s, transform .15s; position:relative; }
-a.wt-card:hover { box-shadow:0 6px 20px rgba(26,27,31,.10); border-color:var(--primary); transform:translateY(-2px); }
-.wt-card.soon { opacity:.62; }
-.wt-card .top { display:flex; align-items:center; justify-content:space-between; gap:8px; }
-.wt-card h3 { font-size:15px; font-weight:800; }
-.wt-card p { font-size:12px; color:var(--on-surface-variant); line-height:1.5; }
-.wt-card .plans { font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--on-surface-variant);
-  background:var(--surface-low); border:1px solid var(--outline-variant); border-radius:7px; padding:3px 8px; align-self:flex-start; }
-.wt-card .status { font-size:11px; font-weight:800; display:inline-flex; align-items:center; gap:4px; }
-.wt-card .status.done { color:var(--ok); } .wt-card .status.soon { color:var(--on-surface-variant); }
-.wt-readbox { position:absolute; bottom:15px; right:15px; display:inline-flex; align-items:center; gap:5px; font-size:10.5px;
-  font-weight:700; color:var(--on-surface-variant); cursor:pointer; user-select:none; }
-.wt-readbox input { accent-color:var(--ok); cursor:pointer; }
-.wt-card.read { border-color:var(--ok); }
-.wt-card.read .status.done::after { content:' · 읽음 ✓'; color:var(--ok); }
-
-/* ── 카테고리 3 (Creative) 테마 통합 오버라이드 ── */
-body.creative-theme .wt-card {
-  background: rgba(255, 255, 255, 0.78);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  box-shadow: 
-    0 4px 30px rgba(59, 130, 246, 0.02),
-    0 1px 3px rgba(0, 0, 0, 0.01),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  border-radius: 16px;
-  transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1),
-              box-shadow 0.25s cubic-bezier(0.2, 0, 0, 1),
-              border-color 0.25s cubic-bezier(0.2, 0, 0, 1);
-}
-
-body.creative-theme a.wt-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 
-    0 20px 40px rgba(59, 130, 246, 0.06),
-    0 1px 10px rgba(59, 130, 246, 0.03);
-  border-color: rgba(59, 130, 246, 0.25);
-}
-
-/* 컨트롤 버튼들 알약형(Stadium) 변환 */
-body.creative-theme .wt-btn,
-body.creative-theme .wt-btn.primary {
-  border-radius: 9999px !important;
-  padding: 8px 18px !important;
-  font-weight: 700;
-  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
-}
-
-/* ════════════════════════════════════════════════════════════════════
-   창의 테마 확장 (plan workspace/0011 §2.1) — 좌측 점프 네비 · 대문 카드 ·
-   섹션 번호별 그라데이션 · 콜아웃 재디자인. walkthrough.js가 네비를 주입한다.
-   ════════════════════════════════════════════════════════════════════ */
-
-/* 본문을 좌측 레일만큼 밀어줌 (creative-theme 페이지에서만) */
-body.creative-theme { padding-left: 264px; }
-@media (max-width: 900px) {
-  body.creative-theme { padding-left: 0; }
-  .wt-nav { transform: translateX(-100%); }
-}
-
-/* ── 좌측 점프 네비(고정 레일 + 주제별 아코디언) ── */
-.wt-nav { position:fixed; top:0; left:0; width:264px; height:100vh; box-sizing:border-box; z-index:60;
-  display:flex; flex-direction:column; padding:16px 12px; overflow-y:auto;
-  background:rgba(255,255,255,.72); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
-  border-right:1px solid rgba(255,255,255,.65); box-shadow:2px 0 30px rgba(59,130,246,.05);
-  transition:transform .26s; }
-.wt-nav__head { display:flex; align-items:center; gap:9px; padding:6px 6px 12px; margin-bottom:4px;
-  border-bottom:1px solid var(--outline-variant); }
-.wt-nav__logo { flex:none; width:32px; height:32px; border-radius:10px; display:grid; place-items:center; color:#fff;
-  background:linear-gradient(135deg,#3B82F6,#7C3AED); box-shadow:0 5px 14px rgba(99,80,237,.28); }
-.wt-nav__logo .mi { font-size:19px; }
-.wt-nav__brand { font-size:13.5px; font-weight:800; color:var(--on-surface); white-space:nowrap; overflow:hidden; }
-
-/* 주제(그룹) 아코디언 — 라벨 클릭으로 접고 펴기 */
-.wt-nav__group-label { width:100%; display:flex; align-items:center; justify-content:space-between; gap:8px;
-  background:none; border:0; cursor:pointer; font-family:inherit; font-size:9.5px; font-weight:800; letter-spacing:.07em;
-  text-transform:uppercase; color:var(--on-surface-variant); padding:13px 10px 6px; transition:color .14s; }
-.wt-nav__group-label:hover { color:var(--primary); }
-.wt-nav__group-label .gchev { font-size:16px; opacity:.6; transition:transform .24s cubic-bezier(.2,0,0,1); }
-.wt-nav__group.grp-collapsed .wt-nav__group-label .gchev { transform:rotate(-90deg); }
-.wt-nav__group-items { overflow:hidden; max-height:560px; opacity:1; transition:max-height .28s ease, opacity .2s; }
-.wt-nav__group.grp-collapsed .wt-nav__group-items { max-height:0; opacity:0; }
-
-.wt-nav__item { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:10px; text-decoration:none;
-  color:var(--on-surface); font-size:12.5px; font-weight:600; white-space:nowrap; overflow:hidden;
-  transition:background .14s, color .14s, transform .16s; }
-.wt-nav__item .d { flex:none; width:8px; height:8px; border-radius:50%;
-  background:linear-gradient(135deg,#3B82F6,#7C3AED); opacity:.45; transition:opacity .14s, transform .2s; }
-.wt-nav__item:hover { background:rgba(59,130,246,.08); }
-.wt-nav__item:hover .d { opacity:.8; }
-.wt-nav__item.active { background:linear-gradient(135deg, rgba(59,130,246,.15), rgba(124,58,237,.10));
-  color:var(--primary); font-weight:800; }
-.wt-nav__item.active .d { opacity:1; }
-
-/* ── 대문 카드(.hero) — 라이트 파스텔 그라데이션 채움(레퍼런스 웰컴배너) ── */
-body.creative-theme .hero {
-  background:linear-gradient(135deg, rgba(224,238,255,.7) 0%, rgba(238,233,253,.58) 50%, rgba(250,246,255,.5) 100%);
-  backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
-  border:1px solid rgba(191,214,250,.6); border-radius:22px; padding:26px 28px 24px; margin-bottom:38px;
-  box-shadow:0 12px 38px rgba(99,102,241,.1), inset 0 1px 0 rgba(255,255,255,.85); position:relative; overflow:hidden; }
-body.creative-theme .hero::before { content:''; position:absolute; inset:0 0 auto 0; height:3px;
-  background:linear-gradient(90deg, rgba(147,197,253,.9), rgba(196,181,253,.9), rgba(167,243,208,.85)); }
-body.creative-theme .hero::after { content:''; position:absolute; top:-42%; right:-8%; width:320px; height:320px; pointer-events:none;
-  background:radial-gradient(circle, rgba(139,92,246,.08), transparent 64%); }
-body.creative-theme .hero > * { position:relative; z-index:1; }
-body.creative-theme .hero .crest { background:linear-gradient(135deg,#3B82F6,#2563EB) !important; color:#fff !important;
-  border-radius:18px; box-shadow:0 10px 24px rgba(59,130,246,.34); animation:wtFloat 4.5s ease-in-out infinite; }
-@keyframes wtFloat { 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-5px); } }
-
-/* ── 섹션 번호 배지: 번호별 그라데이션(walkthrough.js가 .g1~.g6 부여) ── */
-body.creative-theme .sec-head .no { color:#fff !important; border-radius:11px; box-shadow:0 4px 12px rgba(59,130,246,.16); }
-body.creative-theme .sec-head .no.g1 { background:linear-gradient(135deg,#3B82F6,#2563EB) !important; }
-body.creative-theme .sec-head .no.g2 { background:linear-gradient(135deg,#8B5CF6,#7C3AED) !important; }
-body.creative-theme .sec-head .no.g3 { background:linear-gradient(135deg,#14B8A6,#0D9488) !important; }
-body.creative-theme .sec-head .no.g4 { background:linear-gradient(135deg,#F59E0B,#D97706) !important; }
-body.creative-theme .sec-head .no.g5 { background:linear-gradient(135deg,#F43F5E,#E11D48) !important; }
-body.creative-theme .sec-head .no.g6 { background:linear-gradient(135deg,#06B6D4,#0891B2) !important; }
-
-/* ── 콜아웃(느낌표/전구) — 화이트-팝 + 좌측 컬러 슬리버(배경 대비). walkthrough.js가 .note--* 부여 ── */
-body.creative-theme .note { border-radius:14px; border:1px solid rgba(30,41,59,.08); border-left:5px solid #3B82F6;
-  background:linear-gradient(100deg, rgba(59,130,246,.16) 0%, rgba(255,255,255,.9) 44%); backdrop-filter:blur(8px);
-  padding:14px 17px; margin:22px 0; box-shadow:0 5px 20px rgba(30,41,59,.07); position:relative;
-  transition:transform .18s cubic-bezier(.2,0,0,1), box-shadow .18s; }
-body.creative-theme .note:hover { transform:translateY(-2px); box-shadow:0 13px 32px rgba(30,41,59,.14); z-index:6; }
-body.creative-theme .note .mi { transition:transform .2s; }
-body.creative-theme .note:hover .mi { transform:scale(1.18) rotate(-6deg); }
-body.creative-theme .note b { color:#1e293b; }
-body.creative-theme .note.note--blue   { border-left-color:#3B82F6; background:linear-gradient(100deg, rgba(59,130,246,.17) 0%, rgba(255,255,255,.9) 44%); }
-body.creative-theme .note.note--blue .mi   { color:#3B82F6; }
-body.creative-theme .note.note--purple { border-left-color:#8B5CF6; background:linear-gradient(100deg, rgba(139,92,246,.18) 0%, rgba(255,255,255,.9) 44%); }
-body.creative-theme .note.note--purple .mi { color:#7C3AED; }
-body.creative-theme .note.note--teal   { border-left-color:#14B8A6; background:linear-gradient(100deg, rgba(20,184,166,.17) 0%, rgba(255,255,255,.9) 44%); }
-body.creative-theme .note.note--teal .mi   { color:#0D9488; }
-body.creative-theme .note.note--amber  { border-left-color:#F59E0B; background:linear-gradient(100deg, rgba(245,158,11,.19) 0%, rgba(255,255,255,.9) 44%); }
-body.creative-theme .note.note--amber .mi  { color:#D97706; }
-
-/* ── 인터랙션: 호버 · 스크롤 리빌 · 맨 위로 ── */
-.wt-nav__item { transition:background .14s, transform .16s cubic-bezier(.2,0,0,1), color .14s; }
-.wt-nav__item:hover { transform:translateX(4px); }
-.wt-nav__item .d { transition:opacity .14s, transform .2s; }
-.wt-nav__item:hover .d { transform:scale(1.55); }
-.wt-nav__logo { transition:transform .3s cubic-bezier(.34,1.56,.64,1); }
-.wt-nav__head:hover .wt-nav__logo { transform:rotate(-8deg) scale(1.06); }
-
-body.creative-theme .sec-head .no { transition:transform .22s cubic-bezier(.34,1.56,.64,1), box-shadow .22s; }
-body.creative-theme .sec-head:hover .no { transform:scale(1.14) rotate(-5deg); box-shadow:0 7px 18px rgba(59,130,246,.28); }
-
-body.creative-theme .es-card, body.creative-theme .evt, body.creative-theme .why {
-  position:relative; transition:transform .2s cubic-bezier(.2,0,0,1), box-shadow .2s, border-color .2s; }
-body.creative-theme .es-card:hover, body.creative-theme .evt:hover, body.creative-theme .why:hover {
-  transform:translateY(-3px); box-shadow:0 16px 34px rgba(59,130,246,.14); border-color:rgba(59,130,246,.32); z-index:6; }
-
-/* 이격 — 호버 리프트가 이웃 카드/콜아웃/표와 겹치지 않게 간격 확보 */
-body.creative-theme .wrap > section { margin-bottom:42px; }
-body.creative-theme .events { gap:20px; }
-body.creative-theme .why-grid { gap:18px; }
-body.creative-theme .wt-cards { gap:18px; }
-
-body.creative-theme.js-reveal .wrap > section { opacity:0; transform:translateY(18px);
-  transition:opacity .55s cubic-bezier(.2,0,0,1), transform .55s cubic-bezier(.2,0,0,1); }
-body.creative-theme.js-reveal .wrap > section.wt-in { opacity:1; transform:none; }
-
-.wt-top { position:fixed; right:22px; bottom:22px; width:46px; height:46px; border-radius:50%; border:0; cursor:pointer; z-index:70;
-  color:#fff; background:linear-gradient(135deg,#3B82F6,#7C3AED); box-shadow:0 8px 22px rgba(99,80,237,.4);
-  display:grid; place-items:center; opacity:0; transform:translateY(14px) scale(.85); pointer-events:none;
-  transition:opacity .25s, transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .2s; }
-.wt-top.show { opacity:1; transform:none; pointer-events:auto; }
-.wt-top:hover { transform:translateY(-3px) scale(1.06); box-shadow:0 14px 30px rgba(99,80,237,.5); }
-.wt-top .mi { font-size:22px; }
-
-@media (prefers-reduced-motion: reduce) {
-  body.creative-theme.js-reveal .wrap > section { opacity:1; transform:none; transition:none; }
-  body.creative-theme .hero .crest { animation:none; }
-}
-
+<style>
+html,body{margin:0;padding:0}
+body{font-family:'Pretendard Variable',Pretendard,'Noto Sans KR',sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--cn-link,#2563EB);text-decoration:none}
+a:hover{color:var(--cn-primary,#3B82F6)}
+.mi{font-family:'Material Symbols Outlined';font-weight:normal;font-style:normal;line-height:1;display:inline-block;vertical-align:-0.15em;font-variation-settings:'FILL' 0,'wght' 400}
+@media (max-width:960px){ .cn-rail{display:none!important} .cn-main{padding-left:32px!important} }
+@keyframes cnFlow{to{background-position:24px 0}}
+svg text{font-family:'Pretendard Variable',Pretendard,'Noto Sans KR',sans-serif}
+svg .mono{font-family:'JetBrains Mono',monospace}
 </style>
-<script>/* inlined (deferred) from walkthrough.js */
-(function(__run){if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',__run);}else{__run();}})(function(){
-/* 워크스루 인터랙티브 (plan workspace/0007) — 의존성 0, 빌드 0.
-   ① 스텝 플레이어(.wt-controls → 대상 .run.stepped) ② "왜?" 토글(.why-q) ③ 허브 읽음표시(.wt-readbox).
-   접근성: prefers-reduced-motion이면 애니메이션 생략. */
+</head>
+<body>
+<!-- dc-compile.mjs 번들 (plan workspace/0025) — 원본: 워크스루-마이그레이션.dc.html · 재편집은 원본 .dc에서 -->
+<script type="text/x-dc-template">
+<div class="canon" data-theme="{{ theme }}" style="min-height:100vh;background:var(--cn-mesh);background-attachment:fixed;color:var(--cn-ink);font-size:15px;line-height:1.7;transition:background .25s,color .25s">
+
+  <nav class="cn-rail" style="position:fixed;top:0;left:0;bottom:0;width:236px;box-sizing:border-box;padding:20px 14px;display:flex;flex-direction:column;gap:2px;background:var(--cn-card-glass);backdrop-filter:blur(14px);border-right:1px solid var(--cn-line);z-index:50">
+    <div style="display:flex;align-items:center;gap:10px;padding:4px 8px 14px;border-bottom:1px solid var(--cn-line);margin-bottom:10px">
+      <div style="width:32px;height:32px;border-radius:9px;display:grid;place-items:center;color:#fff;background:var(--cn-grad-id,linear-gradient(135deg,#3B82F6,#7C3AED));flex:none"><span class="mi" style="font-size:18px">sync_alt</span></div>
+      <div>
+        <div style="font-size:13.5px;font-weight:800;letter-spacing:-.01em">마이그레이션</div>
+        <div style="font-size:10.5px;color:var(--cn-faint);font-family:'JetBrains Mono',monospace">walkthrough #10</div>
+      </div>
+    </div>
+    <div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--cn-faint);text-transform:uppercase;padding:8px 10px 4px">목차</div>
+    <sc-for list="{{ navItems }}" as="nv" hint-placeholder-count="7">
+      <a href="{{ nv.href }}" style="display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:8px;font-size:12.5px;font-weight:600;color:var(--cn-ink)" style-hover="background:var(--cn-tint);color:var(--cn-primary-deep)">
+        <span class="mi" style="font-size:16px;color:var(--cn-primary)">{{ nv.icon }}</span>{{ nv.label }}
+      </a>
+    </sc-for>
+    <div style="flex:1"></div>
+    <a href="../index.html" style="display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:8px;font-size:12.5px;font-weight:600;color:var(--cn-muted)" style-hover="background:var(--cn-tint);color:var(--cn-primary-deep)">
+      <span class="mi" style="font-size:16px;color:var(--cn-primary)">arrow_back</span>포트폴리오 홈
+    </a>
+    <button onClick="{{ toggleTheme }}" style="display:flex;align-items:center;justify-content:center;gap:7px;padding:9px 14px;border-radius:999px;border:1px solid var(--cn-line-strong);background:var(--cn-card);color:var(--cn-ink);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer" style-hover="border-color:var(--cn-primary)">
+      <span class="mi" style="font-size:16px">{{ themeIcon }}</span>{{ themeLabel }}
+    </button>
+  </nav>
+
+  <main class="cn-main" style="padding:44px 40px 90px 284px;max-width:1280px;margin:0 auto;box-sizing:border-box">
+
+    <header style="border-radius:18px;padding:34px 36px;margin-bottom:20px;position:relative;overflow:hidden;background:linear-gradient(120deg,var(--cn-tint) 0%,var(--cn-bg) 70%);border:1px solid var(--cn-line);box-shadow:var(--cn-shadow-1)">
+      <div style="position:absolute;inset:0 0 auto 0;height:3px;background:linear-gradient(90deg,var(--cn-primary),var(--cn-purple),var(--cn-teal))"></div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:600;color:var(--cn-primary-deep);letter-spacing:.04em;margin-bottom:10px">WALKTHROUGH · 마이그레이션 · 레거시 탈피 지도</div>
+      <h1 style="margin:0 0 10px;font-size:34px;font-weight:800;letter-spacing:-.025em;line-height:1.25">데이터 마이그레이션 · 이카운트 탈피 역사</h1>
+      <p style="margin:0;max-width:680px;font-size:15px;color:var(--cn-muted)">시스템을 인수하면 가장 먼저 흔들리는 질문 — <b style="color:var(--cn-ink)">「이 재고·잔액의 출처가 뭐냐」</b>의 풀버전입니다.
+        한때 6~7곳에 흩어진 다중 진실(이카운트·종이발주·카톡·수기노트·사진·엑셀)을 <b style="color:var(--cn-ink)">파싱 → 정합검증 → 은행 대사</b>로 하나씩 PostgreSQL 단일 백본으로 옮긴 이야기입니다.</p>
+      <div style="display:flex;gap:8px;margin-top:18px;flex-wrap:wrap">
+        <span style="font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;background:var(--cn-tint-deep);color:var(--cn-primary-deep)">레거시 → 단일 백본</span>
+        <span style="font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;background:var(--cn-tint-deep);color:var(--cn-primary-deep)">누계차 0.0021%</span>
+        <span style="font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;background:var(--cn-tint-deep);color:var(--cn-primary-deep)">읽기 6분</span>
+      </div>
+    </header>
+
+    <div style="border-radius:12px;border:1px solid var(--cn-line);border-left:4px solid var(--cn-primary);background:var(--cn-card);padding:16px 19px;box-shadow:var(--cn-shadow-1);margin-bottom:44px;display:flex;gap:12px;align-items:flex-start">
+      <span class="mi" style="font-size:20px;color:var(--cn-primary);flex:none;margin-top:2px">bolt</span>
+      <div style="font-size:13px;line-height:1.75;color:var(--cn-muted)">
+        <b style="color:var(--cn-ink)">TL;DR</b> —
+        <b style="color:var(--cn-ink)">무엇</b>: 이카운트·종이발주·카톡·수기노트·사진·엑셀 6~7곳에 흩어진 다중 진실을 파싱·정제해 PostgreSQL 단일 백본으로 이관. ·
+        <b style="color:var(--cn-ink)">왜</b>: 이카운트 매출 GL은 결산기 일괄기장, AR/AP는 발생기장 누락으로 잔액이 음수 붕괴 — 내부 숫자끼리만 맞추면 같이 틀릴 수 있어 은행(외부 진실)과 교차검증해야 진짜 신뢰가 생김. ·
+        <b style="color:var(--cn-ink)">결과</b>: 은행 대사 매칭 98.4%(3,414/3,470) · 2경로 교차대조 누계차 0.0021% 수렴 · 거래처 정합 973/982(99%) — 이카운트는 3단계 병존 제거 진행 중.
+      </div>
+    </div>
+
+    <!-- §1 한 장 지도 -->
+    <section id="s1" style="margin-bottom:48px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+        <div style="width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:#fff;font-size:13px;font-weight:800;background:linear-gradient(135deg,#3B82F6,#2563EB)">1</div>
+        <h2 style="margin:0;font-size:21px;font-weight:800;letter-spacing:-.02em">한 장 지도 — 혼돈에서 단일 백본으로</h2>
+      </div>
+      <p style="margin:0 0 18px 42px;font-size:12.5px;color:var(--cn-faint)">④ PG 단일 백본이 최종 목적지, ③ 정합검증이 유일한 신뢰 게이트입니다. 아래 재생으로 단계별 설명을 볼 수 있습니다.</p>
+
+      <div style="background:var(--cn-card);border:1px solid var(--cn-line);border-radius:14px;padding:24px;box-shadow:var(--cn-shadow-1)">
+        <svg viewBox="0 0 1000 420" style="width:100%;height:auto;display:block">
+          <defs>
+            <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="var(--cn-faint)"></path>
+            </marker>
+            <marker id="arrP" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="var(--cn-primary)"></path>
+            </marker>
+          </defs>
+
+          <!-- 외부 진실 레이어 (상단) -->
+          <text x="16" y="34" font-size="10.5" font-weight="700" letter-spacing="2" fill="var(--cn-faint)" class="mono">EXTERNAL LAYER</text>
+          <rect x="660" y="14" width="230" height="56" rx="12" fill="var(--cn-bg)" stroke="var(--cn-teal)" stroke-width="1.4"></rect>
+          <text x="775" y="38" text-anchor="middle" font-size="13" font-weight="800" fill="var(--cn-ink)">은행 CSV 대사</text>
+          <text x="775" y="56" text-anchor="middle" font-size="10.5" fill="var(--cn-muted)">주거래은행 ↔ 분개장 · 매칭 98.4%</text>
+          <path d="M 775 70 C 740 100, 660 118, 620 148" fill="none" stroke="var(--cn-teal)" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#arr)"></path>
+          <text x="700" y="102" text-anchor="middle" font-size="10.5" fill="var(--cn-faint)">외부 진실 유입</text>
+
+          <!-- 메인 체인 4노드 -->
+          <!-- ① 레거시 -->
+          <rect x="16" y="150" width="210" height="72" rx="12" fill="var(--cn-card)" stroke="var(--cn-line-strong)"></rect>
+          <text x="121" y="180" text-anchor="middle" font-size="13" font-weight="800" fill="var(--cn-ink)">① 레거시</text>
+          <text x="121" y="200" text-anchor="middle" font-size="10" fill="var(--cn-muted)" class="mono">엑셀·구ERP·수기</text>
+          <line x1="226" y1="186" x2="250" y2="186" stroke="var(--cn-faint)" stroke-width="1.6" marker-end="url(#arr)"></line>
+
+          <!-- ② 파싱·정제 -->
+          <rect x="250" y="150" width="210" height="72" rx="12" fill="var(--cn-card)" stroke="var(--cn-line-strong)"></rect>
+          <text x="355" y="180" text-anchor="middle" font-size="13" font-weight="800" fill="var(--cn-ink)">② 파싱·정제</text>
+          <text x="355" y="200" text-anchor="middle" font-size="10" fill="var(--cn-muted)" class="mono">12개월 ETL · 신뢰등급</text>
+          <line x1="460" y1="186" x2="484" y2="186" stroke="var(--cn-faint)" stroke-width="1.6" marker-end="url(#arr)"></line>
+
+          <!-- ③ 정합검증 -->
+          <rect x="484" y="150" width="210" height="72" rx="12" fill="var(--cn-tint)" stroke="var(--cn-teal)" stroke-width="1.6"></rect>
+          <text x="589" y="180" text-anchor="middle" font-size="13" font-weight="800" fill="var(--cn-ink)">③ 정합검증</text>
+          <text x="589" y="200" text-anchor="middle" font-size="10" fill="var(--cn-primary-deep)" class="mono">2경로 · 누계차 0.0021%</text>
+          <line x1="694" y1="186" x2="718" y2="186" stroke="var(--cn-primary)" stroke-width="1.8" marker-end="url(#arrP)"></line>
+
+          <!-- ④ PG 단일 백본 (강조) -->
+          <rect x="718" y="140" width="230" height="92" rx="14" fill="var(--cn-tint)" stroke="var(--cn-primary)" stroke-width="2"></rect>
+          <text x="833" y="172" text-anchor="middle" font-size="13.5" font-weight="800" fill="var(--cn-primary-deep)">④ PG 단일 백본</text>
+          <text x="833" y="192" text-anchor="middle" font-size="10.5" fill="var(--cn-primary-deep)" class="mono">cutover · 이카운트 탈피</text>
+          <text x="833" y="210" text-anchor="middle" font-size="10" fill="var(--cn-muted)">병존 제거 3단계 진행중</text>
+
+          <!-- 파생 스트립 -->
+          <line x1="833" y1="232" x2="833" y2="326" stroke="var(--cn-primary)" stroke-width="1.8" marker-end="url(#arrP)"></line>
+          <rect x="16" y="332" width="968" height="70" rx="12" fill="var(--cn-bg)" stroke="var(--cn-line-strong)"></rect>
+          <text x="36" y="360" font-size="12.5" font-weight="800" fill="var(--cn-ink)">PG 단일 백본 — 사건 로그 위 파생 읽기</text>
+          <text x="36" y="384" font-size="11" fill="var(--cn-muted)" class="mono">pp_stock_movements(OPENING·ADJUST) · pp_bank_movements · 이카운트 잔존의존 3종 단계적 절단(plan 0046)</text>
+        </svg>
+      </div>
+
+      <div style="background:var(--cn-card);border:1px solid var(--cn-line);border-radius:14px;padding:24px;box-shadow:var(--cn-shadow-1);margin-top:14px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap">
+          <div style="font-size:12px;font-weight:700;color:var(--cn-muted);margin-right:auto">단계별 보기 — 노드를 클릭하거나 '다음'으로 넘기세요</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:700;color:var(--cn-muted)">{{ flowStepText }}</div>
+          <button onClick="{{ stepPrev }}" style="display:inline-flex;align-items:center;gap:5px;border:1px solid var(--cn-line-strong);border-radius:999px;padding:8px 16px;background:var(--cn-card);color:var(--cn-ink);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer" style-hover="border-color:var(--cn-primary);color:var(--cn-primary-deep)">
+            <span class="mi" style="font-size:16px">chevron_left</span>이전
+          </button>
+          <button onClick="{{ stepNext }}" style="display:inline-flex;align-items:center;gap:5px;border:0;border-radius:999px;padding:8px 18px;background:var(--cn-primary);color:#fff;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(59,130,246,.25)" style-hover="background:var(--cn-primary-deep)">
+            다음<span class="mi" style="font-size:16px">chevron_right</span>
+          </button>
+        </div>
+        <div style="display:flex;align-items:stretch;gap:8px;overflow-x:auto;padding-bottom:4px">
+          <sc-for list="{{ flowNodes }}" as="f" hint-placeholder-count="4">
+            <div style="display:flex;align-items:center;gap:8px;flex:{{ f.flex }}">
+              <div onClick="{{ f.go }}" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:7px;border:1.5px solid {{ f.bd }};background:{{ f.bg }};border-radius:12px;padding:12px 14px;min-width:74px;transition:border-color .3s,background .3s,box-shadow .3s;box-shadow:{{ f.sh }}">
+                <span class="mi" style="font-size:20px;color:{{ f.ic }};transition:color .3s">{{ f.icon }}</span>
+                <div style="font-size:11.5px;font-weight:700;color:{{ f.tc }};transition:color .3s;white-space:nowrap">{{ f.title }}</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--cn-faint);white-space:nowrap">{{ f.sub }}</div>
+              </div>
+              <sc-if value="{{ f.hasConn }}" hint-placeholder-val="{{ true }}">
+                <div style="flex:1;height:2px;min-width:12px;background:{{ f.connBg }};animation:{{ f.connAnim }}"></div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+        <div style="margin-top:16px;border-radius:10px;background:var(--cn-tint);padding:12px 16px;font-size:12.5px;color:var(--cn-ink);display:flex;gap:9px;align-items:flex-start">
+          <span class="mi" style="font-size:17px;color:var(--cn-primary);flex:none;margin-top:1px">subtitles</span>
+          <span>{{ flowCaption }}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- §2 원점 → 시드 -->
+    <section id="s2" style="margin-bottom:48px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+        <div style="width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:#fff;font-size:13px;font-weight:800;background:linear-gradient(135deg,#8B5CF6,#7C3AED)">2</div>
+        <h2 style="margin:0;font-size:21px;font-weight:800;letter-spacing:-.02em">원점 → 시드 — 다중 진실에서 첫 스냅샷으로</h2>
+      </div>
+      <p style="margin:0 0 18px 42px;font-size:12.5px;color:var(--cn-faint)">plan 0059 · 0078 — 전환 전 원점을 박제하고, 재고의 출발점을 실사 대신 스냅샷으로 잡습니다.</p>
+      <div style="max-width:820px;margin-left:42px">
+        <p style="margin:0 0 16px;color:var(--cn-muted)">전환 전 자사(18명)의 진실은 한 곳에 있지 않았습니다. 생산일지에 식별 key가 없어 과거 마이그레이션 자체가 불가능했고,
+          생산지시서 처리는 건당 <b style="color:var(--cn-ink)">~40분</b>, 발주 처리는 <b style="color:var(--cn-ink)">2시간/일</b>이 관리이사 1명에게 묶여 있었습니다.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-left:42px">
+        <sc-for list="{{ originCards }}" as="o" hint-placeholder-count="4">
+          <div style="background:var(--cn-card);border:1px solid var(--cn-line);border-radius:14px;padding:20px;box-shadow:var(--cn-shadow-1)">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+              <span class="mi" style="font-size:18px;color:{{ o.color }}">{{ o.icon }}</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.06em;color:{{ o.color }}">{{ o.tag }}</span>
+            </div>
+            <div style="font-size:13.5px;font-weight:800;margin-bottom:5px">{{ o.title }}</div>
+            <div style="font-size:12px;color:var(--cn-muted);line-height:1.6">{{ o.body }}</div>
+            <div style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--cn-faint)">{{ o.plans }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="max-width:820px;margin-left:42px;margin-top:14px;display:flex;flex-direction:column;gap:12px">
+        <div style="border-radius:12px;border:1px solid var(--cn-line);border-left:4px solid var(--cn-rose);background:var(--cn-card);padding:14px 17px;box-shadow:var(--cn-shadow-1);display:flex;gap:11px;align-items:flex-start">
+          <span class="mi" style="font-size:19px;color:var(--cn-rose);flex:none;margin-top:1px">priority_high</span>
+          <div style="font-size:12.5px;line-height:1.68;color:var(--cn-muted)"><b style="color:var(--cn-ink)">이중차감 방지가 핵심입니다.</b> 웹 6월 데이터가 이미 있어 06/17 이전 생산일지를 재파생하면 같은 소모를 두 번 빼게 됩니다.
+            검증 = prod 재고장(OPENING SUM) ≡ 이카운트 06/17 재고 통과(샘플 20 + 음수 5). 음수재고 5종은 음수 OPENING 그대로, orphan 11종(비용·재판매)은 제외 —
+            "데이터대로 + 보정 플래그". 이 기초는 <b style="color:var(--cn-ink)">provisional</b>이라 이후 조정은 OPENING이 아니라 <b style="color:var(--cn-ink)">ADJUST 사건</b>으로 처리합니다(이중 시드 금지).</div>
+        </div>
+        <div style="border-radius:12px;border:1px solid var(--cn-line);border-left:4px solid var(--cn-teal);background:var(--cn-card);padding:14px 17px;box-shadow:var(--cn-shadow-1);display:flex;gap:11px;align-items:flex-start">
+          <span class="mi" style="font-size:19px;color:var(--cn-teal);flex:none;margin-top:1px">history_edu</span>
+          <div style="font-size:12.5px;line-height:1.68;color:var(--cn-muted)">이카운트는 당시 SSoT였지만 주문서+재고관리만 활성이고 나머지 ~80% 기능은 죽은 비용이었습니다 —
+            표준원가만·부자재 자동화 없음·모바일 미지원(현장 입력 마찰)·분할납기 미지원. 이 한계 목록이 그대로 현 시스템이 채운 기능(발주보드·생산체인·이벤트소싱 재고장·챗봇)의 이유가 됩니다.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- §3 신뢰등급 -->
+    <section id="s3" style="margin-bottom:48px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+        <div style="width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:#fff;font-size:13px;font-weight:800;background:linear-gradient(135deg,#14B8A6,#0D9488)">3</div>
+        <h2 style="margin:0;font-size:21px;font-weight:800;letter-spacing:-.02em">들이기 전에 의심한다 — 파싱·오염조사</h2>
+      </div>
+      <p style="margin:0 0 18px 42px;font-size:12.5px;color:var(--cn-faint)">plan 0088 — 12개월치를 라인 단위로 파싱하고 도메인별 신뢰등급을 매겨, 믿을 건 앵커로·못 믿을 건 재구성으로.</p>
+      <div style="background:var(--cn-card);border:1px solid var(--cn-line);border-radius:14px;box-shadow:var(--cn-shadow-1);overflow:hidden;margin-left:42px">
+        <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+          <thead>
+            <tr style="background:var(--cn-tint)">
+              <th style="text-align:left;padding:11px 16px;font-size:11px;font-weight:800;letter-spacing:.04em;color:var(--cn-primary-deep)">도메인</th>
+              <th style="text-align:left;padding:11px 16px;font-size:11px;font-weight:800;letter-spacing:.04em;color:var(--cn-primary-deep)">등급</th>
+              <th style="text-align:left;padding:11px 16px;font-size:11px;font-weight:800;letter-spacing:.04em;color:var(--cn-primary-deep)">판정</th>
+            </tr>
+          </thead>
+          <tbody>
+            <sc-for list="{{ trustRows }}" as="r" hint-placeholder-count="6">
+              <tr style="border-top:1px solid var(--cn-line)" style-hover="background:var(--cn-tint)">
+                <td style="padding:11px 16px;font-weight:700;white-space:nowrap">{{ r.d }}</td>
+                <td style="padding:11px 16px;font-weight:800;color:{{ r.gc }}">{{ r.g }}</td>
+                <td style="padding:11px 16px;color:var(--cn-muted)">{{ r.n }}</td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+      <div style="max-width:820px;margin-left:42px;margin-top:14px;border-radius:12px;border:1px solid var(--cn-line);border-left:4px solid var(--cn-rose);background:var(--cn-card);padding:14px 17px;box-shadow:var(--cn-shadow-1);display:flex;gap:11px;align-items:flex-start">
+        <span class="mi" style="font-size:19px;color:var(--cn-rose);flex:none;margin-top:1px">bug_report</span>
+        <div style="font-size:12.5px;line-height:1.68;color:var(--cn-muted)"><b style="color:var(--cn-ink)">루트 오염 = 푸터행 흡수(C8).</b> 파서가 월소계·총합계 행(판매 20·구매 19)을 데이터로 빨아들여 금액 정합이 깨졌었습니다 —
+          푸터 필터 추가로 종결(품목코드 공란 22→0도 동반 해소). 교훈: <b style="color:var(--cn-ink)">"숫자가 안 맞으면 데이터가 아니라 파서를 먼저 의심"</b>. 0088은 아직 <b style="color:var(--cn-ink)">proposed</b>(분석 완료, 라이브 적재 게이트 전)입니다.</div>
+      </div>
+    </section>
+
+    <!-- §4 은행대사 -->
+    <section id="s4" style="margin-bottom:48px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+        <div style="width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:#fff;font-size:13px;font-weight:800;background:linear-gradient(135deg,#F59E0B,#D97706)">4</div>
+        <h2 style="margin:0;font-size:21px;font-weight:800;letter-spacing:-.02em">외부 진실로 맞춘다 — 은행 백본</h2>
+      </div>
+      <p style="margin:0 0 18px 42px;font-size:12.5px;color:var(--cn-faint)">plan 0029 — 시스템 내부 숫자끼리만 맞추면 같이 틀릴 수 있어, 통장(외부 진실)과 대사해야 진짜 신뢰가 생깁니다.</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-left:42px">
+        <sc-for list="{{ bankCards }}" as="b" hint-placeholder-count="3">
+          <div style="background:var(--cn-card);border:1px solid var(--cn-line);border-radius:14px;padding:20px;box-shadow:var(--cn-shadow-1)">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+              <span class="mi" style="font-size:18px;color:{{ b.color }}">{{ b.icon }}</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.06em;color:{{ b.color }}">{{ b.tag }}</span>
+            </div>
+            <div style="font-size:13.5px;font-weight:800;margin-bottom:5px;font-family:'JetBrains Mono',monospace">{{ b.title }}</div>
+            <div style="font-size:12px;color:var(--cn-muted);line-height:1.6">{{ b.body }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="max-width:820px;margin-left:42px;margin-top:14px">
+        <p style="margin:0;color:var(--cn-muted)"><b style="color:var(--cn-ink)">매칭 경로 3단</b> — ① 운영 SSoT 우선(매출·매입·발주 FK, ~80%) → ② 룰/별칭(적요 발주번호·거래처명, ~18%) → ③ 수동 확정(~2%).
+          정본 스크립트 <code style="font-family:'JetBrains Mono',monospace;color:var(--cn-primary-deep)">Data_Parsing/bank_journal_recon.py</code> · 적재 <code style="font-family:'JetBrains Mono',monospace;color:var(--cn-primary-deep)">pp_bank_movements</code>.</p>
+      </div>
+    </section>
+
+    <!-- §5 cutover + 이카운트 탈피 -->
+    <section id="s5" style="margin-bottom:48px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+        <div style="width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:#fff;font-size:13px;font-weight:800;background:linear-gradient(135deg,#F43F5E,#E11D48)">5</div>
+        <h2 style="margin:0;font-size:21px;font-weight:800;letter-spacing:-.02em">운영 기준선 + 이카운트 졸업</h2>
+      </div>
+      <p style="margin:0 0 18px 42px;font-size:12.5px;color:var(--cn-faint)">plan 0108 · 0099 · 0046 — 대부분 proposed. 과거는 재구성 CSV로, 미래는 관계회계로 신축.</p>
+      <div style="background:var(--cn-card);border:1px solid var(--cn-line);border-radius:14px;box-shadow:var(--cn-shadow-1);overflow:hidden;margin-left:42px">
+        <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+          <thead>
+            <tr style="background:var(--cn-tint)">
+              <th style="text-align:left;padding:11px 16px;font-size:11px;font-weight:800;letter-spacing:.04em;color:var(--cn-primary-deep)">건</th>
+              <th style="text-align:left;padding:11px 16px;font-size:11px;font-weight:800;letter-spacing:.04em;color:var(--cn-primary-deep)">방식</th>
+              <th style="text-align:left;padding:11px 16px;font-size:11px;font-weight:800;letter-spacing:.04em;color:var(--cn-primary-deep)">상태</th>
+            </tr>
+          </thead>
+          <tbody>
+            <sc-for list="{{ cutoverRows }}" as="c" hint-placeholder-count="3">
+              <tr style="border-top:1px solid var(--cn-line)" style-hover="background:var(--cn-tint)">
+                <td style="padding:11px 16px;font-weight:700;white-space:nowrap">{{ c.t }}</td>
+                <td style="padding:11px 16px;color:var(--cn-muted)">{{ c.w }}</td>
+                <td style="padding:11px 16px;color:{{ c.sc }};font-weight:700;white-space:nowrap">{{ c.s }}</td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+      <div style="max-width:820px;margin-left:42px;margin-top:14px;border-radius:12px;border:1px solid var(--cn-line);border-left:4px solid var(--cn-amber);background:var(--cn-card);padding:14px 17px;box-shadow:var(--cn-shadow-1);display:flex;gap:11px;align-items:flex-start">
+        <span class="mi" style="font-size:19px;color:var(--cn-amber);flex:none;margin-top:1px">link_off</span>
+        <div style="font-size:12.5px;line-height:1.68;color:var(--cn-muted)"><b style="color:var(--cn-ink)">아직 이카운트에 남은 의존 3종</b>(0046 §1): ① 세금계산서 발행·부가세 신고(세무 전담) · ② 과거 판매/구매/채권채무 기록(역이입 경로 없음) ·
+          ③ 생산실적 TSV 업로드(이카운트 장부 유지용). 최종 목적 = <b style="color:var(--cn-ink)">병존 제거</b> — 웹+이카운트 동시 사용은 비표준 중복이고, 표준은 "회계SW 1개 + 세무사"입니다.
+          근본 해결책은 <b style="color:var(--cn-ink)">웹 단가엔진(0040)</b>(복잡 단가 → 이카운트 단가입력 실패 → 홈택스 수동발행 이중작업의 근원을 끊음) + 세금계산서 웹발행(ASP).</div>
+      </div>
+    </section>
+
+    <!-- §6 결정과 트레이드오프 -->
+    <section id="s6" style="margin-bottom:48px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+        <div style="width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:#fff;font-size:13px;font-weight:800;background:linear-gradient(135deg,#06B6D4,#0891B2)">6</div>
+        <h2 style="margin:0;font-size:21px;font-weight:800;letter-spacing:-.02em">결정과 트레이드오프 — 무엇을 진실로 믿을지</h2>
+      </div>
+      <p style="margin:0 0 18px 42px;font-size:12.5px;color:var(--cn-faint)">일곱 개의 SSoT 선택 — 채택·기각·근거.</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;margin-left:42px">
+        <sc-for list="{{ decisions }}" as="dc" hint-placeholder-count="7">
+          <div style="background:var(--cn-card);border:1px solid var(--cn-line);border-radius:14px;padding:20px;box-shadow:var(--cn-shadow-1)">
+            <div style="font-size:13.5px;font-weight:800;margin-bottom:10px">{{ dc.q }}</div>
+            <div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:6px">
+              <span class="mi" style="font-size:16px;color:var(--cn-green);flex:none;margin-top:2px">check_circle</span>
+              <div style="font-size:12.5px;line-height:1.55"><b>채택</b> — {{ dc.pick }}</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:8px">
+              <span class="mi" style="font-size:16px;color:var(--cn-rose);flex:none;margin-top:2px">cancel</span>
+              <div style="font-size:12.5px;line-height:1.55;color:var(--cn-muted)"><b style="color:var(--cn-ink)">기각</b> — {{ dc.drop }}</div>
+            </div>
+            <div style="font-size:12px;color:var(--cn-muted);line-height:1.6;border-top:1px solid var(--cn-line);padding-top:8px">{{ dc.why }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <!-- §7 운영주의 + 정본 -->
+    <section id="s7" style="margin-bottom:24px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+        <div style="width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:#fff;font-size:13px;font-weight:800;background:linear-gradient(135deg,#3B82F6,#7C3AED)">7</div>
+        <h2 style="margin:0;font-size:21px;font-weight:800;letter-spacing:-.02em">데이터 출처를 다룰 때 — 5가지</h2>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-left:42px;margin-top:18px">
+        <sc-for list="{{ noteCards }}" as="n" hint-placeholder-count="5">
+          <div style="background:var(--cn-card);border:1px solid var(--cn-line);border-radius:14px;padding:18px 20px;box-shadow:var(--cn-shadow-1)">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+              <span class="mi" style="font-size:18px;color:var(--cn-primary)">{{ n.icon }}</span>
+            </div>
+            <div style="font-size:13.5px;font-weight:800;margin-bottom:5px">{{ n.title }}</div>
+            <div style="font-size:12px;color:var(--cn-muted);line-height:1.6">{{ n.body }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="max-width:820px;margin-left:42px;margin-top:18px;border-radius:12px;border:1px solid var(--cn-line);border-left:4px solid var(--cn-teal);background:var(--cn-card);padding:14px 17px;box-shadow:var(--cn-shadow-1);display:flex;gap:11px;align-items:flex-start">
+        <span class="mi" style="font-size:19px;color:var(--cn-teal);flex:none;margin-top:1px">verified</span>
+        <div style="font-size:12.5px;line-height:1.7;color:var(--cn-muted)"><b style="color:var(--cn-ink)">이 데이터가 흘러가는 곳</b> — 자금·채권(앵커·재구성)과 재고 이벤트소싱(OPENING 사건)으로 이어집니다.
+          정본 스크립트 <code style="font-family:'JetBrains Mono',monospace;color:var(--cn-primary-deep)">Data_Parsing/ecount_recon.py</code> · <code style="font-family:'JetBrains Mono',monospace;color:var(--cn-primary-deep)">bank_journal_recon.py</code> ·
+          테이블 <code style="font-family:'JetBrains Mono',monospace;color:var(--cn-primary-deep)">pp_stock_movements</code>(OPENING) · <code style="font-family:'JetBrains Mono',monospace;color:var(--cn-primary-deep)">pp_bank_movements</code>.</div>
+      </div>
+    </section>
+
+    <footer style="margin-top:40px;padding-top:20px;border-top:1px solid var(--cn-line);display:flex;justify-content:space-between;font-size:11.5px;color:var(--cn-faint);font-family:'JetBrains Mono',monospace">
+      <span>creative canon v2</span><span>manufacturing-ax-portfolio · 2026-07</span>
+    </footer>
+  </main>
+</div>
+</script>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;\&quot;light\&quot;|\&quot;dark\&quot;&quot;,&quot;section&quot;:&quot;테마&quot;}}">
+class Component extends DCLogic {
+  state = { theme: null, flowStep: -1 };
+  componentWillUnmount() { clearInterval(this._t); }
+  renderVals() {
+    const theme = this.state.theme ?? this.props.theme ?? "light";
+    const dark = theme === "dark";
+    const { flowStep } = this.state;
+    const flowBase = [
+      { icon: "history_edu", title: "① 레거시", sub: "엑셀·구ERP·수기", cap: "as-is 원점 — 다중 SSoT 6~7곳(이카운트·종이발주·카톡·수기노트·사진·엑셀), 데이터 거버넌스 0(생산일지 식별키 없음). plan 0059." },
+      { icon: "filter_alt", title: "② 파싱·정제", sub: "12개월 ETL", cap: "라인 단위 파싱 + 도메인별 신뢰등급 A~D 부여. 병행해 이카운트 06/17 재고 스냅샷을 OPENING 사건으로 시드(227종+, 실사 대체). plan 0088 · 0078." },
+      { icon: "fact_check", title: "③ 정합검증", sub: "2경로 교차대조", cap: "자금일보 실잔액 ↔ 분개장 누적 순증감, 매월 교차대조 — 누계차 0.0021% 수렴. 은행 CSV 대사(외부 진실)로 재확인, 매칭 98.4%." },
+      { icon: "hub", title: "④ PG 단일 백본", sub: "cutover", cap: "이카운트 재고현황 baseline으로 cutover(dev=OPENING신규/prod=ADJUST). 이카운트는 3단계로 병존 제거 진행(0046, 미착수)." },
+    ];
+    return {
+      theme,
+      themeIcon: dark ? "light_mode" : "dark_mode",
+      themeLabel: dark ? "라이트 모드" : "다크 모드",
+      toggleTheme: () => this.setState({ theme: dark ? "light" : "dark" }),
+      navItems: [
+        { href: "#s1", icon: "map", label: "한 장 지도" },
+        { href: "#s2", icon: "input", label: "원점 → 시드" },
+        { href: "#s3", icon: "fact_check", label: "신뢰등급" },
+        { href: "#s4", icon: "account_balance", label: "은행 대사" },
+        { href: "#s5", icon: "sync_alt", label: "cutover·탈피" },
+        { href: "#s6", icon: "alt_route", label: "결정과 트레이드오프" },
+        { href: "#s7", icon: "checklist", label: "출처 다룰 때" },
+      ],
+      flowNodes: flowBase.map((f, i) => {
+        const on = i <= flowStep;
+        const connOn = i < flowStep;
+        const last = i === flowBase.length - 1;
+        return {
+          ...f, hasConn: !last, flex: last ? "none" : "1",
+          go: () => this.setState({ flowStep: i }),
+          bd: on ? "var(--cn-primary)" : "var(--cn-line)",
+          bg: on ? "var(--cn-tint)" : "var(--cn-card)",
+          ic: on ? "var(--cn-primary-deep)" : "var(--cn-faint)",
+          tc: on ? "var(--cn-primary-deep)" : "var(--cn-muted)",
+          sh: on ? "0 4px 14px rgba(59,130,246,.18)" : "none",
+          connBg: connOn ? "repeating-linear-gradient(90deg,var(--cn-primary) 0 8px,transparent 8px 16px)" : "var(--cn-line)",
+          connAnim: connOn ? "cnFlow .5s linear infinite" : "none",
+        };
+      }),
+      flowStepText: flowStep < 0 ? "대기" : (flowStep + 1) + " / " + flowBase.length,
+      flowCaption: flowStep < 0 ? "'다음'을 누르거나 노드를 클릭하면 각 단계의 설명이 여기 표시됩니다." : flowBase[Math.min(flowStep, flowBase.length - 1)].cap,
+      stepNext: () => this.setState({ flowStep: Math.min(flowStep + 1, flowBase.length - 1) }),
+      stepPrev: () => this.setState({ flowStep: Math.max(flowStep - 1, -1) }),
+      originCards: [
+        { icon: "warning", tag: "다중SSoT", color: "var(--cn-rose)", title: "진실 6~7곳 분산", body: "이카운트+종이발주+카톡+수기노트+사진+엑셀 — 같은 사실이 여러 곳에 따로 존재.", plans: "plan 0059" },
+        { icon: "key_off", tag: "거버넌스 0", color: "var(--cn-amber)", title: "식별 key 부재", body: "생산일지에 식별 key가 없어 과거 마이그레이션 자체가 불가능했던 출발점.", plans: "plan 0059" },
+        { icon: "person", tag: "병목", color: "var(--cn-purple)", title: "1인 집중", body: "생산지시서 건당 ~40분·발주 처리 2시간/일이 관리이사 1명에게 묶여 있었음.", plans: "plan 0059" },
+        { icon: "download_for_offline", tag: "OPENING", color: "var(--cn-primary)", title: "기초재고 스냅샷 시드", body: "이카운트가 실재고를 유지 중(95% 매칭)임을 확인해 현장 실사를 폐기, 06/17 스냅샷을 OPENING 사건 227종+로 시드.", plans: "plan 0078" },
+      ],
+      trustRows: [
+        { d: "자금(주거래 보통예금 GL)", g: "A", gc: "var(--cn-green)", n: "18개월 분개장 ≡ 은행 원 단위 일치 → 자금 앵커" },
+        { d: "거래처 · 재고수불", g: "A", gc: "var(--cn-green)", n: "거래처 973/982(99%)·이름중복0 · 재고 스냅샷 198/198 일치" },
+        { d: "품목(제품)", g: "A−", gc: "var(--cn-green)", n: "1,178/1,194(98.6%) · orphan 일부 등록 큐" },
+        { d: "매입", g: "B", gc: "var(--cn-primary-deep)", n: "FK 99.8% · 0원 단가 55라인(단가 미입력 보정 대상)" },
+        { d: "매출", g: "C+", gc: "var(--cn-amber)", n: "GL 결산기 일괄기장(실시간 X) → 매출 SSoT = 판매현황(GL 아님)" },
+        { d: "AR/AP 잔액", g: "D", gc: "var(--cn-rose)", n: "GL 음수 붕괴(대규모 음수대) → 발생−수금/지급 재구성 필수" },
+      ],
+      bankCards: [
+        { icon: "balance", tag: "매칭", color: "var(--cn-primary)", title: "3,414 / 3,470 = 98.4%", body: "3패스: 날짜+방향+금액 → ±3일 → ±35일. 잔차 56 = 타이밍40+금융/계열16+어음할인5(전부 설명됨)." },
+        { icon: "link", tag: "거래처 FK", color: "var(--cn-teal)", title: "99% · 死데이터 0건", body: "은행 거래처코드 99%가 거래처 마스터(973)에 매칭. 설명 안 되는 행 0건." },
+        { icon: "insights", tag: "교차검증", color: "var(--cn-purple)", title: "은행실측 ≈ 독립추정", body: "수금·매입지급의 은행 실측이 파싱 기반 독립 추정과 정합 — 두 독립 경로가 같은 그림(구체 금액 비공개)." },
+      ],
+      cutoverRows: [
+        { t: "재고 cutover (0108)", w: "이카운트 재고현황 baseline · dev=OPENING 신규 / prod=ADJUST(기존 227과 차이만)", s: "proposed", sc: "var(--cn-amber)" },
+        { t: "생산·발주 마이그 (0099)", w: "16개월 재구성(코드 회수 99.7%) · 라이브 미적재·분석 CSV 유지", s: "proposed", sc: "var(--cn-amber)" },
+        { t: "이카운트 탈피 (0046)", w: "3단계 — 과거 export → 입력 최소화 → 해지조건 충족 시 해지", s: "proposed·미착수", sc: "var(--cn-rose)" },
+      ],
+      decisions: [
+        { q: "자금 앵커는 무엇을 SSoT로?", pick: "분개장 보통예금.", drop: "자금일보(비정형).", why: "분개장은 정형·전표·거래처 有 · 18개월 은행과 원 단위 일치. 자금일보는 보조(비고·현금시재)." },
+        { q: "매출 SSoT는?", pick: "판매현황(판매 모듈).", drop: "매출 GL.", why: "이카운트 매출 GL은 결산기 일괄기장이라 ~90% 부재 → GL 조인 자체가 불가능." },
+        { q: "AR/AP 잔액을 어떻게?", pick: "발생−수금/지급 재구성.", drop: "이카운트 잔액 리포트.", why: "발생기장 누락으로 GL 잔액이 음수 붕괴(대규모 음수대). 거래처별 리포트는 윤곽 참고만." },
+        { q: "재고 기초를 어떻게 잡나?", pick: "이카운트 스냅샷 import.", drop: "현장 실사.", why: "이카운트가 실재고 유지(95% 매칭) → 실사 공수 0·즉시 양수 기초. 오염은 운영 사이클에서 보정." },
+        { q: "과거 생산일지를 어떻게 다루나?", pick: "분석 CSV(라이브 미적재).", drop: "라이브 DB 재적재.", why: "구양식 밀도 부재(13개월)·추정 금지. 목적 = 분석·근본원인 증거이지 운영 입력이 아님." },
+        { q: "이카운트를 어떻게 처분하나?", pick: "병존 제거(3단계 졸업).", drop: "웹+이카운트 영구 병행.", why: "이중 입력 = 비표준·오염원. 표준 = 회계SW 1개+세무사. 단계적 해지(데이터 보존·세무사 확인 게이트)." },
+        { q: "0원 단가 매입 라인을 어떻게 처리하나?", pick: "단가 미입력(보정 대상).", drop: "무상 사급으로 간주.", why: "추정 금지(0072 §6) — 사용자 확정 원칙. 규모 = 매입 55라인(+1.1%)." },
+      ],
+      noteCards: [
+        { icon: "looks_one", title: "OPENING은 한 번만", body: "기초 시드는 06/17 단일. 이후 차이는 ADJUST로 — OPENING 재발행은 이중 시드." },
+        { icon: "looks_two", title: "06/17 이전 재파생 금지", body: "웹 6월분이 이미 포함 — 그 이전 생산일지를 다시 분해하면 같은 소모가 이중 차감됨." },
+        { icon: "looks_3", title: "오염 도메인은 재구성", body: "매출(판매현황)·AR/AP(발생−수금)는 GL이 아니라 재구성이 정본. 이카운트 잔액 리포트를 그대로 믿지 않음." },
+        { icon: "looks_4", title: "과거는 안 붓는다", body: "분석 CSV는 근본원인·원가율 용도. 라이브는 신규부터 — 추정으로 과거를 채우지 않음." },
+        { icon: "looks_5", title: "숫자 안 맞으면 파서부터", body: "정합 깨짐의 루트가 푸터오염(C8)이었듯, 데이터를 의심하기 전에 파서를 먼저 의심." },
+      ],
+    };
+  }
+}
+</script>
+<script>
+/* =============================================================
+   DESIGN CANON v2 — .dc 템플릿 자체 렌더러 (plan workspace/0025 D3)
+   Claude Design DSL 서브셋 구현: {{expr}} 보간 · sc-for · sc-if ·
+   on* 이벤트 바인딩 · style-hover · DCLogic(state/setState/lifecycle).
+   미지원 sc-* 태그는 조용히 넘기지 않고 명시적 에러(화면 배너 + throw).
+
+   원문 취득 우선순위:
+   ① <script type="text/x-dc-template"> — dc-compile.mjs 번들 출력 (권장 배포 형태)
+   ② fetch(현재 URL) 원문 재취득 — http(s) 서빙된 raw .dc 라이브 프리뷰
+   ③ DOM 폴백(경고) — file://로 raw .dc를 직접 연 경우. 브라우저 파서의
+      foster-parenting 때문에 <table> 내 sc-for·SVG 대소문자 속성이 깨질 수 있음.
+
+   왜 자체 파서인가: 브라우저 HTML 파서는 <tbody> 안의 <sc-for>를 표 밖으로
+   끌어내(foster parenting) 표 템플릿을 구조적으로 파괴한다. 원문 텍스트를
+   직접 파싱하면 이 문제와 SVG 속성 소문자화(viewBox)가 모두 회피된다.
+   ============================================================= */
 (function () {
   'use strict';
-  var REDUCE = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // ── ① 스텝 플레이어 ─────────────────────────────────────────
-  function numOf(el) { return parseFloat(String(el).replace(/[^0-9.\-]/g, '')) || 0; }
+  /* raw .dc를 직접 열었을 때 미렌더 {{ }} 플래시 방지 */
+  var hider = document.createElement('style');
+  hider.textContent = 'x-dc{display:none}';
+  (document.head || document.documentElement).appendChild(hider);
 
-  document.querySelectorAll('.wt-controls').forEach(function (ctl) {
-    var run = document.getElementById(ctl.dataset.target || '');
-    if (!run) return;
-    var nodes = Array.prototype.slice.call(run.querySelectorAll('.node'));
-    var arrows = Array.prototype.slice.call(run.querySelectorAll('.arrow'));
-    var lbl = ctl.querySelector('.wt-step');
-    var total = nodes.length, step = 0, timer = null;
+  var VOID = { area: 1, base: 1, br: 1, col: 1, embed: 1, hr: 1, img: 1, input: 1, link: 1, meta: 1, source: 1, track: 1, wbr: 1 };
+  var SVG_NS = 'http://www.w3.org/2000/svg';
 
-    // 각 .bal 원본값 보존
-    nodes.forEach(function (n) {
-      var b = n.querySelector('.bal');
-      if (b && b.dataset.bal == null) b.dataset.bal = b.textContent.trim();
+  function decodeEnt(s) {
+    return s.replace(/&(amp|lt|gt|quot|#39|apos);/g, function (m, k) {
+      return { amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'", apos: "'" }[k];
     });
-
-    function balAt(i) { var b = nodes[i].querySelector('.bal'); return numOf(b.dataset.bal != null ? b.dataset.bal : b.textContent); }
-    function setLbl() { if (lbl) lbl.textContent = step + ' / ' + total; }
-
-    function animate(node, from, to) {
-      var el = node.querySelector('.bal'); if (!el) return;
-      if (REDUCE) { el.textContent = to; return; }
-      var t0 = null, dur = 420;
-      function fr(ts) { if (!t0) t0 = ts; var p = Math.min(1, (ts - t0) / dur);
-        el.textContent = Math.round(from + (to - from) * p);
-        if (p < 1) requestAnimationFrame(fr); else el.textContent = to; }
-      requestAnimationFrame(fr);
-    }
-
-    function reveal() {
-      if (step >= total) return false;
-      if (step > 0 && arrows[step - 1]) arrows[step - 1].classList.add('shown');
-      var node = nodes[step];
-      node.classList.add('shown', 'pulse');
-      setTimeout(function () { node.classList.remove('pulse'); }, 520);
-      animate(node, step > 0 ? balAt(step - 1) : 0, balAt(step));
-      step++; setLbl();
-      return true;
-    }
-
-    function reset() {
-      step = 0; if (timer) { clearInterval(timer); timer = null; }
-      nodes.forEach(function (n) { n.classList.remove('shown', 'pulse');
-        var b = n.querySelector('.bal'); if (b && b.dataset.bal != null) b.textContent = b.dataset.bal; });
-      arrows.forEach(function (a) { a.classList.remove('shown'); });
-      setLbl();
-    }
-
-    ctl.querySelectorAll('[data-act]').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        var act = btn.dataset.act;
-        if (act === 'step') { if (timer) { clearInterval(timer); timer = null; } reveal(); }
-        else if (act === 'auto') {
-          if (timer) { clearInterval(timer); timer = null; return; }
-          if (step >= total) reset();
-          timer = setInterval(function () { if (!reveal()) { clearInterval(timer); timer = null; } }, 820);
-        } else if (act === 'reset') { reset(); }
-      });
-    });
-    reset();
-  });
-
-  // ── ② "왜?" 토글 ───────────────────────────────────────────
-  document.querySelectorAll('.why-q').forEach(function (q) {
-    q.setAttribute('aria-expanded', 'false');
-    q.addEventListener('click', function () {
-      var box = q.closest('.why'); if (!box) return;
-      var open = box.classList.toggle('open');
-      q.setAttribute('aria-expanded', open ? 'true' : 'false');
-    });
-  });
-
-  // ── ③ 허브 읽음표시 (localStorage) ─────────────────────────
-  document.querySelectorAll('.wt-card[data-read-id]').forEach(function (card) {
-    var id = card.dataset.readId, key = 'wt-read-' + id;
-    var box = card.querySelector('.wt-readbox input');
-    var on = localStorage.getItem(key) === '1';
-    if (on) card.classList.add('read');
-    if (box) {
-      box.checked = on;
-      box.addEventListener('click', function (e) { e.stopPropagation(); });
-      box.addEventListener('change', function () {
-        if (box.checked) { localStorage.setItem(key, '1'); card.classList.add('read'); }
-        else { localStorage.removeItem(key); card.classList.remove('read'); }
-      });
-    }
-  });
-})();
-
-/* ── ④ 좌측 점프 네비 주입 + 섹션 번호 그라데이션 (creative-theme 전용, plan 0011 §2.1) ── */
-(function () {
-  if (!document.body.classList.contains('creative-theme')) return;
-
-  // 섹션 번호 배지에 번호별 그라데이션 클래스(.g1~.g6) 부여 — HTML 무수정
-  document.querySelectorAll('.sec-head .no').forEach(function (el) {
-    var n = parseInt((el.textContent || '').replace(/[^0-9]/g, ''), 10);
-    if (!isNaN(n)) el.classList.add('g' + (((n - 1) % 6) + 1));
-  });
-
-  // 페이지 매니페스트(단일 출처) — 그룹 → [파일, 제목]
-  var NAV = [
-    ['여기서 시작', [['워크스루.html', '교육문서 허브'], ['워크스루-시스템오버뷰.html', '시스템 오버뷰']]],
-    ['기초·핵심', [['워크스루-재고이벤트소싱.html', '재고 이벤트 소싱'], ['워크스루-생산일지분해.html', '생산일지 분해']]],
-    ['도메인 주제', [['워크스루-일정문의챗봇.html', '일정문의·챗봇'], ['워크스루-자금채권.html', '자금·채권'], ['워크스루-생산로스율.html', '생산·로스율'], ['워크스루-샘플관리.html', '샘플관리'], ['워크스루-거래처마스터.html', '거래처 마스터'], ['워크스루-협업보드.html', '협업보드'], ['워크스루-발주출고-SSoT.html', '발주·출고 SSoT'], ['워크스루-마이그레이션.html', '마이그레이션'], ['워크스루-온톨로지.html', '온톨로지'], ['워크스루-문서허브.html', '문서허브'], ['워크스루-코퍼스적재.html', '코퍼스 적재']]],
-    ['거버넌스·운영', [['워크스루-권한감사.html', '권한·감사'], ['워크스루-거버넌스.html', '거버넌스 체계'], ['워크스루-기타요약.html', '그 외 요약']]]
-  ];
-  var here = decodeURIComponent((location.pathname.split('/').pop() || '')).toLowerCase();
-
-  var nav = document.createElement('nav');
-  nav.className = 'wt-nav';
-
-  var head = document.createElement('div');
-  head.className = 'wt-nav__head';
-  head.innerHTML = '<span class="wt-nav__logo"><span class="mi">school</span></span>'
-    + '<span class="wt-nav__brand">워크스루</span>';
-  nav.appendChild(head);
-
-  // 주제(그룹)별 아코디언 — 라벨 클릭으로 접고 펴기, 상태 기억(현재 페이지 그룹은 항상 펼침)
-  NAV.forEach(function (grp, gi) {
-    var groupEl = document.createElement('div');
-    groupEl.className = 'wt-nav__group';
-
-    var lbl = document.createElement('button');
-    lbl.className = 'wt-nav__group-label';
-    lbl.type = 'button';
-    lbl.innerHTML = '<span class="gl"></span><span class="mi gchev">expand_more</span>';
-    lbl.querySelector('.gl').textContent = grp[0];
-    groupEl.appendChild(lbl);
-
-    var items = document.createElement('div');
-    items.className = 'wt-nav__group-items';
-    var hasActive = false;
-    grp[1].forEach(function (it) {
-      var a = document.createElement('a');
-      a.className = 'wt-nav__item';
-      a.href = it[0];
-      if (it[0].toLowerCase() === here) { a.classList.add('active'); hasActive = true; }
-      a.innerHTML = '<span class="d"></span><span class="t"></span>';
-      a.querySelector('.t').textContent = it[1];
-      items.appendChild(a);
-    });
-    groupEl.appendChild(items);
-
-    var gkey = 'wtGrp_' + gi;
-    var gcol = false;
-    try { gcol = localStorage.getItem(gkey) === '1'; } catch (e) {}
-    if (gcol && !hasActive) groupEl.classList.add('grp-collapsed');
-    lbl.addEventListener('click', function () {
-      var c = groupEl.classList.toggle('grp-collapsed');
-      try { localStorage.setItem(gkey, c ? '1' : '0'); } catch (e) {}
-    });
-
-    nav.appendChild(groupEl);
-  });
-
-  document.body.insertBefore(nav, document.body.firstChild);
-
-  // 콜아웃 타입별 색상 — .note의 아이콘을 4버킷(purple/teal/amber/blue)으로 매핑
-  var NOTE_BUCKET = {
-    lightbulb:'purple', insights:'purple', bolt:'purple', psychology:'purple', palette:'purple', manage_search:'purple', trending_up:'purple', history_edu:'purple',
-    verified:'teal', verified_user:'teal', shield_lock:'teal', rule:'teal', balance:'teal', bookmark:'teal', key_off:'teal', badge:'teal', filter_center_focus:'teal', join_inner:'teal',
-    priority_high:'amber', warning:'amber', report_problem:'amber', bug_report:'amber', block:'amber', link_off:'amber', visibility_off:'amber', settings_ethernet:'amber'
-  };
-  document.querySelectorAll('.note').forEach(function (el) {
-    var ic = el.querySelector('.mi');
-    var name = ic ? (ic.textContent || '').trim() : '';
-    el.classList.add('note--' + (NOTE_BUCKET[name] || 'blue'));
-  });
-
-  // 스크롤 리빌 — 섹션이 뷰포트 진입 시 페이드업 (no-JS 폴백: js-reveal 가드로 항상 보임)
-  if ('IntersectionObserver' in window) {
-    document.body.classList.add('js-reveal');
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('wt-in'); io.unobserve(e.target); } });
-    }, { threshold: 0.06, rootMargin: '0px 0px -36px 0px' });
-    document.querySelectorAll('.wrap > section').forEach(function (s) { io.observe(s); });
   }
 
-  // 맨 위로 — 스크롤 시 등장, 클릭 시 부드럽게 상단으로
-  var top = document.createElement('button');
-  top.className = 'wt-top'; top.type = 'button'; top.setAttribute('aria-label', '맨 위로');
-  top.innerHTML = '<span class="mi">arrow_upward</span>';
-  document.body.appendChild(top);
-  top.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
-  window.addEventListener('scroll', function () { top.classList.toggle('show', window.scrollY > 420); }, { passive: true });
+  /* ── 미니 HTML 파서 → {tag, attrs, children} / {text} 트리 ── */
+  function parseTpl(src) {
+    var root = { tag: '#root', attrs: {}, children: [] };
+    var stack = [root];
+    var re = /<!--[\s\S]*?-->|<\/([a-zA-Z][\w-]*)\s*>|<([a-zA-Z][\w-]*)((?:\s+[^\s=\/>]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+))?)*)\s*(\/?)>/g;
+    var last = 0, m;
+    while ((m = re.exec(src))) {
+      if (m.index > last) {
+        var txt = src.slice(last, m.index);
+        if (txt) stack[stack.length - 1].children.push({ text: decodeEnt(txt) });
+      }
+      last = re.lastIndex;
+      if (m[0].slice(0, 4) === '<!--') continue;
+      if (m[1]) { /* 닫는 태그 — 같은 이름을 찾을 때까지 pop */
+        var closing = m[1].toLowerCase();
+        for (var j = stack.length - 1; j > 0; j--) {
+          if (stack[j].tag.toLowerCase() === closing) { stack.length = j; break; }
+        }
+      } else {
+        var attrs = {}, ar = /([^\s=\/>]+)(?:\s*=\s*("([^"]*)"|'([^']*)'|([^\s>]+)))?/g, am;
+        while ((am = ar.exec(m[3]))) {
+          attrs[am[1]] = am[3] != null ? decodeEnt(am[3]) : am[4] != null ? decodeEnt(am[4]) : am[5] != null ? decodeEnt(am[5]) : '';
+        }
+        var node = { tag: m[2], attrs: attrs, children: [] };
+        stack[stack.length - 1].children.push(node);
+        if (!m[4] && !VOID[m[2].toLowerCase()]) stack.push(node);
+      }
+    }
+    if (last < src.length) {
+      var tail = src.slice(last);
+      if (tail) stack[stack.length - 1].children.push({ text: decodeEnt(tail) });
+    }
+    return root;
+  }
+
+  /* ── 표현식 평가 ({{ }} 내부) — 스코프 체인은 프로토타입 체인으로 ── */
+  var fnCache = {};
+  function evalExpr(expr, scope) {
+    var f = fnCache[expr] || (fnCache[expr] = new Function('__s', 'with(__s){return(' + expr + ')}'));
+    try { return f(scope); }
+    catch (e) { throw new Error('[dc] 표현식 평가 실패: {{ ' + expr + ' }} — ' + e.message); }
+  }
+  var MUSTACHE = /\{\{\s*([\s\S]+?)\s*\}\}/g;
+  function interpolate(str, scope) {
+    return str.replace(MUSTACHE, function (_, e) {
+      var v = evalExpr(e, scope);
+      return v == null ? '' : String(v);
+    });
+  }
+  function soleExpr(str) {
+    var m = /^\s*\{\{\s*([\s\S]+?)\s*\}\}\s*$/.exec(str);
+    return m && m[1];
+  }
+
+  /* ── style-hover → 생성 클래스 (인라인 style은 :hover 불가) ── */
+  var hoverMap = {}, hoverSeq = 0, hoverStyleEl = null;
+  function hoverClass(css) {
+    if (hoverMap[css]) return hoverMap[css];
+    var cls = 'dc-hv' + (++hoverSeq);
+    hoverMap[css] = cls;
+    if (!hoverStyleEl) {
+      hoverStyleEl = document.createElement('style');
+      document.head.appendChild(hoverStyleEl);
+    }
+    hoverStyleEl.textContent += '.' + cls + ':hover{' + css + '}\n';
+    return cls;
+  }
+
+  /* ── 트리 → DOM (out 배열에 push) ── */
+  function build(node, scope, svgCtx, out) {
+    if (node.text !== undefined) {
+      out.push(document.createTextNode(node.text.indexOf('{{') >= 0 ? interpolate(node.text, scope) : node.text));
+      return;
+    }
+    var tag = node.tag.toLowerCase();
+    if (tag === 'sc-for') {
+      var list = evalExpr(soleExpr(node.attrs.list || '') || 'null', scope) || [];
+      var as = node.attrs.as || 'item';
+      for (var i = 0; i < list.length; i++) {
+        var s = Object.create(scope);
+        s[as] = list[i];
+        s[as + 'Index'] = i;
+        for (var c = 0; c < node.children.length; c++) build(node.children[c], s, svgCtx, out);
+      }
+      return;
+    }
+    if (tag === 'sc-if') {
+      if (evalExpr(soleExpr(node.attrs.value || '') || 'false', scope)) {
+        for (var c2 = 0; c2 < node.children.length; c2++) build(node.children[c2], scope, svgCtx, out);
+      }
+      return;
+    }
+    if (tag.slice(0, 3) === 'sc-') {
+      throw new Error('[dc] 미지원 DSL 태그: <' + node.tag + '> — support.js 서브셋(sc-for·sc-if)에 없음. 렌더러 확장 필요.');
+    }
+    var isSvg = svgCtx || tag === 'svg';
+    var el = isSvg ? document.createElementNS(SVG_NS, node.tag) : document.createElement(tag);
+    var events = null;
+    for (var name in node.attrs) {
+      var raw = node.attrs[name], lname = name.toLowerCase();
+      if (lname.indexOf('hint-') === 0) continue;
+      if (/^on[a-z]/.test(lname) && soleExpr(raw)) {
+        var fn = evalExpr(soleExpr(raw), scope);
+        if (typeof fn === 'function') { el[lname] = fn; (events = events || {})[lname] = fn; }
+        continue;
+      }
+      if (lname === 'style-hover') {
+        el.classList.add(hoverClass(raw.indexOf('{{') >= 0 ? interpolate(raw, scope) : raw));
+        continue;
+      }
+      el.setAttribute(name, raw.indexOf('{{') >= 0 ? interpolate(raw, scope) : raw);
+    }
+    if (events) el.__dcEvents = events;
+    var kids = [];
+    for (var k = 0; k < node.children.length; k++) build(node.children[k], scope, isSvg, kids);
+    for (var k2 = 0; k2 < kids.length; k2++) el.appendChild(kids[k2]);
+    out.push(el);
+  }
+
+  /* ── 모프 (in-place 패치) — 전체 교체 대신 속성/텍스트만 갱신해
+        CSS transition(게이지 채움·플로우 노드 점등 등)이 살아있게 한다 ── */
+  function morph(live, fresh) {
+    if (live.nodeType !== fresh.nodeType || (live.nodeType === 1 && live.nodeName !== fresh.nodeName)) {
+      live.replaceWith(fresh);
+      return;
+    }
+    if (live.nodeType === 3) {
+      if (live.nodeValue !== fresh.nodeValue) live.nodeValue = fresh.nodeValue;
+      return;
+    }
+    var i, a;
+    for (i = live.attributes.length - 1; i >= 0; i--) {
+      a = live.attributes[i];
+      if (!fresh.hasAttribute(a.name)) live.removeAttribute(a.name);
+    }
+    for (i = 0; i < fresh.attributes.length; i++) {
+      a = fresh.attributes[i];
+      if (live.getAttribute(a.name) !== a.value) live.setAttribute(a.name, a.value);
+    }
+    var oe = live.__dcEvents || {}, ne = fresh.__dcEvents || {};
+    for (var k1 in oe) if (!(k1 in ne)) live[k1] = null;
+    for (var k2 in ne) live[k2] = ne[k2];
+    live.__dcEvents = fresh.__dcEvents;
+    var la = [].slice.call(live.childNodes), fa = [].slice.call(fresh.childNodes);
+    for (i = 0; i < fa.length; i++) {
+      if (i < la.length) morph(la[i], fa[i]);
+      else live.appendChild(fa[i]);
+    }
+    for (i = la.length - 1; i >= fa.length; i--) live.removeChild(la[i]);
+  }
+
+  /* ── DCLogic 베이스 ── */
+  function DCLogic(props) { this.props = props || {}; }
+  DCLogic.prototype.setState = function (partial) {
+    if (!this.state) this.state = {};
+    Object.assign(this.state, partial);
+    if (this.__dcRender) this.__dcRender();
+  };
+
+  function fail(e) {
+    console.error(e);
+    var box = document.createElement('div');
+    box.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#ba1a1a;color:#fff;font:600 13px/1.5 monospace;padding:10px 16px;white-space:pre-wrap';
+    box.textContent = String(e && e.message || e);
+    document.body.appendChild(box);
+    throw e;
+  }
+
+  function start(tplSrc, logicScript, anchorEl) {
+    /* helmet → head (번들 출력엔 helmet이 이미 head에 있어 여기 안 옴) */
+    var hm = /<helmet>([\s\S]*?)<\/helmet>/.exec(tplSrc);
+    if (hm) {
+      tplSrc = tplSrc.replace(hm[0], '');
+      var tmp = document.createElement('div');
+      tmp.innerHTML = hm[1];
+      while (tmp.firstChild) document.head.appendChild(tmp.firstChild);
+    }
+
+    /* props 기본값: data-props JSON의 각 키.default ($preview 제외) */
+    var props = {};
+    if (logicScript) {
+      var pj = logicScript.getAttribute('data-props');
+      if (pj) {
+        var spec = JSON.parse(pj);
+        for (var k in spec) if (k !== '$preview' && spec[k] && 'default' in spec[k]) props[k] = spec[k].default;
+      }
+    }
+
+    var Component = DCLogic;
+    if (logicScript && logicScript.textContent.trim()) {
+      Component = new Function('DCLogic', logicScript.textContent + ';return Component;')(DCLogic);
+    }
+    var inst = new Component(props);
+    if (!inst.state) inst.state = {};
+
+    var ast = parseTpl(tplSrc);
+    var container = document.createElement('div');
+    container.setAttribute('data-dc-root', '');
+    var mounted = false;
+
+    function render() {
+      var vals = inst.renderVals ? inst.renderVals() : {};
+      var out = [];
+      for (var i = 0; i < ast.children.length; i++) build(ast.children[i], vals, false, out);
+      if (!mounted) {
+        for (var j = 0; j < out.length; j++) container.appendChild(out[j]);
+      } else {
+        var freshBox = document.createElement('div');
+        for (var j2 = 0; j2 < out.length; j2++) freshBox.appendChild(out[j2]);
+        var la = [].slice.call(container.childNodes), fa = [].slice.call(freshBox.childNodes);
+        for (var x = 0; x < fa.length; x++) {
+          if (x < la.length) morph(la[x], fa[x]);
+          else container.appendChild(fa[x]);
+        }
+        for (var y = la.length - 1; y >= fa.length; y--) container.removeChild(la[y]);
+      }
+    }
+
+    inst.__dcRender = function () { try { render(); } catch (e) { fail(e); } };
+    render();
+    anchorEl.replaceWith(container);
+    mounted = true;
+    if (inst.componentDidMount) inst.componentDidMount();
+    if (inst.componentWillUnmount) {
+      window.addEventListener('pagehide', function () { inst.componentWillUnmount(); });
+    }
+  }
+
+  function boot() {
+    try {
+      var tplScript = document.querySelector('script[type="text/x-dc-template"]');
+      var logicScript = document.querySelector('script[type="text/x-dc"]');
+      if (tplScript) { start(tplScript.textContent, logicScript, tplScript); return; }
+      var xdc = document.querySelector('x-dc');
+      if (!xdc) return;
+      fetch(location.href)
+        .then(function (r) { return r.text(); })
+        .then(function (txt) {
+          var mm = /<x-dc>([\s\S]*?)<\/x-dc>/.exec(txt);
+          start(mm ? mm[1] : xdc.innerHTML, logicScript, xdc);
+        })
+        .catch(function () {
+          console.warn('[dc] 원문 fetch 실패(file:// 직접 오픈?) — DOM 폴백. <table> 내 sc-for·SVG 속성이 깨질 수 있음. dc-compile 번들 또는 http 서빙 권장.');
+          try { start(xdc.innerHTML, logicScript, xdc); } catch (e) { fail(e); }
+        });
+    } catch (e) { fail(e); }
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
 })();
 
-});
 </script>
-</head>
-<body class="creative-theme">
-<div class="wrap">
-
-  <header class="hero">
-    <div class="crest"><span class="mi">database</span></div>
-    <div>
-      <h1>데이터 마이그레이션 · 이카운트 탈피 역사</h1>
-      <span class="tag"><span class="mi">school</span>교육 워크스루 · Tier B · plan 0059 · 0078 · 0088 · 0029 · 0099 · 0108 · 0046</span>
-      <p class="lead">시스템을 인수하면 가장 먼저 흔들리는 질문 — <b>"이 재고/잔액의 출처가 뭐냐?"</b>의 풀버전입니다. 자사의 데이터는
-        한때 <b>6~7곳에 흩어진 다중 진실</b>(이카운트·종이발주·카톡·수기노트·사진·엑셀)이었어요. 그걸 <b>원점 기록 → 기초 시드 →
-        파싱·오염조사 → 은행 대사 → cutover</b>로 하나씩 단일 진실로 옮긴 이야기, 그리고 이카운트를 <b>어떻게 졸업시킬지</b>입니다.</p>
-    </div>
-  </header>
-
-  <div class="wt-toolbar">
-    <span class="wt-hint"><span class="mi">layers</span><b>Tier B</b> — 흐름도 + 단계별 메커니즘 + 결정 표. "숫자의 출처와 신뢰도"를 읽는 법.</span>
-    <a class="wt-btn" href="워크스루.html"><span class="mi">grid_view</span>워크스루 허브</a>
-  </div>
-
-  <!-- 1. 큰 그림 -->
-  <section>
-    <div class="sec-head"><span class="no">1</span><h2>혼돈에서 단일 진실로 — 다섯 단계</h2><span class="sub">원점 → 시드 → 검증 → 대사 → cutover</span></div>
-    <div class="esflow">
-      <div class="es-stage">
-        <span class="lbl">① 원점</span>
-        <div class="es-card store">
-          <span class="ic"><span class="mi">flag</span></span>
-          <h4>as-is 박제</h4>
-          <p>다중SSoT 6~7곳 · 거버넌스 0</p>
-          <span class="pill">plan 0059</span>
-        </div>
-      </div>
-      <div class="es-conn"><span class="tag">기준점</span><span class="line"></span></div>
-      <div class="es-stage">
-        <span class="lbl">② 시드</span>
-        <div class="es-card view">
-          <span class="ic"><span class="mi">download_for_offline</span></span>
-          <h4>기초재고 OPENING</h4>
-          <p>실사 폐기 · 이카운트 스냅샷</p>
-          <span class="pill">plan 0078</span>
-        </div>
-      </div>
-      <div class="es-conn"><span class="tag">12개월</span><span class="line"></span></div>
-      <div class="es-stage">
-        <span class="lbl">③ 검증</span>
-        <div class="es-gate">
-          <span class="ic"><span class="mi">biotech</span></span>
-          <code>ecount_recon</code>
-          <small>파싱·오염조사 · 도메인별 신뢰등급 A~D</small>
-        </div>
-      </div>
-      <div class="es-conn"><span class="tag">외부 진실</span><span class="line"></span></div>
-      <div class="es-stage">
-        <span class="lbl">④ 대사</span>
-        <div class="es-card view">
-          <span class="ic"><span class="mi">account_balance</span></span>
-          <h4>은행 백본</h4>
-          <p>주거래은행 ↔ 분개장 98.4%</p>
-          <span class="pill">plan 0029</span>
-        </div>
-      </div>
-      <div class="es-conn"><span class="tag">기준선</span><span class="line"></span></div>
-      <div class="es-stage">
-        <span class="lbl">⑤ cutover</span>
-        <div class="es-card ui">
-          <span class="ic"><span class="mi">sync_alt</span></span>
-          <h4>운영 정합 + 탈피</h4>
-          <p>OPENING/ADJUST · 이카운트 졸업</p>
-          <span class="pill">0108 · 0046</span>
-        </div>
-      </div>
-    </div>
-    <p class="cap"><b>핵심:</b> 과거 데이터는 <b>두 트랙</b>으로 다룹니다 — <b>과거 = 집계 재구성</b>(분석·근본원인 증거),
-      <b>미래 = 관계회계 신축</b>(거래 출생 시 FK 강제). 과거를 라이브 DB에 그대로 부어넣지 <b>않는</b> 게 핵심 결정이에요 —
-      이카운트의 오염을 함께 들이지 않으려고.</p>
-  </section>
-
-  <!-- 2. 원점 -->
-  <section>
-    <div class="sec-head"><span class="no">2</span><h2>어디서 출발했나 — as-is 원점</h2><span class="sub">plan 0059 · 디지털전환 이전 박제</span></div>
-    <p class="cap" style="margin-top:0">전환 전 자사(18명)의 데이터는 <b>한 곳에 있지 않았습니다.</b> "왜 이 시스템이 필요했나"의 증거라 원점을 박제했어요.</p>
-    <div class="events">
-      <div class="evt"><span class="sign m">!</span><h3>다중 SSoT 6~7곳</h3><p>진실이 이카운트 + 종이발주 + 카톡 + 수기노트 + 사진 + 엑셀에 분산. 같은 사실이 여러 곳에 따로.</p></div>
-      <div class="evt"><span class="sign m">!</span><h3>데이터 거버넌스 0</h3><p>생산일지 <b>식별 key가 없어</b> 과거 마이그 자체가 불가능했음. "추적성 0"이 출발점.</p></div>
-      <div class="evt"><span class="sign m">!</span><h3>1인 집중</h3><p>생산지시서를 관리이사 1명만, 건당 ~40분. 발주 처리 2시간/일. 병목이 사람에 묶임.</p></div>
-      <div class="evt"><span class="sign m">!</span><h3>재고 미추적</h3><p>원료 입고량 대비 <b>장부·실물 불일치가 잦아 정확한 재고 파악이 어려운 상태</b>. 실사는 3~4개월마다 매번 어긋남.</p></div>
-    </div>
-    <div class="note info"><span class="mi">history_edu</span><div>이카운트는 당시 <b>SSoT</b>였지만 주문서+재고관리만 활성이고 나머지 ~80% 기능은 죽은 비용 — 표준원가만·부자재 자동화 없음·모바일 미지원(현장 입력 마찰)·분할납기 미지원. 이 한계 목록이 그대로 <b>현 시스템이 채운 기능들</b>(발주보드·생산체인·이벤트소싱 재고장·챗봇)의 이유가 됩니다.</div></div>
-  </section>
-
-  <!-- 3. 기초재고 시드 -->
-  <section>
-    <div class="sec-head"><span class="no">3</span><h2>재고의 출발점 — 실사를 버리고 스냅샷으로</h2><span class="sub">plan 0078 · OPENING 사건</span></div>
-    <p class="cap" style="margin-top:0">원래 설계는 "현장 실사로 기초재고를 잡자"였는데, 확인해보니 <b>이카운트가 전 품목 재고를 실제로 유지</b>하고 있었어요(샘플 95% 매칭).
-      그래서 실사를 폐기하고 <b>이카운트 06/17 재고 스냅샷</b>을 기초로 시드했습니다.</p>
-    <div class="run">
-      <div class="node"><div class="ev">기존 movement 삭제</div><div class="dl m">6월 2주치</div></div>
-      <span class="arrow">→</span>
-      <div class="node"><div class="ev">OPENING 발행</div><div class="dl p">227종 +</div></div>
-      <span class="arrow">→</span>
-      <div class="node"><div class="ev">06/18+ 정상 누적</div><div class="dl">이벤트 소싱</div></div>
-    </div>
-    <p class="cap"><code>source_module='ecount_opening'</code> · <code>movement_date=2026-06-17</code> 단일 기준. 검증 = prod 재고장
-      (OPENING SUM) ≡ 이카운트 06/17 재고 통과(샘플 20 + 음수 5).</p>
-    <div class="note"><span class="mi">priority_high</span><div><b>이중차감 방지가 설계의 핵심.</b> 웹 6월 데이터가 이미 들어있어서, <b>06/17 이전 생산일지를 재파생하면 안 됩니다</b>(같은 소모를 두 번 빼게 됨).
-      음수재고 5종은 <b>음수 OPENING 그대로</b>, orphan 11종(비용/재판매)은 제외 — "데이터대로 + 보정 플래그". 단, 이 기초는 <b>provisional</b>(이카운트 오염을 함께 들임)이라 첫 운영 사이클에서 보정합니다.
-      그래서 이후 조정은 OPENING이 아니라 <b>ADJUST 사건</b>(이중 시드 금지).</div></div>
-  </section>
-
-  <!-- 4. 파싱·오염조사 -->
-  <section>
-    <div class="sec-head"><span class="no">4</span><h2>들이기 전에 의심한다 — 파싱·오염조사</h2><span class="sub">plan 0088 · 12개월 ETL · 신뢰등급</span></div>
-    <p class="cap" style="margin-top:0">이카운트 12개월치를 라인 단위로 파싱하고 <b>교차검증</b>했어요. "데이터가 깨끗할 것"이라 가정하지 않고
-      도메인마다 <b>신뢰 등급</b>을 매겨, 믿을 건 앵커로 쓰고 못 믿을 건 재구성하기로.</p>
-    <table class="matrix">
-      <thead><tr><th>도메인</th><th>등급</th><th>판정</th></tr></thead>
-      <tbody>
-        <tr><th>자금(주거래 보통예금 GL)</th><td class="y">A</td><td>18개월 분개장 ≡ 은행 <b>원 단위 일치</b> → 자금 앵커</td></tr>
-        <tr><th>거래처 · 재고수불</th><td class="y">A</td><td>거래처 973/982(99%)·이름중복0 · 재고 스냅샷 198/198 일치</td></tr>
-        <tr><th>품목(제품)</th><td>A−</td><td>1,178/1,194(98.6%) · orphan 일부 등록 큐</td></tr>
-        <tr><th>매입</th><td>B</td><td>FK 99.8% · 0원 단가 55라인(단가 미입력 보정 대상)</td></tr>
-        <tr><th>매출</th><td class="m">C+</td><td><b>GL 결산기 일괄기장</b>(실시간 X) → 매출 SSoT = 판매현황(GL 아님)</td></tr>
-        <tr><th>AR/AP 잔액</th><td class="m">D</td><td><b>GL 음수 붕괴</b>(대규모 음수대) → <b>발생−수금/지급 재구성</b> 필수</td></tr>
-      </tbody>
-    </table>
-    <div class="note info"><span class="mi">bug_report</span><div><b>루트 오염 = 푸터행 흡수(C8).</b> 파서가 월소계·총합계 행(판매 20·구매 19)을 데이터로 빨아들여 금액 정합이 깨졌었어요 —
-      푸터 필터 추가로 종결(품목코드 공란 22→0도 동반 해소). 교훈: <b>"숫자가 안 맞으면 데이터가 아니라 파서를 먼저 의심"</b>. 0088은 아직 <b>proposed</b>(분석 완료, 라이브 적재 게이트 전)입니다.</div></div>
-  </section>
-
-  <!-- 5. 은행 대사 -->
-  <section>
-    <div class="sec-head"><span class="no">5</span><h2>외부 진실로 맞춘다 — 은행 백본</h2><span class="sub">plan 0029 · 주거래은행 ↔ 분개장</span></div>
-    <p class="cap" style="margin-top:0">시스템 내부 숫자끼리만 맞추면 같이 틀릴 수 있어요. <b>통장(외부 진실)</b>과 대사해야 진짜 신뢰가 생깁니다.
-      주거래은행 입금내역을 분개장과 맞춰 각 은행 거래에 <b>상대 계정을 자동 부착</b>(= 회계화)했어요.</p>
-    <div class="calc">
-      <div class="formula"><div class="eq">매칭 <span class="op">=</span> 3,414 / 3,470 <span class="op">=</span> <span class="res">98.4%</span></div><div class="desc">3패스(날짜+방향+금액 → ±3일 → ±35일). 잔차 56 = 타이밍40 + 금융/계열16 + 어음할인5(전부 설명됨).</div></div>
-      <div class="formula"><div class="eq">거래처 FK <span class="op">=</span> <span class="res">99%</span> · 死데이터 <span class="op">=</span> <span class="res">0건</span></div><div class="desc">은행 거래처코드 99%가 거래처 마스터(973)에 매칭. 설명 안 되는 행 0.</div></div>
-      <div class="formula"><div class="eq">영업흐름 검증 <span class="op">:</span> 은행실측 <span class="op">≈</span> <span class="res">독립 추정</span></div><div class="desc">수금·매입지급의 은행 실측이 파싱 기반 독립 추정과 정합 — 두 독립 경로가 같은 그림(구체 금액 비공개).</div></div>
-    </div>
-    <p class="cap"><b>매칭 경로 3단:</b> ① <b>운영 SSoT 우선</b>(매출·매입·발주 FK, ~80%) → ② 룰/별칭(적요 발주번호·거래처명, ~18%) → ③ 수동 확정(~2%).
-      정본 스크립트 <code>Data_Parsing/bank_journal_recon.py</code> · 적재 <code>pp_bank_movements</code>.</p>
-  </section>
-
-  <!-- 6. cutover + 탈피 -->
-  <section>
-    <div class="sec-head"><span class="no">6</span><h2>운영 기준선 + 이카운트 졸업</h2><span class="sub">plan 0108 · 0099 · 0046 (대부분 proposed)</span></div>
-    <table class="matrix">
-      <thead><tr><th>건</th><th>방식</th><th>상태</th></tr></thead>
-      <tbody>
-        <tr><th>재고 cutover (0108)</th><td>이카운트 재고현황 baseline · dev=OPENING 신규 / <b>prod=ADJUST</b>(기존 227과 차이만)</td><td>proposed · dev 검증 완료</td></tr>
-        <tr><th>생산·발주 마이그 (0099)</th><td>16개월 재구성(코드 회수 99.7%) · <b>라이브 미적재·분석 CSV 유지</b></td><td>proposed · P0~P2 완료</td></tr>
-        <tr><th>이카운트 탈피 (0046)</th><td>3단계 — 과거 export → 입력 최소화 → 해지조건 충족 시 해지</td><td class="m">proposed · 미착수</td></tr>
-      </tbody>
-    </table>
-    <div class="note"><span class="mi">link_off</span><div><b>아직 이카운트에 남은 의존 3종</b>(0046 §1): ① 세금계산서 발행·부가세 신고(세무 전담) · ② 과거 판매/구매/채권채무 기록(역이입 경로 없음) ·
-      ③ 생산실적 TSV 업로드(이카운트 장부 유지용). <b>최종 목적 = 병존 제거</b> — 웹+이카운트 동시 사용은 비표준 중복이고, 표준은 "회계SW 1개 + 세무사"입니다.
-      근본 해결책은 <b>웹 단가엔진(0040)</b>(복잡 단가 → 이카운트 단가입력 실패 → 홈택스 수동발행 이중작업의 근원을 끊음) + 세금계산서 웹발행(ASP).</div></div>
-  </section>
-
-  <!-- 7. 결정과 트레이드오프 -->
-  <section>
-    <div class="sec-head"><span class="no">7</span><h2>결정과 트레이드오프</h2><span class="sub">무엇을 진실로 믿을지의 선택</span></div>
-    <table class="matrix">
-      <thead><tr><th>쟁점</th><th class="y">채택 (SSoT)</th><th class="m">기각</th><th>근거</th></tr></thead>
-      <tbody>
-        <tr><th>자금 앵커</th><td>분개장 보통예금</td><td>자금일보(비정형)</td><td>분개장은 정형·전표·거래처 有 · 18개월 은행과 원단위 일치. 자금일보는 보조(비고·현금시재).</td></tr>
-        <tr><th>매출 SSoT</th><td>판매현황(판매 모듈)</td><td>매출 GL</td><td>이카운트 매출 GL은 결산기 일괄기장이라 ~90% 부재 → GL 조인 불가능.</td></tr>
-        <tr><th>AR/AP 잔액</th><td>발생−수금/지급 <b>재구성</b></td><td>이카운트 잔액 리포트</td><td>발생기장 누락으로 GL 잔액이 음수 붕괴(대규모 음수대). 거래처별 리포트는 윤곽 참고만.</td></tr>
-        <tr><th>재고 기초</th><td>이카운트 스냅샷 import</td><td>현장 실사</td><td>이카운트가 실재고 유지(95% 매칭) → 실사 공수 0·즉시 양수 기초. 오염은 운영 사이클 보정.</td></tr>
-        <tr><th>과거 생산일지</th><td>분석 CSV(라이브 미적재)</td><td>라이브 DB 재적재</td><td>구양식 밀도 부재(13개월)·추정 금지. 목적=분석·근본원인 증거이지 운영 입력 아님.</td></tr>
-        <tr><th>이카운트 처분</th><td>병존 제거(3단계 졸업)</td><td>웹+이카운트 영구 병행</td><td>이중 입력=비표준·오염원. 표준=회계SW 1개+세무사. 단계적 해지(데이터 보존·세무사 확인 게이트).</td></tr>
-        <tr><th>0원 단가</th><td>단가 미입력(보정 대상)</td><td>무상 사급으로 간주</td><td>추정 금지(0072 §6) — 사용자 확정. 규모=매입 55라인(+1.1%).</td></tr>
-      </tbody>
-    </table>
-  </section>
-
-  <!-- 8. 주의 + 다음 -->
-  <section>
-    <div class="sec-head"><span class="no">8</span><h2>운영 주의 + 다음에 볼 것</h2><span class="sub">데이터 출처를 다룰 때</span></div>
-    <div class="events">
-      <div class="evt"><span class="sign z">1</span><h3>OPENING은 한 번만</h3><p>기초 시드는 06/17 단일. 이후 차이는 <b>ADJUST</b>로. OPENING 재발행은 이중 시드.</p></div>
-      <div class="evt"><span class="sign z">2</span><h3>06/17 이전 재파생 금지</h3><p>웹 6월분이 이미 포함 — 그 이전 생산일지를 다시 분해하면 같은 소모 이중차감.</p></div>
-      <div class="evt"><span class="sign z">3</span><h3>오염 도메인은 재구성</h3><p>매출(판매현황)·AR/AP(발생−수금)는 GL이 아니라 재구성이 정본. 이카운트 잔액 리포트를 그대로 믿지 말 것.</p></div>
-      <div class="evt"><span class="sign z">4</span><h3>과거는 안 붓는다</h3><p>분석 CSV는 근본원인·원가율 용도. 라이브는 신규부터 — 추정으로 과거를 채우지 않음.</p></div>
-      <div class="evt"><span class="sign z">5</span><h3>숫자 안 맞으면 파서부터</h3><p>정합 깨짐의 루트가 푸터오염(C8)이었듯, 데이터 의심 전에 파서를 먼저.</p></div>
-      <div class="evt"><span class="sign z">6</span><h3>다음 워크스루</h3><p>이 데이터가 흘러가는 곳 — <b>자금·채권</b>(앵커·재구성)과 <b>재고 이벤트소싱</b>(OPENING 사건). 출처 신뢰는 <b>오버뷰 §4</b>로.</p></div>
-    </div>
-  </section>
-
-  <div class="foot">
-    데이터 마이그레이션·이카운트 탈피 · 교육 워크스루 · 정본 스크립트 <code>Data_Parsing/ecount_recon.py</code> · <code>bank_journal_recon.py</code> ·
-    테이블 <code>pp_stock_movements</code>(OPENING) · <code>pp_bank_movements</code> · 설계 plan 0059 · 0078 · 0088 · 0029 · 0099 · 0108 · 0046 · 문서 체계 plan workspace/0007
-  </div>
-
-</div>
 </body>
 </html>
-
