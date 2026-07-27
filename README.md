@@ -52,7 +52,7 @@ adopted upstream by Arize, and a self-hosted AI stack ([agent-memory-llmops](htt
 
 ## ① 실제 시스템 — 제조 웹 ERP (프로덕션 성과)
 
-관리자 주요 화면은 **맨 위 슬라이드쇼**(더미 데이터 · 약 2초 간격 자동 재생)에 담았습니다 — 한 화면씩 크게 보려면 **[인터랙티브 슬라이드쇼](https://moongioh.github.io/manufacturing-ax-portfolio/slides.html)**.
+관리자 주요 화면은 **맨 위 슬라이드쇼**(더미 데이터 · 약 2초 간격 자동 재생)에 담았습니다 — 한 화면씩 크게 보려면 **[시스템 오버뷰](https://moongioh.github.io/manufacturing-ax-portfolio/walkthroughs/%EC%9B%8C%ED%81%AC%EC%8A%A4%EB%A3%A8-%EC%8B%9C%EC%8A%A4%ED%85%9C%EC%98%A4%EB%B2%84%EB%B7%B0.html)**(화면 13장 + 전체 구조 지도).
 
 **아키텍처 한 줄 원리 — 「모든 변화는 사건(event)으로 기록하고, 숫자는 그 사건들에서 파생한다」**
 재고도·매출도·자금도 저장된 "현재값"이 아니라 **이력의 합(SUM)**입니다. 수주 → 생산(APS) → 재고(SSoT) → 파생 회계 → 데이터 분석이 하나의 게이트(`record_movement`)로 모이고, 온톨로지 Sieve가 적재 전 정합성 위반을 걸러냅니다.
@@ -124,4 +124,4 @@ flowchart LR
 
 ## 라이브 데모
 
-화면은 상단 GIF와 [슬라이드쇼](https://moongioh.github.io/manufacturing-ax-portfolio/slides.html)로 볼 수 있습니다. 동작하는 라이브 데모(백엔드 없이 MSW mock·더미 데이터)는 **요청 시 링크로 공유**합니다 — awsgioh@gmail.com
+화면은 상단 GIF와 [시스템 오버뷰](https://moongioh.github.io/manufacturing-ax-portfolio/walkthroughs/%EC%9B%8C%ED%81%AC%EC%8A%A4%EB%A3%A8-%EC%8B%9C%EC%8A%A4%ED%85%9C%EC%98%A4%EB%B2%84%EB%B7%B0.html)로 볼 수 있습니다. 동작하는 라이브 데모(백엔드 없이 MSW mock·더미 데이터)는 **요청 시 링크로 공유**합니다 — awsgioh@gmail.com
