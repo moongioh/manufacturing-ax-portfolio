@@ -1,20 +1,28 @@
 # 문기오 — 제조 현장을 데이터 구조로 바꾸고 그 위에 AI를 얹는 엔지니어
 
-> 자체 소프트웨어가 0이고 업무 데이터가 6\~7곳에 흩어져 있던 **18인 제조·화학 중소기업**에, 웹 ERP를
-> **1인으로 설계·구축**해 실운영에 안착시켰습니다 (재직 2026.04\~2026.07 · 입사 4주 차 첫 실가동 →
-> 약 2개월에 걸쳐 14개 업무 도메인 확장). **데이터 정합(DX)을 먼저 세우고 그 위에 자동화·AI(AX)를 얹는**
-> 순서로 일합니다 — 정형 백본 위에 온톨로지 검증 레이어, 비정형 16GB를 다루는 시멘틱 문서허브(RAG),
-> 카톡 문의 응답 에이전트까지.
+## 🖥 [포트폴리오 홈 바로가기 →](https://moongioh.github.io/manufacturing-ax-portfolio/)
 
-**In English** — Solo design, build and operation of a cloud full-stack ERP (FastAPI · React · PostgreSQL ·
+**프로젝트 전체 4종**(제조 웹 ERP · harness-scope · LLM 게이트웨이 · 개인 지식그래프)과 **이력서**를 한 곳에 모았습니다 — 검토 시간에 맞춰 **5분 · 15분 · 전체** 코스로 안내합니다.
+
+[![제조 ERP 데모 — 주요 화면 슬라이드쇼](images/screens-slideshow.gif)](https://moongioh.github.io/manufacturing-ax-portfolio/)
+
+자체 소프트웨어가 0이고 데이터가 6\~7곳에 흩어져 있던 **18인 제조·화학 중소기업**에 웹 ERP를 **1인으로 설계·구축**해
+실운영에 안착시켰습니다 — 입사 **4주 차** 첫 실가동 → 약 2개월간 **14개 업무 도메인** 확장 (재직 2026.04\~2026.07).
+**데이터 정합(DX)을 먼저 세우고 그 위에 자동화·AI(AX)를 얹는** 순서로 일합니다.
+
+📄 [이력서](https://moongioh.github.io/manufacturing-ax-portfolio/resume.html) · ⚙ [harness-scope](https://github.com/moongioh/harness-scope) · [agent-memory-llmops](https://github.com/moongioh/agent-memory-llmops) · 📧 awsgioh@gmail.com
+
+<details>
+<summary><b>In English</b> — solo-built manufacturing ERP, AX layered on DX</summary>
+
+Solo design, build and operation of a cloud full-stack ERP (FastAPI · React · PostgreSQL ·
 Cloud Run) for an 18-person manufacturing/chemical SME in Korea — first production use four weeks in,
 expanded to 14 business domains over ~2 months. I build **DX first** (one event-sourced backbone with
 domain-ontology validation), then **layer AX on top** (a semantic document hub over 16GB, LLM intake agents).
 Also: open-source AI-agent tooling ([harness-scope](https://github.com/moongioh/harness-scope)) whose fix was
 adopted upstream by Arize, and a self-hosted AI stack ([agent-memory-llmops](https://github.com/moongioh/agent-memory-llmops)).
 
-🖥 **[포트폴리오 홈](https://moongioh.github.io/manufacturing-ax-portfolio/)** · 📄 **[이력서](https://moongioh.github.io/manufacturing-ax-portfolio/resume.html)** · 📧 awsgioh@gmail.com
-⚙ **OSS · 개인 R&D:** [harness-scope](https://github.com/moongioh/harness-scope) (에이전트 거버넌스 관측 · Apache-2.0) · [agent-memory-llmops](https://github.com/moongioh/agent-memory-llmops) (자가호스팅 AI 스택 아키텍처 쇼케이스)
+</details>
 
 ---
 
@@ -44,9 +52,7 @@ adopted upstream by Arize, and a self-hosted AI stack ([agent-memory-llmops](htt
 
 ## ① 실제 시스템 — 제조 웹 ERP (프로덕션 성과)
 
-관리자 주요 화면을 더미 데이터로 시연합니다 (약 2초 간격 자동 재생 · 한 화면씩 크게: **[인터랙티브 슬라이드쇼](https://moongioh.github.io/manufacturing-ax-portfolio/slides.html)**).
-
-![제조 ERP 데모 — 주요 화면 슬라이드쇼](images/screens-slideshow.gif)
+관리자 주요 화면은 **맨 위 슬라이드쇼**(더미 데이터 · 약 2초 간격 자동 재생)에 담았습니다 — 한 화면씩 크게 보려면 **[인터랙티브 슬라이드쇼](https://moongioh.github.io/manufacturing-ax-portfolio/slides.html)**.
 
 **아키텍처 한 줄 원리 — 「모든 변화는 사건(event)으로 기록하고, 숫자는 그 사건들에서 파생한다」**
 재고도·매출도·자금도 저장된 "현재값"이 아니라 **이력의 합(SUM)**입니다. 수주 → 생산(APS) → 재고(SSoT) → 파생 회계 → 데이터 분석이 하나의 게이트(`record_movement`)로 모이고, 온톨로지 Sieve가 적재 전 정합성 위반을 걸러냅니다.
