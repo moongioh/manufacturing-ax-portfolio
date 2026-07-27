@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>워크스루 — 문서허브 (시멘틱 검색·RAG)</title>
+<title>워크스루 — 문서허브 (파싱·검색·초안 생성)</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..600,0..1,0" rel="stylesheet">
 <style>
@@ -128,10 +128,11 @@ svg .mono{font-family:'JetBrains Mono',monospace}
 
     <header style="border-radius:18px;padding:34px 36px;margin-bottom:20px;position:relative;overflow:hidden;background:linear-gradient(120deg,var(--cn-tint) 0%,var(--cn-bg) 70%);border:1px solid var(--cn-line);box-shadow:var(--cn-shadow-1)">
       <div style="position:absolute;inset:0 0 auto 0;height:3px;background:linear-gradient(90deg,var(--cn-primary),var(--cn-purple),var(--cn-teal))"></div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:600;color:var(--cn-primary-deep);letter-spacing:.04em;margin-bottom:10px">WALKTHROUGH · 비정형 데이터 · 시멘틱 검색</div>
-      <h1 style="margin:0 0 10px;font-size:34px;font-weight:800;letter-spacing:-.025em;line-height:1.25">문서허브 — 비정형 16GB를 검색 가능한 시멘틱 백본으로</h1>
-      <p style="margin:0;max-width:680px;font-size:15px;color:var(--cn-muted)">제조·화학 중소기업 환경의 수년치 비정형 문서(hwp·PDF·Excel)를 정제 → 임베딩 → 하이브리드 검색 → 정본 관리로 잇는
-        <b style="color:var(--cn-ink)">두 번째(비정형) 백본</b>입니다. 정형 온톨로지·ERP 백본과 나란히, 검색·정본·동기화를 시스템이 강제하도록 설계했습니다.</p>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:600;color:var(--cn-primary-deep);letter-spacing:.04em;margin-bottom:10px">WALKTHROUGH · 비정형 데이터 · 문서 생성</div>
+      <h1 style="margin:0 0 10px;font-size:34px;font-weight:800;letter-spacing:-.025em;line-height:1.25">문서허브 — 요청 서류를 초안까지 찍어내는 문서 공장</h1>
+      <p style="margin:0;max-width:680px;font-size:15px;color:var(--cn-muted)">받은 공문·요청서를 올리면 <b style="color:var(--cn-ink)">어떤 서류가 필요한지</b>를 파싱해 뽑아내고,
+        수년치 사내 문서(hwp·PDF·Excel)에서 근거를 찾아와, 기존 양식에 맞춰 <b style="color:var(--cn-ink)">초안까지 만들어 docx로 내보냅니다</b>.
+        그 아래를 받치는 것이 정제 → 임베딩 → 하이브리드 검색 → 정본 관리로 잇는 비정형 백본입니다.</p>
       <div style="display:flex;gap:8px;margin-top:18px;flex-wrap:wrap">
         <span style="font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;background:var(--cn-tint-deep);color:var(--cn-primary-deep)">16GB→2,809문서</span>
         <span style="font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;background:var(--cn-tint-deep);color:var(--cn-primary-deep)">13,759청크·에러 0</span>
@@ -142,10 +143,10 @@ svg .mono{font-family:'JetBrains Mono',monospace}
     <div style="border-radius:12px;border:1px solid var(--cn-line);border-left:4px solid var(--cn-primary);background:var(--cn-card);padding:16px 19px;box-shadow:var(--cn-shadow-1);margin-bottom:44px;display:flex;gap:12px;align-items:flex-start">
       <span class="mi" style="font-size:20px;color:var(--cn-primary);flex:none;margin-top:2px">bolt</span>
       <div style="font-size:13px;line-height:1.75;color:var(--cn-muted)">
-        <b style="color:var(--cn-ink)">TL;DR</b> —
-        <b style="color:var(--cn-ink)">무엇</b>: 비정형 문서를 정제→임베딩→RRF 하이브리드 검색→정본 관리까지 잇는 검색 가능한 시멘틱 백본. ·
-        <b style="color:var(--cn-ink)">왜</b>: 정형 백본과 달리 비정형 문서는 검색·정본·동기화를 시스템이 강제하지 않으면 담당자 교체·수작업 규율 붕괴로 반복해서 무너지는 구조였기 때문. ·
-        <b style="color:var(--cn-ink)">결과</b>: 16GB→7.32GiB·2,809파일로 정제, 13,759청크 pgvector 적재 에러 0건, RRF 3채널 검색 + DB UNIQUE 제약으로 정본 슬롯을 강제합니다.
+        <div style="font-size:11px;font-weight:800;letter-spacing:.06em;color:var(--cn-primary-deep);font-family:'JetBrains Mono',monospace;margin-bottom:7px">TL;DR</div>
+        <div style="margin-bottom:7px"><b style="color:var(--cn-ink)">무엇</b> — 요청 서류 파싱 → 필요 서류 도출 → 근거 문서 회수 → 양식 기반 초안 생성 → docx 내보내기까지 잇는 문서 생성 파이프라인. 그 아래에 비정형 문서를 정제·임베딩·검색·정본 관리하는 백본이 깔려 있습니다.</div>
+        <div style="margin-bottom:7px"><b style="color:var(--cn-ink)">왜</b> — 서류 작성은 "어떤 게 필요한지 파악 → 근거 찾기 → 양식 채우기"가 매번 사람 손을 타는 일이었고, 비정형 문서는 검색·정본을 시스템이 강제하지 않으면 담당자가 바뀌는 순간 다시 무너지는 구조였습니다.</div>
+        <div><b style="color:var(--cn-ink)">결과</b> — 16GB→7.32GiB·2,809파일로 정제, 13,759청크 pgvector 적재 에러 0건, RRF 3채널 검색 + DB UNIQUE 제약으로 정본 슬롯 강제. 작성 케이스는 갭분석 라인업으로 영속화됩니다.</div>
       </div>
     </div>
 
@@ -389,11 +390,11 @@ svg .mono{font-family:'JetBrains Mono',monospace}
     <section id="s6" style="margin-bottom:48px">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
         <div style="width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:#fff;font-size:13px;font-weight:800;background:linear-gradient(135deg,#06B6D4,#0891B2)">6</div>
-        <h2 style="margin:0;font-size:21px;font-weight:800;letter-spacing:-.02em">RAG 작성 지원</h2>
+        <h2 style="margin:0;font-size:21px;font-weight:800;letter-spacing:-.02em">문서 생성 — 요청 서류에서 초안까지</h2>
       </div>
-      <p style="margin:0 0 18px 42px;font-size:12.5px;color:var(--cn-faint)">검색된 근거로 초안을 생성하고, 작성 과정을 영속화합니다.</p>
+      <p style="margin:0 0 18px 42px;font-size:12.5px;color:var(--cn-faint)">이 허브의 최종 출력. 받은 요청서를 넣으면 필요 서류가 목록으로 나오고, 근거를 모아 양식대로 초안이 나옵니다.</p>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-left:42px">
-        <sc-for list="{{ ragCards }}" as="g" hint-placeholder-count="4">
+        <sc-for list="{{ ragCards }}" as="g" hint-placeholder-count="5">
           <div style="background:var(--cn-card);border:1px solid var(--cn-line);border-radius:14px;padding:18px;box-shadow:var(--cn-shadow-1)">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:9px">
               <div style="width:22px;height:22px;border-radius:7px;background:var(--cn-tint);color:var(--cn-primary-deep);font-size:11px;font-weight:800;display:grid;place-items:center;flex:none">{{ g.n }}</div>
@@ -470,7 +471,7 @@ class Component extends DCLogic {
         { href: "#s3", icon: "search", label: "임베딩·검색" },
         { href: "#s4", icon: "verified_user", label: "정본 레지스트리" },
         { href: "#s5", icon: "share", label: "의미지도·증분동기" },
-        { href: "#s6", icon: "auto_awesome", label: "RAG 작성 지원" },
+        { href: "#s6", icon: "auto_awesome", label: "문서 생성" },
         { href: "#s7", icon: "alt_route", label: "결정과 트레이드오프" },
       ],
       flowNodes: flowBase.map((f, i) => {
@@ -515,10 +516,11 @@ class Component extends DCLogic {
         { icon: "sync_alt", title: "증분 동기", body: "델타 ETL이 신규/변경 문서만 식별해 재처리하고, 인앱 업로드분은 GCS에 정본 저장되어 이후 파이프라인이 GCS를 원본으로 참조합니다 — 스토리지 자체가 코퍼스의 단일 진실 원천으로 승격됐습니다. 근사중복은 3단계로 걸러냅니다." },
       ],
       ragCards: [
-        { n: 1, icon: "search", title: "근거 검색", body: "하이브리드 검색으로 견적·품질서류 작성에 필요한 근거 문서를 가져옵니다." },
-        { n: 2, icon: "edit_note", title: "초안 생성·정제", body: "근거 문서를 컨텍스트로 초안을 generate하고, 피드백에 따라 refine을 반복합니다." },
-        { n: 3, icon: "save", title: "작성 케이스 영속화", body: "세션 휘발성으로 두지 않고 갭분석 라인업으로 저장해 이어서 작업합니다." },
-        { n: 4, icon: "description", title: "docx 내보내기", body: "완성된 초안을 docx로 내보내 이메일 첨부·결재 등 기존 업무 흐름에 얹습니다." },
+        { n: 1, icon: "upload_file", title: "요청 서류 파싱", body: "받은 공문·요청서를 업로드하면 파싱해 '어떤 서류가 필요한지'를 항목으로 뽑아냅니다." },
+        { n: 2, icon: "search", title: "근거 검색", body: "뽑아낸 항목마다 하이브리드 검색으로 사내 문서에서 근거를 회수합니다." },
+        { n: 3, icon: "edit_note", title: "양식 기반 초안", body: "근거와 기존 문서 양식을 컨텍스트로 초안을 generate하고, 피드백에 따라 refine을 반복합니다." },
+        { n: 4, icon: "save", title: "작성 케이스 영속화", body: "세션 휘발성으로 두지 않고 갭분석 라인업으로 저장 — 무엇이 비고 무엇이 찼는지 함께 추적합니다." },
+        { n: 5, icon: "description", title: "docx 내보내기", body: "완성된 초안을 docx로 내보내 이메일 첨부·결재 등 기존 업무 흐름에 얹습니다." },
       ],
       decisions: [
         { q: "왜 비정형 문서를 '시멘틱 백본' 문제로 정의했나?", pick: "정형 백본과 나란히 검색·정본·의미 연결이 가능한 두 번째 백본으로 격상.", drop: "폴더 정리 규칙·명명 컨벤션 문서화 등 수작업 개선으로 방치.", why: "수작업 규칙은 사람이 바뀌거나 바빠지는 순간 깨집니다. 검색·정본·동기화를 시스템이 강제하지 않으면 같은 문제가 반복됩니다." },

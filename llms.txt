@@ -13,7 +13,7 @@ Related open-source tool: harness-scope (Apache-2.0) — https://github.com/moon
 
 - [Portfolio home](https://moongioh.github.io/manufacturing-ax-portfolio/): intro + 4 flagship project cards with KPIs (Korean, with English abstract)
 - [Resume](https://moongioh.github.io/manufacturing-ax-portfolio/resume.html): full case study and career detail
-- [Screen tour](slides.html): key screens of the ERP's admin UI on dummy data (slide deck of screenshots). A live frontend-only demo (static build, MSW mocks) is available on request.
+- [Screen tour](walkthroughs/워크스루-시스템오버뷰.html): key screens of the ERP's admin UI on dummy data, now merged into the System Overview walkthrough alongside the architecture map. A live frontend-only demo (static build, MSW mocks) is available on request.
 
 ## Project pages (Korean)
 

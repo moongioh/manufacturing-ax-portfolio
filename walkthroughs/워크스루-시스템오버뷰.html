@@ -88,6 +88,10 @@ a{color:var(--cn-link,#2563EB);text-decoration:none}
 a:hover{color:var(--cn-primary,#3B82F6)}
 .mi{font-family:'Material Symbols Outlined';font-weight:normal;font-style:normal;line-height:1;display:inline-block;vertical-align:-0.15em;font-variation-settings:'FILL' 0,'wght' 400}
 @media (max-width:960px){ .cn-rail{display:none!important} .cn-main{padding-left:32px!important} }
+.shot-grid{display:grid;grid-template-columns:minmax(0,1fr) 288px;gap:26px;align-items:center}
+@media (max-width:900px){ .shot-grid{grid-template-columns:1fr} }
+.map-grid{display:grid;grid-template-columns:minmax(0,1fr) 268px;gap:22px;align-items:start}
+@media (max-width:900px){ .map-grid{grid-template-columns:1fr} }
 @keyframes cnFlow{to{background-position:24px 0}}
 svg text{font-family:'Pretendard Variable',Pretendard,'Noto Sans KR',sans-serif}
 svg .mono{font-family:'JetBrains Mono',monospace}
@@ -107,7 +111,7 @@ svg .mono{font-family:'JetBrains Mono',monospace}
       </div>
     </div>
     <div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--cn-faint);text-transform:uppercase;padding:8px 10px 4px">목차</div>
-    <sc-for list="{{ navItems }}" as="nv" hint-placeholder-count="7">
+    <sc-for list="{{ navItems }}" as="nv" hint-placeholder-count="6">
       <a href="{{ nv.href }}" style="display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:8px;font-size:12.5px;font-weight:600;color:var(--cn-ink)" style-hover="background:var(--cn-tint);color:var(--cn-primary-deep)">
         <span class="mi" style="font-size:16px;color:var(--cn-primary)">{{ nv.icon }}</span>{{ nv.label }}
       </a>
@@ -124,34 +128,79 @@ svg .mono{font-family:'JetBrains Mono',monospace}
     </button>
   </nav>
 
-  <main class="cn-main" style="padding:44px 40px 90px 284px;max-width:1280px;margin:0 auto;box-sizing:border-box">
+  <main class="cn-main" style="padding:44px 40px 90px 284px;max-width:1480px;margin:0 auto;box-sizing:border-box">
 
     <header style="border-radius:18px;padding:34px 36px;margin-bottom:20px;position:relative;overflow:hidden;background:linear-gradient(120deg,var(--cn-tint) 0%,var(--cn-bg) 70%);border:1px solid var(--cn-line);box-shadow:var(--cn-shadow-1)">
       <div style="position:absolute;inset:0 0 auto 0;height:3px;background:linear-gradient(90deg,var(--cn-primary),var(--cn-purple),var(--cn-teal))"></div>
       <div style="font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:600;color:var(--cn-primary-deep);letter-spacing:.04em;margin-bottom:10px">WALKTHROUGH · 진입점 · 아키텍처 지도</div>
       <h1 style="margin:0 0 10px;font-size:34px;font-weight:800;letter-spacing:-.025em;line-height:1.25">제조 ERP 시스템 오버뷰</h1>
-      <p style="margin:0;max-width:660px;font-size:15px;color:var(--cn-muted)">14개 업무 도메인이 어떻게 한 시스템으로 맞물리는지 한 장으로 보는 지도입니다.
-        전체를 떠받치는 생각은 하나 — <b style="color:var(--cn-ink)">「모든 변화는 사건으로 기록하고, 숫자는 그 사건들에서 파생한다」</b>.</p>
+      <p style="margin:0;max-width:660px;font-size:15px;color:var(--cn-muted)">실제 쓰는 화면부터 보고, 14개 업무 도메인이 어떻게 한 시스템으로 맞물리는지 한 장으로 이어 봅니다.</p>
       <div style="display:flex;gap:8px;margin-top:18px;flex-wrap:wrap">
-        <span style="font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;background:var(--cn-tint-deep);color:var(--cn-primary-deep)">이벤트 소싱</span>
+        <span style="font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;background:var(--cn-tint-deep);color:var(--cn-primary-deep)">화면 13장</span>
         <span style="font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;background:var(--cn-tint-deep);color:var(--cn-primary-deep)">14개 도메인</span>
         <span style="font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;background:var(--cn-tint-deep);color:var(--cn-primary-deep)">읽기 5분</span>
       </div>
     </header>
 
-    <div style="border-radius:12px;border:1px solid var(--cn-line);border-left:4px solid var(--cn-primary);background:var(--cn-card);padding:16px 19px;box-shadow:var(--cn-shadow-1);margin-bottom:44px;display:flex;gap:12px;align-items:flex-start">
-      <span class="mi" style="font-size:20px;color:var(--cn-primary);flex:none;margin-top:2px">bolt</span>
-      <div style="font-size:13px;line-height:1.75;color:var(--cn-muted)">
-        <b style="color:var(--cn-ink)">TL;DR</b> —
-        <b style="color:var(--cn-ink)">무엇</b>: 문의→발주→생산→재고→출고→자금이 한 백본 위에서 도는 웹 ERP. ·
-        <b style="color:var(--cn-ink)">왜</b>: 모든 숫자를 append-only 사건의 합으로 파생시켜, ERP 최악의 사고인 조용한 데이터 오염을 구조로 차단. ·
-        <b style="color:var(--cn-ink)">결과</b>: 모든 재고·매출·자금 변화가 단일 게이트(record_movement)를 지나고, 어떤 숫자든 "왜 이 값인지" 이력으로 설명됩니다.
+    <div style="border-radius:12px;border:1px solid var(--cn-line);border-left:4px solid var(--cn-primary);background:var(--cn-card);padding:18px 20px;box-shadow:var(--cn-shadow-1);margin-bottom:44px;display:flex;gap:12px;align-items:flex-start">
+      <span class="mi" style="font-size:20px;color:var(--cn-primary);flex:none;margin-top:3px">bolt</span>
+      <div style="font-size:13px;line-height:1.75;color:var(--cn-muted);display:flex;flex-direction:column;gap:7px">
+        <div style="font-size:11px;font-weight:800;letter-spacing:.06em;color:var(--cn-primary-deep);font-family:'JetBrains Mono',monospace">TL;DR</div>
+        <div><b style="color:var(--cn-ink)">무엇</b> — 문의→발주→생산→재고→출고→자금이 한 백본 위에서 도는 웹 ERP. 14개 업무 도메인.</div>
+        <div><b style="color:var(--cn-ink)">왜</b> — 기존 시스템이 실제 업무 흐름을 담지 못해 기록이 흩어져 있었습니다. 진행 상태가 제때 갱신되지 않아 일이 어디서 멈췄는지 뒤늦게 드러났고, 축적이 없어 BOM·원가는 추정조차 불가능했습니다.</div>
+        <div><b style="color:var(--cn-ink)">결과</b> — 입사 4주 차 첫 실가동, 약 2개월에 14개 도메인. 도메인·용어·코드 구조를 온톨로지로 먼저 세우고 그 위에서 AI 에이전트와 함께 지었습니다.</div>
       </div>
     </div>
 
-    <section id="s1" style="margin-bottom:48px">
+    <section id="s0" style="margin-bottom:48px">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
         <div style="width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:#fff;font-size:13px;font-weight:800;background:linear-gradient(135deg,#3B82F6,#2563EB)">1</div>
+        <h2 style="margin:0;font-size:21px;font-weight:800;letter-spacing:-.02em">화면 둘러보기</h2>
+      </div>
+      <p style="margin:0 0 18px 42px;font-size:12.5px;color:var(--cn-faint)">더미 데이터로 구성한 데모 화면 13장 — 좌우 버튼·썸네일로 넘기세요.</p>
+
+      <div style="background:var(--cn-card);border:1px solid var(--cn-line);border-radius:14px;padding:22px;box-shadow:var(--cn-shadow-1)">
+        <div class="shot-grid">
+          <div style="border-radius:12px;overflow:hidden;border:1px solid var(--cn-line);background:var(--cn-bg)">
+            <img src="{{ shot.src }}" alt="{{ shot.title }}" style="width:100%;aspect-ratio:16/9.4;object-fit:contain;display:block;background:var(--cn-bg)">
+          </div>
+          <div>
+            <span style="display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:800;letter-spacing:.08em;padding:3px 10px;border-radius:999px;background:var(--cn-tint-deep);color:var(--cn-primary-deep)">{{ shot.tag }}</span>
+            <div style="font-size:16.5px;font-weight:800;letter-spacing:-.015em;margin:10px 0 8px;line-height:1.35">{{ shot.title }}</div>
+            <p style="margin:0;font-size:13px;line-height:1.7;color:var(--cn-muted)">{{ shot.body }}</p>
+            <sc-if value="{{ shot.hasNode }}" hint-placeholder-val="{{ true }}">
+              <div onClick="{{ shot.goMap }}" style="cursor:pointer;display:inline-flex;align-items:center;gap:7px;margin-top:14px;padding:7px 13px;border-radius:999px;border:1px dashed var(--cn-line-strong);font-size:11.5px;font-weight:700;color:var(--cn-primary-deep);background:var(--cn-tint)" style-hover="border-color:var(--cn-primary);border-style:solid">
+                <span class="mi" style="font-size:15px">map</span>지도의 {{ shot.nodeLabel }} 단계
+              </div>
+            </sc-if>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:18px">
+              <button onClick="{{ shotPrev }}" style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border:1px solid var(--cn-line-strong);border-radius:999px;background:var(--cn-card);color:var(--cn-ink);cursor:pointer" style-hover="border-color:var(--cn-primary);color:var(--cn-primary-deep)">
+                <span class="mi" style="font-size:18px">chevron_left</span>
+              </button>
+              <button onClick="{{ shotNext }}" style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border:0;border-radius:999px;background:var(--cn-primary);color:#fff;cursor:pointer;box-shadow:0 2px 8px rgba(59,130,246,.25)" style-hover="background:var(--cn-primary-deep)">
+                <span class="mi" style="font-size:18px">chevron_right</span>
+              </button>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:700;color:var(--cn-faint);margin-left:4px">{{ shot.counter }}</span>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:18px;padding-top:16px;border-top:1px solid var(--cn-line)">
+          <sc-for list="{{ shotThumbs }}" as="t" hint-placeholder-count="13">
+            <div onClick="{{ t.go }}" style="cursor:pointer;width:66px;height:42px;border-radius:7px;overflow:hidden;border:2px solid {{ t.bd }};opacity:{{ t.op }};background:var(--cn-bg);transition:opacity .15s,border-color .15s">
+              <img src="{{ t.src }}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="border-radius:12px;border:1px solid var(--cn-line);border-left:4px solid var(--cn-primary);background:var(--cn-card);padding:14px 17px;box-shadow:var(--cn-shadow-1);margin-top:14px;display:flex;gap:11px;align-items:flex-start">
+        <span class="mi" style="font-size:19px;color:var(--cn-primary);flex:none;margin-top:1px">lock</span>
+        <div style="font-size:12.5px;line-height:1.65;color:var(--cn-muted)">거래처·품목·금액·계좌는 전부 시연용 더미이며, 회사 식별정보와 영업비밀(로스율·배합비·계수)은 마스킹되어 포함되지 않습니다. 라이브 데모는 요청 시 안내드립니다.</div>
+      </div>
+    </section>
+
+    <section id="s1" style="margin-bottom:48px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+        <div style="width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:#fff;font-size:13px;font-weight:800;background:linear-gradient(135deg,#3B82F6,#2563EB)">2</div>
         <h2 style="margin:0;font-size:21px;font-weight:800;letter-spacing:-.02em">한 장 지도 — 업무 한 바퀴</h2>
       </div>
       <p style="margin:0 0 18px 42px;font-size:12.5px;color:var(--cn-faint)">가운데 ④ 게이트가 모든 ±변화가 지나는 유일한 문입니다. 아래 재생으로 단계별 설명을 볼 수 있습니다.</p>
@@ -241,41 +290,46 @@ svg .mono{font-family:'JetBrains Mono',monospace}
             다음<span class="mi" style="font-size:16px">chevron_right</span>
           </button>
         </div>
-        <div style="display:flex;align-items:stretch;gap:8px;overflow-x:auto;padding-bottom:4px">
-          <sc-for list="{{ flowNodes }}" as="f" hint-placeholder-count="6">
-            <div style="display:flex;align-items:center;gap:8px;flex:{{ f.flex }}">
-              <div onClick="{{ f.go }}" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:7px;border:1.5px solid {{ f.bd }};background:{{ f.bg }};border-radius:12px;padding:12px 14px;min-width:68px;transition:border-color .3s,background .3s,box-shadow .3s;box-shadow:{{ f.sh }}">
-                <span class="mi" style="font-size:20px;color:{{ f.ic }};transition:color .3s">{{ f.icon }}</span>
-                <div style="font-size:11.5px;font-weight:700;color:{{ f.tc }};transition:color .3s;white-space:nowrap">{{ f.title }}</div>
-                <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--cn-faint);white-space:nowrap">{{ f.sub }}</div>
-              </div>
-              <sc-if value="{{ f.hasConn }}" hint-placeholder-val="{{ true }}">
-                <div style="flex:1;height:2px;min-width:12px;background:{{ f.connBg }};animation:{{ f.connAnim }}"></div>
-              </sc-if>
+        <div class="map-grid">
+          <div>
+            <div style="display:flex;align-items:stretch;gap:8px;overflow-x:auto;padding-bottom:4px">
+              <sc-for list="{{ flowNodes }}" as="f" hint-placeholder-count="6">
+                <div style="display:flex;align-items:center;gap:8px;flex:{{ f.flex }}">
+                  <div onClick="{{ f.go }}" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:7px;border:1.5px solid {{ f.bd }};background:{{ f.bg }};border-radius:12px;padding:12px 14px;min-width:68px;transition:border-color .3s,background .3s,box-shadow .3s;box-shadow:{{ f.sh }}">
+                    <span class="mi" style="font-size:20px;color:{{ f.ic }};transition:color .3s">{{ f.icon }}</span>
+                    <div style="font-size:11.5px;font-weight:700;color:{{ f.tc }};transition:color .3s;white-space:nowrap">{{ f.title }}</div>
+                    <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--cn-faint);white-space:nowrap">{{ f.sub }}</div>
+                  </div>
+                  <sc-if value="{{ f.hasConn }}" hint-placeholder-val="{{ true }}">
+                    <div style="flex:1;height:2px;min-width:12px;background:{{ f.connBg }};animation:{{ f.connAnim }}"></div>
+                  </sc-if>
+                </div>
+              </sc-for>
             </div>
-          </sc-for>
-        </div>
-        <div style="margin-top:16px;border-radius:10px;background:var(--cn-tint);padding:12px 16px;font-size:12.5px;color:var(--cn-ink);display:flex;gap:9px;align-items:flex-start">
-          <span class="mi" style="font-size:17px;color:var(--cn-primary);flex:none;margin-top:1px">subtitles</span>
-          <span>{{ flowCaption }}</span>
-        </div>
-      </div>
-    </section>
+            <div style="margin-top:16px;border-radius:10px;background:var(--cn-tint);padding:12px 16px;font-size:12.5px;color:var(--cn-ink);display:flex;gap:9px;align-items:flex-start">
+              <span class="mi" style="font-size:17px;color:var(--cn-primary);flex:none;margin-top:1px">subtitles</span>
+              <span>{{ flowCaption }}</span>
+            </div>
+          </div>
 
-    <section id="s2" style="margin-bottom:48px">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
-        <div style="width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:#fff;font-size:13px;font-weight:800;background:linear-gradient(135deg,#8B5CF6,#7C3AED)">2</div>
-        <h2 style="margin:0;font-size:21px;font-weight:800;letter-spacing:-.02em">하나의 척추 — 사건을 쌓고, 숫자는 파생한다</h2>
-      </div>
-      <p style="margin:0 0 18px 42px;font-size:12.5px;color:var(--cn-faint)">도메인이 달라도 패턴은 같습니다.</p>
-      <div style="max-width:760px;margin-left:42px">
-        <p style="margin:0 0 16px;color:var(--cn-muted)">이 시스템에는 "현재값 컬럼"이 거의 없습니다. 재고·매출·자금 모두 저장된 값이 아니라
-          <b style="color:var(--cn-ink)">이력의 합</b>입니다. 현재값 갱신 방식은 동시성·중복 차감에 취약하고 "왜 이 숫자인지" 설명하지 못하는 반면,
-          사건은 전부 감사 가능하고 재계산으로 복원됩니다. 되돌리기도 행 삭제가 아니라 <b style="color:var(--cn-ink)">반대부호 사건</b>으로 —
-          회계의 역분개와 동형입니다.</p>
-        <div style="border-radius:12px;border:1px solid var(--cn-line);border-left:4px solid var(--cn-purple);background:var(--cn-card);padding:14px 17px;box-shadow:var(--cn-shadow-1);display:flex;gap:11px;align-items:flex-start">
-          <span class="mi" style="font-size:19px;color:var(--cn-purple);flex:none;margin-top:1px">lightbulb</span>
-          <div style="font-size:12.5px;line-height:1.6;color:var(--cn-muted)"><b style="color:var(--cn-ink)">이 패턴 하나가 전부입니다</b> — 아래 워크스루 전편이 같은 이야기의 도메인별 변주로 읽힙니다.</div>
+          <div style="border:1px solid var(--cn-line);border-radius:12px;overflow:hidden;background:var(--cn-bg)">
+            <div style="padding:10px 14px;border-bottom:1px solid var(--cn-line);font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:800;letter-spacing:.06em;color:var(--cn-faint)">이 단계의 화면</div>
+            <sc-if value="{{ stepShot.on }}" hint-placeholder-val="{{ true }}">
+              <div onClick="{{ stepShot.goShot }}" style="cursor:pointer">
+                <img src="{{ stepShot.src }}" alt="{{ stepShot.title }}" loading="lazy" style="width:100%;aspect-ratio:16/10;object-fit:cover;object-position:top center;display:block;border-bottom:1px solid var(--cn-line)">
+                <div style="padding:12px 14px">
+                  <div style="font-size:12.5px;font-weight:800;margin-bottom:4px">{{ stepShot.title }}</div>
+                  <div style="font-size:11.5px;font-weight:700;color:var(--cn-primary-deep);display:flex;align-items:center;gap:5px">크게 보기<span class="mi" style="font-size:15px">north_east</span></div>
+                </div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ stepShot.off }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:22px 16px;text-align:center;color:var(--cn-faint);font-size:12px;line-height:1.65">
+                <span class="mi" style="font-size:26px;display:block;margin-bottom:8px">image</span>
+                노드를 선택하면<br>그 단계의 실제 화면이 여기 뜹니다.
+              </div>
+            </sc-if>
+          </div>
         </div>
       </div>
     </section>
@@ -283,8 +337,9 @@ svg .mono{font-family:'JetBrains Mono',monospace}
     <section id="s3" style="margin-bottom:48px">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
         <div style="width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:#fff;font-size:13px;font-weight:800;background:linear-gradient(135deg,#14B8A6,#0D9488)">3</div>
-        <h2 style="margin:0;font-size:21px;font-weight:800;letter-spacing:-.02em">사건 → 파생 — 도메인별 대응표</h2>
+        <h2 style="margin:0;font-size:21px;font-weight:800;letter-spacing:-.02em">도메인별 기록 → 숫자 대응표</h2>
       </div>
+      <p style="margin:0 0 18px 42px;font-size:12.5px;color:var(--cn-faint)">도메인이 달라도 패턴은 같습니다 — 변화를 기록으로 남기고, 화면의 숫자는 거기서 계산합니다.</p>
       <div style="background:var(--cn-card);border:1px solid var(--cn-line);border-radius:14px;box-shadow:var(--cn-shadow-1);overflow:hidden;margin-left:42px;margin-top:18px">
         <table style="width:100%;border-collapse:collapse;font-size:12.5px">
           <thead>
@@ -333,7 +388,7 @@ svg .mono{font-family:'JetBrains Mono',monospace}
         <div style="width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:#fff;font-size:13px;font-weight:800;background:linear-gradient(135deg,#F43F5E,#E11D48)">5</div>
         <h2 style="margin:0;font-size:21px;font-weight:800;letter-spacing:-.02em">결정과 트레이드오프 — 왜 이렇게 지었나</h2>
       </div>
-      <p style="margin:0 0 18px 42px;font-size:12.5px;color:var(--cn-faint)">여섯 개의 구조적 결정 — 채택·기각·근거.</p>
+      <p style="margin:0 0 18px 42px;font-size:12.5px;color:var(--cn-faint)">여섯 개의 구조적 결정 — 채택·기각·근거. 앞의 둘이 이 프로젝트의 실제 차별점입니다.</p>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;margin-left:42px">
         <sc-for list="{{ decisions }}" as="dc" hint-placeholder-count="6">
           <div style="background:var(--cn-card);border:1px solid var(--cn-line);border-radius:14px;padding:20px;box-shadow:var(--cn-shadow-1)">
@@ -357,7 +412,7 @@ svg .mono{font-family:'JetBrains Mono',monospace}
         <div style="width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:#fff;font-size:13px;font-weight:800;background:linear-gradient(135deg,#06B6D4,#0891B2)">6</div>
         <h2 style="margin:0;font-size:21px;font-weight:800;letter-spacing:-.02em">도메인 워크스루 지도</h2>
       </div>
-      <p style="margin:0 0 18px 42px;font-size:12.5px;color:var(--cn-faint)">카드를 눌러 상세로 — 가치사슬 순서.</p>
+      <p style="margin:0 0 18px 42px;font-size:12.5px;color:var(--cn-faint)">가치사슬 순서 — 재고 코어부터 보시면 나머지가 그 변주로 읽힙니다.</p>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin-left:42px">
         <sc-for list="{{ mapCards }}" as="m" hint-placeholder-count="12">
           <a href="{{ m.href }}" style="background:var(--cn-card);border:1px solid var(--cn-line);border-radius:14px;padding:18px 20px;box-shadow:var(--cn-shadow-1);display:block;color:var(--cn-ink);transition:transform .2s var(--cn-ease),box-shadow .2s" style-hover="transform:translateY(-2px);box-shadow:var(--cn-shadow-2)">
@@ -373,26 +428,6 @@ svg .mono{font-family:'JetBrains Mono',monospace}
       </div>
     </section>
 
-    <section id="s7" style="margin-bottom:24px">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
-        <div style="width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:#fff;font-size:13px;font-weight:800;background:linear-gradient(135deg,#3B82F6,#7C3AED)">7</div>
-        <h2 style="margin:0;font-size:21px;font-weight:800;letter-spacing:-.02em">읽는 순서 · 어디를 보면 진실인가</h2>
-      </div>
-      <div style="max-width:760px;margin-left:42px;margin-top:18px">
-        <p style="margin:0 0 16px;color:var(--cn-muted)">순서는 <b style="color:var(--cn-ink)">재고 코어 → 생산일지 분해</b>(사건→파생의 원형) 먼저,
-          그 다음 <b style="color:var(--cn-ink)">발주·출고 → 자금·채권</b>(돈의 줄기), 이어서 현장·영업(생산로스율·챗봇·샘플)과
-          횡단(온톨로지·문서허브·협업보드·거버넌스) 순입니다. 코드 구조 정본은 docs/ARCHITECTURE.md, 용어 정본은 docs/ubiquitous_language.md — AI와 사람이 같은 지도를 씁니다.</p>
-        <div style="border-radius:12px;border:1px solid var(--cn-line);border-left:4px solid var(--cn-teal);background:var(--cn-card);padding:14px 17px;box-shadow:var(--cn-shadow-1);display:flex;gap:11px;align-items:flex-start">
-          <span class="mi" style="font-size:19px;color:var(--cn-teal);flex:none;margin-top:1px">verified</span>
-          <div style="font-size:12.5px;line-height:1.7;color:var(--cn-muted)"><b style="color:var(--cn-ink)">3대 정본</b> —
-            ① 데이터 = pp_stock_movements 등 사건 로그(파생은 VIEW) ·
-            ② 설계 결정 = 승인된 plan 문서 ·
-            ③ 현재 상태 = 프로젝트별 STATE.yaml 스냅샷.
-            이 셋만 신뢰하면 대시보드·요약은 전부 파생이라 틀려도 재생성됩니다.</div>
-        </div>
-      </div>
-    </section>
-
     <footer style="margin-top:40px;padding-top:20px;border-top:1px solid var(--cn-line);display:flex;justify-content:space-between;font-size:11.5px;color:var(--cn-faint);font-family:'JetBrains Mono',monospace">
       <span>creative canon v2</span><span>manufacturing-ax-portfolio · 2026-07</span>
     </footer>
@@ -401,12 +436,31 @@ svg .mono{font-family:'JetBrains Mono',monospace}
 </script>
 <script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;\&quot;light\&quot;|\&quot;dark\&quot;&quot;,&quot;section&quot;:&quot;테마&quot;}}">
 class Component extends DCLogic {
-  state = { theme: null, flowStep: -1 };
+  state = { theme: null, flowStep: -1, shotIdx: 0 };
   componentWillUnmount() { clearInterval(this._t); }
   renderVals() {
     const theme = this.state.theme ?? this.props.theme ?? "light";
     const dark = theme === "dark";
-    const { flowStep } = this.state;
+    const { flowStep, shotIdx } = this.state;
+    const shots = [
+      { img: "01-home.png", tag: "DASHBOARD", title: "홈 · 업무 흐름 대시보드", body: "수주→생산→재고→회계가 한 줄로 이어지고, 각 단계를 누르면 그 업무 화면으로 바로 들어갑니다.", node: 0 },
+      { img: "02-order-board.png", tag: "ORDER", title: "발주서 보드", body: "발주(헤더)-품목(라인)-납기(스케줄) 3층 구조 — 부분출고와 잔량이 흐트러지지 않습니다.", node: 1 },
+      { img: "03-stock-ledger.png", tag: "INVENTORY", title: "재고장", body: "총재고·예약·가용을 분리해 보여줍니다. 음수는 숨기지 않습니다 — 결손 신호니까요.", node: 3 },
+      { img: "04-daily-plan.png", tag: "PRODUCTION", title: "현장 생산계획 · APS 큐", body: "계획과 현장 입력이 같은 화면. 완료 수량이 그대로 일지·재고로 흘러 이중 입력이 없습니다.", node: 2 },
+      { img: "05-production-log.png", tag: "SSOT", title: "생산일지", body: "엑셀을 벗은 자리에 실측과 이론값을 나란히 — 원가율이 매일 자동으로 잡힙니다.", node: 2 },
+      { img: "06-loss-analysis.png", tag: "CALIBRATION", title: "로스 분석", body: "측정을 쌓을수록 정밀해지는 경험계수. 실제 계수는 영업비밀이라 화면에서 마스킹했습니다." },
+      { img: "07-treasury.png", tag: "TREASURY", title: "자금일보", body: "실측 잔액 + 미수·어음·고정비에서 파생한 입출금 예정. 제안은 시스템이, 확정은 사람이.", node: 5 },
+      { img: "08-analytics-console.png", tag: "ANALYTICS", title: "경영분석 콘솔", body: "매출·원가율·채권을 한 콘솔에서. 따로 집계하는 게 아니라 파생이라 항상 최신입니다.", node: 4 },
+      { img: "09-ontology.png", tag: "ONTOLOGY", title: "온톨로지", body: "용어사전을 개념그래프로 승격. 노드를 누르면 그 개념을 중심으로 지도가 다시 그려집니다." },
+      { img: "13-doc-hub.png", tag: "DOC HUB", title: "문서허브", body: "파일명으로 못 찾던 문서를 의미로 착지. 자연어 질문에 출처를 달아 답합니다." },
+      { img: "10-admin-console.png", tag: "OVERVIEW", title: "통합 관리 콘솔", body: "스택·규모·보안 계층을 한 장으로 — 인계받는 사람이 처음 여는 화면." },
+      { img: "11-mts.png", tag: "ADVISORY", title: "재고생산 추천", body: "라인 여유분에 무엇을 미리 만들지 제안합니다. 결정은 사람 몫으로 남겨뒀습니다." },
+      { img: "12-mobile.png", tag: "MOBILE", title: "모바일 라이트", body: "현장은 폰으로. 무거운 관리자 셸 밖의 전용 경량 화면입니다." },
+    ];
+    const si = ((shotIdx % shots.length) + shots.length) % shots.length;
+    /* 지도 6노드 → 대표 화면 (역방향은 shots[].node) */
+    const NODE_TO_SHOT = [0, 1, 4, 2, 7, 6];
+    const jump = (id) => { const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); };
     const flowBase = [
       { icon: "forum", title: "① 수요", sub: "일정문의·챗봇", cap: "카톡 문의를 LLM이 구조화하고 3단 판정엔진이 발주/조율/반려를 제안합니다." },
       { icon: "list_alt", title: "② 주문", sub: "발주 보드", cap: "발주 헤더/라인/스케줄 — 출고의 SSoT. 미출고분은 예약 재고로 잡힙니다." },
@@ -420,14 +474,39 @@ class Component extends DCLogic {
       themeIcon: dark ? "light_mode" : "dark_mode",
       themeLabel: dark ? "라이트 모드" : "다크 모드",
       toggleTheme: () => this.setState({ theme: dark ? "light" : "dark" }),
+      shot: {
+        src: "../images/slides/" + shots[si].img,
+        tag: shots[si].tag, title: shots[si].title, body: shots[si].body,
+        counter: (si + 1) + " / " + shots.length,
+        hasNode: shots[si].node != null,
+        nodeLabel: shots[si].node != null ? flowBase[shots[si].node].title : "",
+        goMap: () => { this.setState({ flowStep: shots[si].node }); jump("s1"); },
+      },
+      stepShot: (() => {
+        if (flowStep < 0) return { on: false, off: true };
+        const idx = NODE_TO_SHOT[Math.min(flowStep, NODE_TO_SHOT.length - 1)];
+        return {
+          on: true, off: false,
+          src: "../images/slides/" + shots[idx].img,
+          title: shots[idx].title,
+          goShot: () => { this.setState({ shotIdx: idx }); jump("s0"); },
+        };
+      })(),
+      shotPrev: () => this.setState({ shotIdx: si - 1 }),
+      shotNext: () => this.setState({ shotIdx: si + 1 }),
+      shotThumbs: shots.map((s, i) => ({
+        src: "../images/slides/" + s.img,
+        bd: i === si ? "var(--cn-primary)" : "transparent",
+        op: i === si ? "1" : ".55",
+        go: () => this.setState({ shotIdx: i }),
+      })),
       navItems: [
+        { href: "#s0", icon: "photo_library", label: "화면 둘러보기" },
         { href: "#s1", icon: "map", label: "한 장 지도" },
-        { href: "#s2", icon: "insights", label: "하나의 척추" },
-        { href: "#s3", icon: "table_rows", label: "사건→파생 표" },
+        { href: "#s3", icon: "table_rows", label: "기록→숫자 대응표" },
         { href: "#s4", icon: "input", label: "데이터 출처" },
         { href: "#s5", icon: "alt_route", label: "결정과 트레이드오프" },
         { href: "#s6", icon: "grid_view", label: "워크스루 지도" },
-        { href: "#s7", icon: "checklist", label: "읽는 순서·정본" },
       ],
       flowNodes: flowBase.map((f, i) => {
         const on = i <= flowStep;
@@ -464,12 +543,12 @@ class Component extends DCLogic {
         { icon: "account_balance", tag: "RECON", color: "var(--cn-amber)", title: "은행 입금 대사", body: "주거래은행 CSV 임포트로 미수금 반자동 대사 — 외부 진실(통장)과 시스템을 맞춥니다.", plans: "plan 0029" },
       ],
       decisions: [
-        { q: "왜 '사건→파생'을 전 도메인의 척추로?", pick: "이벤트 소싱 — append-only 사건 + 파생 읽기.", drop: "각 도메인이 '현재값' 컬럼을 직접 갱신.", why: "ERP 최악의 사고는 조용한 데이터 오염. 현재값 갱신은 동시성·중복차감에 취약하고 '왜 이 숫자?'를 설명 못 합니다. 사건은 전부 감사 가능하고 재계산으로 복원. 비용 = 파생 SUM(현 규모 무시 가능)." },
-        { q: "왜 PostgreSQL 하나만? NoSQL·벡터DB는?", pick: "단일 PostgreSQL (벡터는 pgvector).", drop: "NoSQL 이전 · 별도 벡터DB 인프라.", why: "규모가 작고 관계·트랜잭션 무결성이 핵심 — 분산 저장은 정합성 비용만 늘립니다. 임베딩도 pgvector로 충분해 별도 인프라는 과설계." },
-        { q: "왜 데스크톱(.exe)을 버리고 웹?", pick: "FastAPI + React + Cloud Run 컨테이너.", drop: "tkinter 데스크톱 + PyInstaller .exe 배포.", why: ".exe는 PC마다 설치·버전 드리프트·원격 협업 불가. 웹은 한 번 배포로 전원 최신·모바일 열람·무중단 업데이트. 트레이드오프 = 1회성 인프라 학습비용." },
+        { q: "1인이 두 달에 14개 도메인 — 어떻게 가능했나?", pick: "AI 에이전트를 상시 실행 주체로 두고, 사람은 결정을 승인·검증. 승인된 plan → 구현, 규율은 기계가 강제(pre-commit 캡·인덱스 자동생성·쓰기 소유권·드리프트 검증).", drop: "산문 규율만 두고 에이전트 자율에 맡기기.", why: "속도의 출처는 타이핑이 아니라 이 규율입니다. 에이전트는 규칙을 잊고 산문은 드리프트합니다 — 결정을 문서로 못 박고 기계가 집행해야 멀티세션에서도 원장이 어긋나지 않습니다. 트레이드오프 = 게이트 통과 오버헤드." },
+        { q: "왜 코드보다 온톨로지를 먼저 세웠나?", pick: "도메인 용어·개념·코드 위치를 PostgreSQL 개념그래프로 구조화한 뒤, 그 위에서 빌드.", drop: "도메인 지식은 코드에만 두고 용어는 사람 머릿속에.", why: "에이전트가 '이 용어가 어느 테이블·어느 코드인지'를 매번 추측하면 오적재가 납니다. 개념그래프를 먼저 세우니 적재 정합 검증과 AI 컨텍스트를 같은 자산이 겸했고, 사람과 AI가 같은 지도를 쓰게 됐습니다." },
+        { q: "부서마다 다른 숫자 — 무엇부터 고쳤나?", pick: "상태·수량 변화를 기록으로 남기고, 화면의 숫자는 전부 그 기록에서 계산.", drop: "화면·부서별로 '현재값'을 각자 갱신.", why: "ERP에서 오래 쓰인 재고수불부 방식을 시스템 전체의 단일 원장으로 삼았습니다. 진행 상태가 갱신되지 않아 문제가 뒤늦게 드러나던 것, 축적이 없어 BOM·원가를 추정조차 못 하던 것이 여기서 풀립니다. 되돌리기도 삭제가 아니라 반대부호 기록 — 회계 역분개와 동형." },
+        { q: "왜 PostgreSQL 하나만? NoSQL·벡터DB는?", pick: "단일 PostgreSQL (벡터는 pgvector).", drop: "NoSQL 이전 · 별도 벡터DB 인프라.", why: "ERP는 관계와 트랜잭션이 본체라 RDB가 정석이고, 이 규모에선 가장 빠르고 효율적인 선택입니다. 임베딩까지 pgvector가 받아내 인프라를 하나로 유지했습니다 — 분산 저장은 정합성 비용만 늘립니다." },
         { q: "왜 상시 로드밸런서 대신 Cloudflare Access?", pick: "Cloud Run + Cloudflare Access (Zero Trust).", drop: "GCP HTTPS 로드밸런서 상시 가동.", why: "소수 사용자에 상시 LB는 idle만으로 월 $30+. '$0 idle' 원칙 — 안 쓰면 $0. SSO 게이트 + TLS를 무료 계층으로. per-call AI는 호출 시에만 과금이라 허용." },
         { q: "왜 빅뱅 재작성 대신 점진 모듈화?", pick: "공통 프리미티브 + touched-시점 대형 모듈 수술.", drop: "전면 재작성 / 일괄 리팩토링 스윕.", why: "최우선 규칙 = '돌아가는 기능을 안 깨는 게 새 기능보다 우선'. 빅뱅은 회귀 폭탄 — 건드릴 때만 큰 파일을 hooks/components로 분해합니다." },
-        { q: "왜 plan 승인 게이트 + 기계 강제 거버넌스?", pick: "승인된 plan → 구현 · pre-commit 캡 · 드리프트 검증.", drop: "산문 규율만 (에이전트 자율 신뢰).", why: "AI 에이전트는 규율을 잊습니다 — 산문은 드리프트합니다. 기계가 강제(상태 캡·인덱스 자동생성·쓰기 소유권)해야 멀티세션에서 원장 경합이 안 납니다." },
       ],
       mapCards: [
         { href: "워크스루-재고이벤트소싱.html", icon: "hub", tier: "TIER A", tierBg: "var(--cn-tint-deep)", tierColor: "var(--cn-primary-deep)", title: "재고 이벤트 소싱 코어", body: "먼저 보세요 — 모든 도메인이 모이는 심장. record_movement 단일 게이트와 SUM 파생.", plans: "0001 · 0010 · 0015" },
@@ -480,7 +559,7 @@ class Component extends DCLogic {
         { href: "워크스루-자금채권.html", icon: "account_balance", tier: "TIER A", tierBg: "var(--cn-tint-deep)", tierColor: "var(--cn-primary-deep)", title: "자금·채권", body: "AR/AP 원장(open-item·상계) → 통장·마감잔액 → 받을어음 → 자금일보.", plans: "0030 · 0073 · 0074 · 0079 · 0029" },
         { href: "워크스루-샘플관리.html", icon: "science", tier: "TIER A", tierBg: "var(--cn-tint-deep)", tierColor: "var(--cn-primary-deep)", title: "샘플관리 saga", body: "원장 절단 샘플 칸반의 진화 — 거래처 연동·부분출고·라벨·재고풀.", plans: "0018 · 0022 · 0032 · 0039 · 0092" },
         { href: "워크스루-온톨로지.html", icon: "share", tier: "TIER A", tierBg: "var(--cn-tint-deep)", tierColor: "var(--cn-primary-deep)", title: "온톨로지", body: "용어사전을 PG 개념그래프로 승격한 정합 레이어 — 적재 검증 + AI 컨텍스트 겸용.", plans: "0101 · 0103" },
-        { href: "워크스루-문서허브.html", icon: "travel_explore", tier: "TIER A", tierBg: "var(--cn-tint-deep)", tierColor: "var(--cn-primary-deep)", title: "문서허브 (시멘틱 검색·RAG)", body: "비정형 16GB → pgvector 임베딩 · RRF 하이브리드 검색 · 정본 레지스트리 · RAG 초안.", plans: "0134~ · 0173 · 0175" },
+        { href: "워크스루-문서허브.html", icon: "travel_explore", tier: "TIER A", tierBg: "var(--cn-tint-deep)", tierColor: "var(--cn-primary-deep)", title: "문서허브 (파싱·검색·초안 생성)", body: "요청 서류를 파싱해 필요 서류를 뽑고, 근거를 모아 양식대로 초안까지 — 토대는 pgvector·RRF 검색·정본 레지스트리.", plans: "0134~ · 0173 · 0175" },
         { href: "워크스루-마이그레이션.html", icon: "sync_alt", tier: "TIER A", tierBg: "var(--cn-tint-deep)", tierColor: "var(--cn-primary-deep)", title: "마이그레이션", body: "레거시 점진 탈피 · 은행 대사 · 18개월 데이터 계보 재구성.", plans: "0046 · 0088 · 0099 · 0029" },
         { href: "워크스루-협업보드.html", icon: "view_kanban", tier: "TIER B", tierBg: "var(--cn-tint)", tierColor: "var(--cn-primary-deep)", title: "협업보드", body: "한 테이블 위 다섯 레이어 — 세 뷰 + silent 폴링 + 비공개 메모.", plans: "0028 · 0055 · 0061 · 0062 · 0065" },
         { href: "워크스루-거버넌스.html", icon: "gavel", tier: "TIER B", tierBg: "var(--cn-tint)", tierColor: "var(--cn-primary-deep)", title: "거버넌스 체계", body: "산문 규율 → 기계 강제 → 검증단. plan 승인 게이트·자동 핸드오버.", plans: "workspace 0001~0005 · 0081 · 0082" },
