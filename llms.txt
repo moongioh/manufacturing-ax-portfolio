@@ -20,7 +20,7 @@ Related open-source tool: harness-scope (Apache-2.0) — https://github.com/moon
 - [Manufacturing web ERP](https://moongioh.github.io/manufacturing-ax-portfolio/projects/erp.html): flagship — 14 domains on an event-sourced backbone; time-budget review courses and the full walkthrough index live here
 - [Production management](https://moongioh.github.io/manufacturing-ax-portfolio/projects/production.html): KakaoTalk order intake → 3-stage deterministic triage → APS netting/EDD queue → one-click production order
 - [Document hub & ontology](https://moongioh.github.io/manufacturing-ax-portfolio/projects/dochub-ontology.html): pgvector embeddings, RRF hybrid semantic search, RAG, domain concept-graph validation
-- [AI engineering (OSS & personal R&D)](https://moongioh.github.io/manufacturing-ax-portfolio/projects/ai-engineering.html): harness-scope (merged patch at Arize's OSS, pip/npm), LLM gateway + personal knowledge graph (Recall@5 0.921)
+- [AI engineering (OSS & personal R&D)](https://moongioh.github.io/manufacturing-ax-portfolio/projects/ai-engineering.html): harness-scope (2 patches merged at Arize's OSS, listed contributor to that repository, pip/npm), LLM gateway + personal knowledge graph (Recall@5 0.921)
 
 ## Architecture walkthroughs (Korean, interactive HTML)
 

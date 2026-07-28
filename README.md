@@ -19,8 +19,9 @@ Solo design, build and operation of a cloud full-stack ERP (FastAPI · React · 
 Cloud Run) for an 18-person manufacturing/chemical SME in Korea — first production use four weeks in,
 expanded to 14 business domains over ~2 months. I build **DX first** (one event-sourced backbone with
 domain-ontology validation), then **layer AX on top** (a semantic document hub over 16GB, LLM intake agents).
-Also: open-source AI-agent tooling ([harness-scope](https://github.com/moongioh/harness-scope)) whose fix was
-adopted upstream by Arize, and a self-hosted AI stack ([agent-memory-llmops](https://github.com/moongioh/agent-memory-llmops)).
+Also: open-source AI-agent tooling ([harness-scope](https://github.com/moongioh/harness-scope)) whose fixes were
+adopted upstream by Arize — I am now a listed contributor to that repository — and a self-hosted AI stack
+([agent-memory-llmops](https://github.com/moongioh/agent-memory-llmops)).
 
 </details>
 
@@ -33,7 +34,7 @@ adopted upstream by Arize, and a self-hosted AI stack ([agent-memory-llmops](htt
 | **실물 (프로덕션)** | 자체 SW 0 → **14도메인 웹 ERP 1인 구축** · 입사 4주 차 실가동 · 무중단 전환 · 실운영 안착. 진실원천 **6\~7곳 → 단일 이벤트소싱 백본** |
 | **AX-on-DX** | 데이터 정합(DX) 위에 AI(AX): 온톨로지 검증 레이어 · **시멘틱 문서허브**(RAG·pgvector·2,809문서) · LLM 문의 응답 에이전트 |
 | **AI-native 방식** | 개발을 AI 에이전트와 — 그 **작업 규율을 도구화**해 오픈소스 공개 ([harness-scope](https://github.com/moongioh/harness-scope)) |
-| **OSS 업스트림 기여** | 그 도구가 잡은 토큰 계측 버그를 **LLM 관측 대표도구 Phoenix를 만든 Arize의 오픈소스에서 재현·수정 → 메인테이너가 내 패치를 작성자 보존·크레딧과 함께 채택해 메인 브랜치에 병합** |
+| **OSS 업스트림 — 컨트리뷰터 등재** | 그 도구가 잡은 토큰 계측 버그를 **LLM 관측 대표도구 Phoenix를 만든 Arize의 오픈소스에서 재현·수정** → 메인테이너 채택·병합 2건 → 현재 해당 저장소 [**공식 컨트리뷰터 등재**](https://github.com/Arize-ai/coding-harness-tracing/graphs/contributors) |
 | **AI 인프라 깊이** | 자가호스팅 AI 스택 개인 R&D — 에이전트 장기기억(지식그래프·RAG·MCP) + LLMOps 게이트웨이 ([agent-memory-llmops](https://github.com/moongioh/agent-memory-llmops)) |
 
 > 지향 역할: 현장에 들어가 문제를 구조화하고 도는 시스템으로 안착까지 책임지는 **FDE형 엔지니어**. 목적지는 산업의 일하는 방식을 바꾸는 **AX**.
@@ -99,7 +100,7 @@ flowchart LR
 **이 방식을 도구화하고, 업스트림 OSS에도 기여했습니다:**
 
 - **[harness-scope](https://github.com/moongioh/harness-scope)** — 에이전트 세션 로그를 턴 단위로 판정하는 거버넌스 관측 도구. **Apache-2.0 오픈소스**(`pip install hscope` · npm `hscope` · 3-OS CI · MCP 서버 10툴).
-- **OSS 업스트림 기여** — harness-scope가 **자체 룰로** 토큰 이중계산 버그를 탐지 → 같은 결함이 **LLM 관측 분야 대표 도구 Phoenix를 만든 Arize의 오픈소스**에도 실재함을 재현·확인(출력 2.79× 과다계산) → 패치 제출 → **메인테이너가 내 패치를 작성자 보존·크레딧과 함께 채택해 메인 브랜치에 병합** ([PR #84](https://github.com/Arize-ai/coding-harness-tracing/pull/84)). *내가 만든 도구가 대표 프로젝트에서 실제 결함을 잡아 고쳐 업스트림에 반영된 기여.*
+- **OSS 업스트림 기여 — 공식 컨트리뷰터 등재** — harness-scope가 **자체 룰로** 토큰 이중계산 버그를 탐지 → 같은 결함이 **LLM 관측 분야 대표 도구 Phoenix를 만든 Arize의 오픈소스**에도 실재함을 재현·확인(출력 2.79× 과다계산) → 패치 제출 → **메인테이너가 내 패치를 작성자 보존·크레딧과 함께 채택해 메인 브랜치에 병합** ([PR #84](https://github.com/Arize-ai/coding-harness-tracing/pull/84)). 이후 윈도우 환경의 트레이스 유실·파일 잠금 해제 실패 두 건을 실측 재현해 제출했고, 그중 하나는 **내 명의로 직접 병합**([PR #92](https://github.com/Arize-ai/coding-harness-tracing/pull/92)). 현재 해당 저장소의 [**공식 컨트리뷰터로 등재**](https://github.com/Arize-ai/coding-harness-tracing/graphs/contributors)돼 있습니다.
 
 ![harness-scope 데모](assets/harness-scope-demo.gif)
 
