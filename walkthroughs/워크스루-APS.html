@@ -135,7 +135,7 @@ svg .mono{font-family:'JetBrains Mono',monospace}
         <b style="color:var(--cn-ink)">소유권</b> — 계산·제안은 100% 프로그램이, 돈과 사람이 걸린 <b style="color:var(--cn-ink)">확정(commit)</b>은 관리부가 맡습니다.</p>
       <div style="display:flex;gap:8px;margin-top:18px;flex-wrap:wrap">
         <span style="font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;background:var(--cn-tint-deep);color:var(--cn-primary-deep)">결정론 엔진</span>
-        <span style="font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;background:var(--cn-tint-deep);color:var(--cn-primary-deep)">생산지시서 40분→1클릭</span>
+        <span style="font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;background:var(--cn-tint-deep);color:var(--cn-primary-deep)">생산지시 40분→실시간</span>
         <span style="font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;background:var(--cn-tint-deep);color:var(--cn-primary-deep)">읽기 6분</span>
       </div>
     </header>
@@ -146,7 +146,7 @@ svg .mono{font-family:'JetBrains Mono',monospace}
         <b style="color:var(--cn-ink)">TL;DR</b> —
         <b style="color:var(--cn-ink)">무엇</b>: 발주 잔량을 가용재고로 네팅하고 그리디 EDD 스케줄러가 날짜축을 채워 추천 큐를 만들면, 확정만 관리부 승인 게이트를 거칩니다. ·
         <b style="color:var(--cn-ink)">왜</b>: 계산 전부를 자동화해도 잔업·displace처럼 인건비·현장부담이 걸린 결정까지 기계가 단독 확정하면 위험합니다 — 계산과 확정의 소유권을 분리해야 "기본은 다 잡고 예외만 사람"이 성립합니다. ·
-        <b style="color:var(--cn-ink)">결과</b>: 생산지시서 건당 40분 → 1클릭, 추천 큐·급발주 두 화면이 같은 엔진을 공유해 계산이 항상 일치합니다.
+        <b style="color:var(--cn-ink)">결과</b>: 생산지시서 작성 건당 40분(작성→출력→전달) → 상시 실시간 APS 큐, 추천 큐·급발주 두 화면이 같은 엔진을 공유해 계산이 항상 일치합니다.
       </div>
     </div>
 
@@ -170,7 +170,7 @@ svg .mono{font-family:'JetBrains Mono',monospace}
 
           <text x="16" y="34" font-size="10.5" font-weight="700" letter-spacing="2" fill="var(--cn-faint)" class="mono">STAGE 1 → 5</text>
           <rect x="800" y="16" width="184" height="30" rx="15" fill="var(--cn-tint-deep)"></rect>
-          <text x="892" y="36" text-anchor="middle" font-size="11" font-weight="700" fill="var(--cn-primary-deep)" class="mono">생산지시서 40분 → 1클릭</text>
+          <text x="892" y="36" text-anchor="middle" font-size="11" font-weight="700" fill="var(--cn-primary-deep)" class="mono">생산지시 40분 → 실시간</text>
 
           <!-- 루프백: 재최적화 -->
           <path d="M 895 140 C 895 92, 494 92, 494 138" fill="none" stroke="var(--cn-faint)" stroke-width="1.4" stroke-dasharray="6 5" marker-end="url(#arr)"></path>
@@ -206,9 +206,9 @@ svg .mono{font-family:'JetBrains Mono',monospace}
           <text x="695" y="200" text-anchor="middle" font-size="10" fill="var(--cn-muted)" class="mono">읽기전용 · 제안</text>
           <line x1="780" y1="186" x2="802" y2="186" stroke="var(--cn-primary)" stroke-width="1.8" marker-end="url(#arrP)"></line>
 
-          <!-- ⑤ 생산지시서 (강조 게이트) -->
+          <!-- ⑤ 생산지시 (강조 게이트) -->
           <rect x="806" y="140" width="178" height="92" rx="14" fill="var(--cn-tint)" stroke="var(--cn-primary)" stroke-width="2"></rect>
-          <text x="895" y="170" text-anchor="middle" font-size="13.5" font-weight="800" fill="var(--cn-primary-deep)">⑤ 생산지시서</text>
+          <text x="895" y="170" text-anchor="middle" font-size="13.5" font-weight="800" fill="var(--cn-primary-deep)">⑤ 생산지시</text>
           <text x="895" y="190" text-anchor="middle" font-size="10.5" fill="var(--cn-primary-deep)" class="mono">관리부 승인 1클릭</text>
           <text x="895" y="208" text-anchor="middle" font-size="10" fill="var(--cn-muted)">확정(commit) — 유일 쓰기</text>
 
@@ -488,7 +488,7 @@ class Component extends DCLogic {
       { icon: "calculate", title: "② 네팅", sub: "EDD 배분", cap: "필요수량 = max(0, 발주수량−가용재고). 같은 품목에 발주가 여럿이면 납기 빠른 순(EDD)으로 재고를 먼저 배분합니다." },
       { icon: "schedule", title: "③ 시간표 계산", sub: "그리디 스케줄러", cap: "날짜축을 하루씩 채우며 전체 리드타임이 가장 짧아지는 순서를 그리디로 잡습니다. 시간축(16:40~22:00)·수량천장(두꺼운 1종) 2한도가 동시에 걸립니다." },
       { icon: "view_kanban", title: "④ 추천 큐", sub: "읽기전용 제안", cap: "품목별 예상 완료일·리드타임·충돌 신호(잔업 N시간/납기지연 M일)를 붙여 큐 카드로 출력합니다. 매트릭스 큐 칸반·ATP 판정 두 화면이 이 결과를 공유합니다." },
-      { icon: "how_to_reg", title: "⑤ 생산지시서", sub: "1클릭 확정", cap: "비충돌분은 버튼 1회로 자동편입, 잔업·displace는 관리부 승인 후 확정됩니다 — 생산지시서 건당 40분에서 1클릭으로." },
+      { icon: "how_to_reg", title: "⑤ 생산지시", sub: "실시간 큐 · 확정은 1클릭", cap: "비충돌분은 버튼 1회로 자동편입, 잔업·displace는 관리부 승인 후 확정됩니다 — 확정된 지시는 문서로 뽑히지 않고 현장 화면의 상시 실시간 큐로 흐릅니다(건당 40분 문서작성 소멸)." },
     ];
     return {
       theme,
@@ -859,5 +859,6 @@ class Component extends DCLogic {
 })();
 
 </script>
+<script src="../assets/nav.js" defer></script>
 </body>
 </html>

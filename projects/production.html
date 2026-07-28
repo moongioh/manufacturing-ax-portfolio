@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>생산 관리 — 카톡 수주→APS→1클릭 지시</title>
-<meta name="description" content="카톡 발주 문의를 3단 판정엔진으로 받아 APS가 잔량을 네팅·EDD 스케줄하고, 생산지시서는 1클릭 발행. 기록은 BOM 분해·유량계 실측 로스로 검증." />
+<title>생산 관리 — 카톡 수주→APS→실시간 지시</title>
+<meta name="description" content="카톡 발주 문의를 3단 판정엔진으로 받아 APS가 잔량을 네팅·EDD 스케줄하고, 생산지시는 상시 실시간 큐로 흐름. 기록은 BOM 분해·유량계 실측 로스로 검증." />
 <link rel="canonical" href="https://moongioh.github.io/manufacturing-ax-portfolio/projects/production.html" />
 <meta property="og:type" content="article" />
-<meta property="og:title" content="생산 관리 — 카톡 수주→APS→1클릭 지시" />
-<meta property="og:description" content="카톡 발주 문의를 3단 판정엔진으로 받아 APS가 잔량을 네팅·EDD 스케줄하고, 생산지시서는 1클릭 발행. 기록은 BOM 분해·유량계 실측 로스로 검증." />
+<meta property="og:title" content="생산 관리 — 카톡 수주→APS→실시간 지시" />
+<meta property="og:description" content="카톡 발주 문의를 3단 판정엔진으로 받아 APS가 잔량을 네팅·EDD 스케줄하고, 생산지시는 상시 실시간 큐로 흐름. 기록은 BOM 분해·유량계 실측 로스로 검증." />
 <meta property="og:url" content="https://moongioh.github.io/manufacturing-ax-portfolio/projects/production.html" />
 <meta property="og:site_name" content="Manufacturing AX Portfolio" />
 <meta property="og:locale" content="ko_KR" />
@@ -108,14 +108,14 @@ section{margin-top:56px}
   <header class="dhero">
     <div class="bar"></div>
     <div class="eyebrow">PROJECT 02 · MANUFACTURING CORE</div>
-    <h1>생산 관리 — 카톡 수주 → APS 계획 → 1클릭 지시</h1>
+    <h1>생산 관리 — 카톡 수주 → APS 계획 → 실시간 지시</h1>
     <div class="tldr">
-      <div class="row"><span class="k">무엇</span><div>카톡 발주 문의가 판정엔진과 APS를 거쳐 생산지시서까지 이어지는 수주→계획→지시 자동화 축.</div></div>
-      <div class="row"><span class="k">왜</span><div>수기 생산지시서 40분 + 문의 응대·계획 수립이 전부 사람 머릿속 — 계산은 기계가, 확정은 사람이 맡는 분리가 필요했습니다.</div></div>
-      <div class="row"><span class="k">결과</span><div>생산지시서 1클릭 발행 · 카톡 문의는 3단 판정으로 자동 소화 · 확정만 관리부 승인 게이트.</div></div>
+      <div class="row"><span class="k">무엇</span><div>카톡 발주 문의가 판정엔진과 APS를 거쳐 현장 생산지시까지 이어지는 수주→계획→지시 자동화 축.</div></div>
+      <div class="row"><span class="k">왜</span><div>수기 생산지시서 40분(작성→출력→전달) + 문의 응대·계획 수립이 전부 사람 머릿속 — 계산은 기계가, 확정은 사람이 맡는 분리가 필요했습니다.</div></div>
+      <div class="row"><span class="k">결과</span><div>생산지시가 문서가 아니라 <b>상시 실시간 APS 큐</b>로 흐름 · 카톡 문의는 3단 판정으로 자동 소화 · 확정만 관리부 승인 게이트.</div></div>
     </div>
     <div class="dkpis">
-      <div class="dkpi"><div class="label">생산지시서 작성</div><div class="value">40분 → 1클릭</div></div>
+      <div class="dkpi"><div class="label">생산 지시</div><div class="value">40분 → 실시간</div></div>
       <div class="dkpi"><div class="label">카톡 문의 처리</div><div class="value">3단 자동 판정</div></div>
       <div class="dkpi"><div class="label">계획 스케줄링</div><div class="value">EDD 추천 큐</div></div>
     </div>
@@ -128,7 +128,7 @@ section{margin-top:56px}
       <div class="fstep"><b>카톡 문의 인입</b><span>LLM은 입구에서 구조화만 — 판정 안 함</span></div>
       <div class="fstep"><b>3단 판정엔진</b><span>재고→동승→신규배치 순서로 부족분 소화</span></div>
       <div class="fstep"><b>APS 네팅·스케줄</b><span>발주 잔량을 가용재고로 네팅, EDD 추천 큐 생성</span></div>
-      <div class="fstep"><b>1클릭 생산지시서</b><span>확정은 관리부 승인 게이트 — 계산과 확정의 분리</span></div>
+      <div class="fstep"><b>실시간 생산지시 큐</b><span>확정만 관리부 승인 1클릭 — 계산과 확정의 분리</span></div>
     </div>
     <p class="prose" style="margin-top:18px">계산·제안은 100% 프로그램이, 돈과 사람이 걸린 <b>확정(commit)은 관리부</b>가 맡습니다.
       비결정적인 LLM 출력은 입구 한 곳(문의 구조화)에만 두고, 재고·생산용량을 보는 판정과 확정은
@@ -181,5 +181,6 @@ section{margin-top:56px}
   });
 })();
 </script>
+<script src="../assets/nav.js" defer></script>
 </body>
 </html>

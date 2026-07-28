@@ -15,6 +15,7 @@
 <meta name="twitter:card" content="summary" />
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "ProfilePage", "name": "이력서 — 문기오 · 데이터 구조 위에 AI를 얹는 엔지니어 (제조 웹 ERP 1인 구축)", "url": "https://moongioh.github.io/manufacturing-ax-portfolio/resume.html", "description": "자체 소프트웨어가 0이던 18인 제조·화학 중소기업에 웹 ERP를 1인으로 설계·구축해 실운영에 안착시켰습니다 (재직 2026.04~2026.07 · 4주차 첫 실가동 · 14개 도메인). 데이터 정합(DX)을 먼저 세우고 그 위에 AI(AX)를 얹는 순서로 — 온톨로지 검증 · 시멘틱 문서허브(RAG) · LLM 문의 에이전트. AI 에이전트 개발 규율은 오픈소스 harness-scope로 공개했고 Arize(Phoenix) 오픈소스가 패치를 채택했습니다.", "inLanguage": "ko", "dateModified": "2026-07-21", "mainEntity": {"@type": "Person", "name": "moongioh", "email": "awsgioh@gmail.com", "url": "https://moongioh.github.io/manufacturing-ax-portfolio/", "sameAs": ["https://github.com/moongioh", "https://github.com/moongioh/harness-scope", "https://github.com/moongioh/agent-memory-llmops"]}}</script>
 <link rel="stylesheet" href="assets/creative.css" />
+<link rel="stylesheet" href="assets/canon-v2.css" />
 <style>
   /* 이 페이지는 좌측 워크스루 네비가 없으므로 rail padding 해제 */
   body.creative-theme { padding-left: 28px; }
@@ -146,7 +147,7 @@
     <table class="matrix">
       <thead><tr><th>항목</th><th>before (전환 이전)</th><th>after</th></tr></thead>
       <tbody>
-        <tr><th>생산지시서 작성</th><td>수작업, 건당 ~40분</td><td class="y">자동 추천 1클릭</td></tr>
+        <tr><th>생산 지시</th><td>지시서 수작업 작성 건당 ~40분 (작성→출력→전달)</td><td class="y">APS 상시 실시간 큐 (문서 작성 소멸)</td></tr>
         <tr><th>발주 관리</th><td>다중 SSoT 정합 맞추기 하루 ~2시간</td><td class="y">실시간 발주서 보드</td></tr>
         <tr><th>진실 원천</th><td>6~7곳 분산</td><td class="y">단일 정합 백본</td></tr>
         <tr><th>재고 정합</th><td>3~4개월 실사 = 리셋 반복</td><td class="y">이벤트소싱 수불부</td></tr>
@@ -164,7 +165,7 @@
       <ul>
         <li><b>Problem:</b> 자체 프로그램 부재 · 진실이 6~7곳 분산 · 생산지시서 작성 건당 ~40분 수작업, 발주 관리 하루 ~2시간, 경영현황 실시간 집계 수단 부재.</li>
         <li><b>Approach:</b> 입사 4주 차에 Phase 1 데스크톱 프로토타입으로 첫 실가동, Phase 2 React+FastAPI+PostgreSQL 웹 전환은 기존 업무를 멈추지 않고 진행, 이후 <b>약 2개월 차까지 14개 도메인으로 확장</b>. Cloud Run + Cloudflare Access Zero-Trust 기반으로 가동 비용 최소화.</li>
-        <li><b>Impact:</b> 생산지시서 40분→1클릭, 발주 2시간/일→실시간 보드, 6~7곳 분산→단일 백본, 경영 현황 실시간 KPI화.</li>
+        <li><b>Impact:</b> 생산지시서 작성 건당 40분→상시 실시간 큐, 발주 2시간/일→실시간 보드, 6~7곳 분산→단일 백본, 경영 현황 실시간 KPI화.</li>
       </ul>
       <a href="walkthroughs/워크스루-마이그레이션.html" style="display:inline-block;margin-top:8px;color:var(--primary);font-weight:700;text-decoration:none;font-size:11.5px">↳ 워크스루: 마이그레이션</a>
     </div>
@@ -267,7 +268,7 @@
         <li><b>주요 역할:</b> 요구사항 발굴 · 도메인 온톨로지 모델링 · 풀스택 설계·구축(React/FastAPI/PostgreSQL) · 정합성 검증 엔진 개발 · Cloud Run/Vercel 배포 자동화 · 현장 온보딩·변화관리</li>
         <li><b>핵심 성과 —</b> 입사 <b>4주 차</b> 데스크톱 프로토타입 첫 실가동 → 클라우드 풀스택 ERP로 기존 업무 중단 없이 전환, 실운영에 안착</li>
         <li>발주·생산(APS)·재고·자금·관리회계 등 <b>14개 업무 도메인</b>을 단일 이벤트소싱 게이트로 통합 — 가용재고 네팅·최적 생산 큐를 제안하는 <b>APS 엔진</b> · 현장 모바일 · RBAC·감사 로그</li>
-        <li>분산 진실원천 <b>6~7곳 → 단일 백본</b> · 거래처 마스터 <b>973건</b> 정합 적재 · 생산지시서 작성 <b>건당 40분 → 1클릭</b> · 발주 정합 공수 <b>하루 2시간 → 실시간 보드</b>로 소멸</li>
+        <li>분산 진실원천 <b>6~7곳 → 단일 백본</b> · 거래처 마스터 <b>973건</b> 정합 적재 · 생산지시서 작성 <b>건당 40분 → 상시 실시간 큐</b>(APS 큐가 대체, 작성·출력·전달 소멸) · 발주 정합 공수 <b>하루 2시간 → 실시간 보드</b>로 소멸</li>
         <li>18개월 이력 파싱·정합검증(분석 백본 구축) + 자금일보↔분개장 2경로 교차대조로 누계 정합오차 <b>총거래액 대비 0.0021%</b> · 도메인 온톨로지 <b>203개념·233엣지</b> 구축</li>
         <li>비정형 문서 <b>16GB → 시멘틱 문서허브</b>(pgvector 임베딩 2,809문서·13,759청크 · RRF 하이브리드 검색 · 근거 인용 AI 질의응답 · 정본 레지스트리 · 인앱 문서 등록 · RAG 초안→docx) 구축 — 검색-질의응답-등록-작성 풀 플로우</li>
         <li>카톡 납기·일정 문의 챗봇 — <b>LLM 구조화 + 3단 판정엔진</b>(재고→동승→신규배치) → 담당자 확인 → 카카오 알림톡 회신</li>
@@ -309,5 +310,6 @@
   </div>
 
 </div>
+<script src="assets/nav.js" defer></script>
 </body>
 </html>
