@@ -143,6 +143,13 @@
     '.pnav-next .lb{font-size:13.5px;font-weight:800;line-height:1.35}',
     '.pnav-next .ht{font-size:11px;color:var(--cn-muted);line-height:1.4}',
     '.pnav-next .go{flex:none;color:var(--cn-primary)}',
+
+    /* 이 페이지 목차 — 레일이 숨는 폭에서 페이지 내부 이동 수단을 대체한다(plan 0006 W2) */
+    '.pnav-toc-list{display:flex;flex-direction:column;gap:4px}',
+    '.pnav-toc-item{display:block;padding:8px 12px;border-radius:8px;font-size:12.5px;font-weight:600;',
+      'color:var(--cn-ink);text-decoration:none;transition:background .18s,color .18s}',
+    '.pnav-toc-item:hover{background:var(--cn-tint);color:var(--cn-primary-deep)}',
+
     '.pnav-foot{margin-top:auto;padding-top:16px;border-top:1px solid var(--cn-line);font-size:11px;color:var(--cn-faint)}',
 
     /* 고정 버튼이 본문 좌상단과 겹치지 않도록 상단 여백 보정(D8) */
@@ -196,6 +203,11 @@
         '<button class="pnav-x" type="button" aria-label="메뉴 닫기">' + ICON_X + '</button></div>' +
       /* "다음에 볼 것"을 동선 목록보다 위에 둔다 — 목록이 길어 아래에 두면 접힘선 밖으로 밀린다 */
       '<div><div class="pnav-cap">지금 보는 곳</div><div class="pnav-here">' + hereLabel + '</div></div>' +
+      /* 목차는 레일에서 런타임에 긁어온다 — 채워질 때까지 숨겨둔다 */
+      (dir === 'walkthroughs'
+        ? '<div class="pnav-toc" style="display:none"><div class="pnav-cap">이 페이지 목차</div>' +
+          '<div class="pnav-toc-list"></div></div>'
+        : '') +
       nextHtml +
       '<div><div class="pnav-cap">동선</div><div class="pnav-list">' + items + '</div></div>' +
       '<div class="pnav-foot">moongioh · awsgioh@gmail.com</div>' +
@@ -209,7 +221,38 @@
     document.body.appendChild(root);
     document.body.classList.add(dir === 'walkthroughs' ? 'pnav-rail' : 'pnav-free');
     wire();
-    syncTheme();
+    refresh();
+  }
+
+  /* 레일의 목차(#앵커 링크)를 드로어로 옮겨 심는다. 레일은 템플릿 런타임이 나중에 렌더하므로
+     지연 등장에 대비해 MutationObserver 쪽에서도 재시도한다. 한 번 채우면 끝. */
+  var tocFilled = false;
+  function buildToc() {
+    if (tocFilled || dir !== 'walkthroughs') return;
+    var box = root.querySelector('.pnav-toc');
+    var rail = document.querySelector('.cn-rail');
+    if (!box || !rail) return;
+    var links = rail.querySelectorAll('a[href^="#"]');
+    if (!links.length) return;
+
+    var list = box.querySelector('.pnav-toc-list');
+    for (var n = 0; n < links.length; n++) {
+      /* 레일 링크는 <span class="mi">아이콘</span>라벨 구조라 아이콘 글자가 라벨에 섞인다 — 떼고 쓴다 */
+      var copy = links[n].cloneNode(true);
+      var icon = copy.querySelector('.mi');
+      if (icon) icon.parentNode.removeChild(icon);
+      var label = copy.textContent.replace(/\s+/g, ' ').trim();
+      if (!label) continue;
+      var a = document.createElement('a');
+      a.className = 'pnav-toc-item';
+      a.setAttribute('href', links[n].getAttribute('href'));
+      a.textContent = label;
+      list.appendChild(a);
+    }
+    /* 같은 페이지 안 이동이라 드로어가 덮은 채로 남으면 안 된다 */
+    list.addEventListener('click', function (e) { if (e.target.closest('a')) close(); });
+    box.style.display = '';
+    tocFilled = true;
   }
 
   /* ───────────────────────────────────────────────────────────────
@@ -245,20 +288,27 @@
   }
 
   /* 페이지의 .canon(워크스루는 템플릿 런타임이 나중에 렌더한다)에서 테마를 읽어 따라간다.
-     .canon이 아직 없거나(런타임 지연) 아예 없는 페이지(이력서 = v1 트랙)는 localStorage로 폴백. */
+     페이지가 .canon을 갖고 있으면 그 값이 정본이고, 아직 없는 구간에서만 localStorage로 폴백한다. */
   var pending = false;
+  function refresh() { syncTheme(); buildToc(); }
   function syncTheme() {
-    pending = false;
     var page = document.querySelector('.canon:not(.pnav-root)');
-    var t = page ? page.getAttribute('data-theme') : null;
-    if (!t) { try { t = localStorage.getItem('cn-theme'); } catch (e) { t = null; } }
+    var t;
+    if (page) {
+      /* 페이지가 정하면 그대로 따른다 — 속성 없음 = 라이트.
+         여기서 localStorage로 폴백하면 라이트 전용 페이지(이력서)에서 드로어만 어두워진다. */
+      t = page.getAttribute('data-theme');
+    } else {
+      /* .canon이 아직 없는 구간(워크스루는 런타임이 나중에 렌더) — 저장값으로 초기 깜빡임을 막는다 */
+      try { t = localStorage.getItem('cn-theme'); } catch (e) { t = null; }
+    }
     if (t === 'dark') root.setAttribute('data-theme', 'dark');
     else root.removeAttribute('data-theme');
   }
   function scheduleSync() {
     if (pending) return;
     pending = true;
-    requestAnimationFrame(syncTheme);
+    requestAnimationFrame(function () { pending = false; refresh(); });
   }
 
   if (document.readyState === 'loading') {
