@@ -47,15 +47,48 @@ section{margin-top:56px}
 .sec-head .no{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:#fff;font-size:13px;font-weight:800;background:linear-gradient(135deg,var(--cn-primary),var(--cn-primary-deep));flex:none}
 .sec-head h2{margin:0;font-size:21px;font-weight:800;letter-spacing:-.02em}
 .sec-head .sub{font-size:12px;color:var(--cn-faint)}
-.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:0;align-items:stretch}
-@media (max-width:760px){.flow{grid-template-columns:1fr}}
-.fstep{position:relative;background:var(--cn-card);border:1px solid var(--cn-line);border-radius:12px;padding:16px 18px;margin-right:26px;box-shadow:var(--cn-shadow-1)}
-.fstep:last-child{margin-right:0}
-.fstep::after{content:'east';font-family:'Material Symbols Outlined';position:absolute;right:-24px;top:50%;transform:translateY(-50%);color:var(--cn-faint);font-size:18px}
-.fstep:last-child::after{content:none}
-@media (max-width:760px){.fstep{margin-right:0;margin-bottom:24px}.fstep::after{content:'south';right:auto;left:50%;top:auto;bottom:-23px;transform:translateX(-50%)}}
-.fstep b{display:block;font-size:13.5px;margin-bottom:5px}
-.fstep span{font-size:12px;color:var(--cn-muted);line-height:1.55;display:block}
+/* 소유권 범례 — 색 단독 금지(DESIGN.md §9): 색 + 아이콘 + 텍스트 동시 */
+.own{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.own .k{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--cn-muted);background:var(--cn-card);border:1px solid var(--cn-line);border-radius:999px;padding:6px 14px 6px 10px}
+.own .k .mi{font-size:16px}
+.own .k .n{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:var(--cn-faint)}
+.own .k.o-llm{border-color:var(--cn-purple)}.own .k.o-llm .mi{color:var(--cn-purple)}
+.own .k.o-auto{border-color:var(--cn-green)}.own .k.o-auto .mi{color:var(--cn-green)}
+.own .k.o-human{border-color:var(--cn-amber)}.own .k.o-human .mi{color:var(--cn-amber)}
+/* 4밴드 × 4노드 레일 */
+.band{margin-bottom:24px}
+.band:last-of-type{margin-bottom:0}
+.bhead{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.bhead .bno{width:22px;height:22px;border-radius:6px;display:grid;place-items:center;flex:none;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;background:var(--cn-tint-deep);color:var(--cn-primary-deep)}
+.bhead b{font-size:13px;letter-spacing:-.01em}
+.bhead .bsub{font-size:11.5px;color:var(--cn-faint)}
+.bnodes{display:grid;grid-template-columns:repeat(4,1fr);gap:0;align-items:stretch}
+.node{position:relative;background:var(--cn-card);border:1px solid var(--cn-line);border-radius:12px;border-top:3px solid var(--cn-green);padding:14px 16px;margin-right:24px;box-shadow:var(--cn-shadow-1)}
+.node:last-child{margin-right:0}
+.node::after{content:'east';font-family:'Material Symbols Outlined';position:absolute;right:-22px;top:50%;transform:translateY(-50%);color:var(--cn-faint);font-size:18px}
+.node:last-child::after{content:none}
+.node.o-llm{border-top-color:var(--cn-purple)}
+.node.o-human{border-top-color:var(--cn-amber)}
+.node .nh{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.node .nh .mi{font-size:17px;color:var(--cn-green);flex:none}
+.node.o-llm .nh .mi{color:var(--cn-purple)}
+.node.o-human .nh .mi{color:var(--cn-amber)}
+.node .nh b{font-size:13px;letter-spacing:-.01em}
+.node span{font-size:11.5px;color:var(--cn-muted);line-height:1.6;display:block}
+.node code{font-family:'JetBrains Mono',monospace;font-size:10.5px;background:var(--cn-code-bg);color:var(--cn-code-ink);border-radius:4px;padding:1px 4px}
+.node .fork{display:block;margin-top:6px;font-size:11px;color:var(--cn-amber)}
+/* .canon .mi(0,2,0)를 이겨야 block이 먹는다 */
+.canon .bjoin{display:block;margin:0 auto 12px;width:22px;text-align:center;color:var(--cn-faint);font-size:18px}
+.loop{display:flex;align-items:flex-start;gap:10px;margin-top:24px;border:1px dashed var(--cn-line-strong);border-radius:12px;padding:14px 16px;background:var(--cn-tint)}
+.loop .mi{font-size:19px;color:var(--cn-primary);flex:none;margin-top:1px}
+.loop div{font-size:12.5px;line-height:1.65;color:var(--cn-muted)}
+.loop b{color:var(--cn-ink)}
+@media (max-width:760px){
+  .bnodes{grid-template-columns:1fr}
+  .node{margin-right:0;margin-bottom:24px}
+  .node::after{content:'south';right:auto;left:50%;top:auto;bottom:-22px;transform:translateX(-50%)}
+  .node:last-child{margin-bottom:0}
+}
 .prose{max-width:820px;font-size:14px;line-height:1.8;color:var(--cn-ink)}
 .prose b{color:var(--cn-primary-deep)}
 .dim{color:var(--cn-faint)}
@@ -96,7 +129,7 @@ section{margin-top:56px}
 .grp-label:first-child{margin-top:0}
 .foot{margin-top:64px;padding-top:24px;border-top:1px solid var(--cn-line);font-size:13px;color:var(--cn-muted);line-height:1.8}
 .foot a{font-weight:700}
-@media print{:root{color-scheme:light}.dkpi,.fstep,.card,.course,.morelink{break-inside:avoid}.sec-head{break-after:avoid}}
+@media print{:root{color-scheme:light}.dkpi,.band,.node,.loop,.card,.course,.morelink{break-inside:avoid}.sec-head{break-after:avoid}}
 </style>
 </head>
 <body>
@@ -124,17 +157,63 @@ section{margin-top:56px}
   <img class="herofig" src="../images/slides/04-daily-plan.png" alt="APS 현장 생산계획 화면" />
 
   <section>
-    <div class="sec-head"><span class="no">1</span><h2>핵심 흐름</h2></div>
-    <div class="flow">
-      <div class="fstep"><b>카톡 문의 인입</b><span>LLM은 입구에서 구조화만 — 판정 안 함</span></div>
-      <div class="fstep"><b>3단 판정엔진</b><span>재고→동승→신규배치 순서로 부족분 소화</span></div>
-      <div class="fstep"><b>APS 네팅·스케줄</b><span>발주 잔량을 가용재고로 네팅, EDD 추천 큐 생성</span></div>
-      <div class="fstep"><b>실시간 생산지시 큐</b><span>확정만 관리부 승인 1클릭 — 계산과 확정의 분리</span></div>
+    <div class="sec-head"><span class="no">1</span><h2>한눈에 보는 전체 플로우</h2><span class="sub">카톡 한 줄 → 현장 생산 큐</span></div>
+    <div class="own">
+      <span class="k o-llm"><span class="mi">smart_toy</span>LLM · 비결정론<span class="n">1</span></span>
+      <span class="k o-auto"><span class="mi">memory</span>결정론 자동<span class="n">14</span></span>
+      <span class="k o-human"><span class="mi">how_to_reg</span>사람(관리부) 확정<span class="n">1</span></span>
     </div>
-    <p class="prose" style="margin-top:18px">계산·제안은 100% 프로그램이, 돈과 사람이 걸린 <b>확정(commit)은 관리부</b>가 맡습니다.
-      비결정적인 LLM 출력은 입구 한 곳(문의 구조화)에만 두고, 재고·생산용량을 보는 판정과 확정은
-      결정적 코드와 사람이 맡아 오파싱 1건이 오발주로 새지 않게 설계했습니다.
-      아래 화면은 APS 생산계획 — 추천 큐와 급발주가 같은 엔진을 공유합니다.
+
+    <div class="band">
+      <div class="bhead"><span class="bno">A</span><b>인입</b><span class="bsub">카카오톡</span></div>
+      <div class="bnodes">
+        <div class="node"><div class="nh"><span class="mi">webhook</span><b>카톡 webhook</b></div><span>5초 안에 ACK만 던지고 끝냅니다. <code>X-Inquiry-Token</code> 공유시크릿 검증(fail-closed).</span></div>
+        <div class="node o-llm"><div class="nh"><span class="mi">smart_toy</span><b>Gemma 구조화</b></div><span>Cloud Tasks가 다시 불러 품목·수량을 뽑습니다. 저신뢰·장애면 원문만 담긴 미파싱 카드 — <b>유실 0</b>.</span></div>
+        <div class="node"><div class="nh"><span class="mi">call_split</span><b>유형 분기</b></div><span>발주 · 일정문의 · 일정조율 · 일반. 유형마다 납기 주체와 완료 트랜잭션이 다릅니다.</span></div>
+        <div class="node"><div class="nh"><span class="mi">rule</span><b>필수정보 게이트</b></div><span>발주만 4종(납기·거래처·현장주소·담당자)이 차야 확정. 일정문의는 게이트 없음 — 생산슬롯도 안 잡습니다.</span></div>
+      </div>
+    </div>
+    <span class="mi bjoin">south</span>
+
+    <div class="band">
+      <div class="bhead"><span class="bno">B</span><b>3단 판정엔진</b><span class="bsub">결정론 폭포 — 위가 우선</span></div>
+      <div class="bnodes">
+        <div class="node"><div class="nh"><span class="mi">inventory_2</span><b>① 가용재고</b></div><span>창고에 있나? <code>available_qty</code>로 즉시 소화하고 남은 부족분만 다음 단으로.</span></div>
+        <div class="node"><div class="nh"><span class="mi">merge</span><b>② 동승</b></div><span>곧 만들 판에 끼나? 같은 품목 미충족 발주 중 <b>가장 이른 납기 1건</b>에 합류시킵니다.</span></div>
+        <div class="node"><div class="nh"><span class="mi">add_box</span><b>③ 신규배치</b></div><span>새 판을 돌릴까? 부족분 100장 이상이면 <code>find_batch_slot()</code>으로 생산일 산정.<span class="fork">↳ 100장 미만 = below_min → 사람 판단</span></span></div>
+        <div class="node"><div class="nh"><span class="mi">forward_to_inbox</span><b>카톡 2층 응답</b></div><span>즉시 답할 건 콜백, 늦는 건 알림톡 — 타이밍으로 쪼갠 발송.</span></div>
+      </div>
+    </div>
+    <span class="mi bjoin">south</span>
+
+    <div class="band">
+      <div class="bhead"><span class="bno">C</span><b>APS 계획</b><span class="bsub">확정된 발주분</span></div>
+      <div class="bnodes">
+        <div class="node"><div class="nh"><span class="mi">list_alt</span><b>① 잔량</b></div><span><code>pp_order_lines</code>에서 <code>want_date</code> 기준 아직 안 채워진 수량을 모읍니다.</span></div>
+        <div class="node"><div class="nh"><span class="mi">calculate</span><b>② EDD 네팅</b></div><span>필요수량 = <code>max(0, 발주−가용)</code>. 같은 품목에 발주가 여럿이면 납기 빠른 순으로 재고를 배분.</span></div>
+        <div class="node"><div class="nh"><span class="mi">schedule</span><b>③ 그리디 스케줄</b></div><span>날짜축을 하루씩 채워 리드타임 최소화. 시간축(정규 16:40 · 잔업 19:00 · 최대 22:00)과 두꺼운 1종 수량천장이 동시에 걸립니다.</span></div>
+        <div class="node"><div class="nh"><span class="mi">view_kanban</span><b>④ 추천 큐</b></div><span>완료일·리드타임·충돌신호(잔업 N시간 / 납기지연 M일)를 붙인 <b>읽기전용</b> 제안.</span></div>
+      </div>
+    </div>
+    <span class="mi bjoin">south</span>
+
+    <div class="band">
+      <div class="bhead"><span class="bno">D</span><b>확정·실행</b><span class="bsub">현장</span></div>
+      <div class="bnodes">
+        <div class="node o-human"><div class="nh"><span class="mi">how_to_reg</span><b>확정 게이트</b></div><span>비충돌분은 버튼 1회. <b>잔업·주말출근·기존주문 미루기는 관리부 승인</b>, 당일·다음날 확정분은 원칙 불변.</span></div>
+        <div class="node"><div class="nh"><span class="mi">shield</span><b>안전핀</b></div><span>이미 착수한 행(<code>completed_qty&gt;0</code>)은 봉인 — 재최적화·이월 대상에서 제외. pin + 스냅샷 undo.</span></div>
+        <div class="node"><div class="nh"><span class="mi">dvr</span><b>실시간 지시 큐</b></div><span>확정된 지시가 문서로 안 뽑히고 현장 화면의 상시 큐로 흐릅니다 — <b>지시 문서 0장</b>.</span></div>
+        <div class="node"><div class="nh"><span class="mi">account_tree</span><b>생산일지 1행</b></div><span>현장이 쓴 한 행이 BOM으로 자동 분해 → 재고원장 적재 + 유량계 실측 로스 대조.</span></div>
+      </div>
+    </div>
+
+    <div class="loop"><span class="mi">restart_alt</span><div><b>루프가 닫힙니다.</b> 생산일지가 분해되어 재고원장을 갱신하면, 다음 카톡 문의의 <b>B① 가용재고</b>가 바로 그 값을 읽습니다 — 문의 판정과 생산 실적이 같은 원장 하나를 봅니다.</div></div>
+
+    <p class="prose" style="margin-top:24px">노드 16개 중 LLM은 <b>입구 한 곳</b>, 사람은 <b>확정 한 곳</b>뿐입니다.
+      계산·제안은 100% 프로그램이, 돈과 사람이 걸린 <b>확정(commit)은 관리부</b>가 맡습니다.
+      비결정적인 LLM 출력을 문의 구조화 한 곳에 가둔 이유도 같습니다 — 재고·생산용량을 보는 판정과
+      확정을 결정적 코드와 사람이 맡아, 오파싱 1건이 오발주로 새지 않게 했습니다.
+      맨 위 화면은 APS 생산계획 — 추천 큐와 급발주가 같은 엔진을 공유합니다.
       <span class="dim">(수치·내용은 공개 워크스루 발췌)</span></p>
   </section>
 
