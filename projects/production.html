@@ -180,7 +180,7 @@ section{margin-top:56px}
       <div class="bnodes">
         <div class="node"><div class="nh"><span class="mi">inventory_2</span><b>① 가용재고</b></div><span>창고에 있나? <code>available_qty</code>로 즉시 소화하고 남은 부족분만 다음 단으로.</span></div>
         <div class="node"><div class="nh"><span class="mi">merge</span><b>② 동승</b></div><span>곧 만들 판에 끼나? 같은 품목 미충족 발주 중 <b>가장 이른 납기 1건</b>에 합류시킵니다.</span></div>
-        <div class="node"><div class="nh"><span class="mi">add_box</span><b>③ 신규배치</b></div><span>새 판을 돌릴까? 부족분 100장 이상이면 <code>find_batch_slot()</code>으로 생산일 산정.<span class="fork">↳ 100장 미만 = below_min → 사람 판단</span></span></div>
+        <div class="node"><div class="nh"><span class="mi">add_box</span><b>③ 신규배치</b></div><span>새 판을 돌릴까? 부족분이 <b>최소배치수량</b> 이상이면 <code>find_batch_slot()</code>으로 생산일 산정.<span class="fork">↳ 임계 미만 = below_min → 사람 판단</span></span></div>
         <div class="node"><div class="nh"><span class="mi">forward_to_inbox</span><b>카톡 2층 응답</b></div><span>즉시 답할 건 콜백, 늦는 건 알림톡 — 타이밍으로 쪼갠 발송.</span></div>
       </div>
     </div>
@@ -191,7 +191,7 @@ section{margin-top:56px}
       <div class="bnodes">
         <div class="node"><div class="nh"><span class="mi">list_alt</span><b>① 잔량</b></div><span><code>pp_order_lines</code>에서 <code>want_date</code> 기준 아직 안 채워진 수량을 모읍니다.</span></div>
         <div class="node"><div class="nh"><span class="mi">calculate</span><b>② EDD 네팅</b></div><span>필요수량 = <code>max(0, 발주−가용)</code>. 같은 품목에 발주가 여럿이면 납기 빠른 순으로 재고를 배분.</span></div>
-        <div class="node"><div class="nh"><span class="mi">schedule</span><b>③ 그리디 스케줄</b></div><span>날짜축을 하루씩 채워 리드타임 최소화. 시간축(정규 16:40 · 잔업 19:00 · 최대 22:00)과 두꺼운 1종 수량천장이 동시에 걸립니다.</span></div>
+        <div class="node"><div class="nh"><span class="mi">schedule</span><b>③ 그리디 스케줄</b></div><span>날짜축을 하루씩 채워 리드타임 최소화. <b>시간축</b>(정규 마감→유연 버퍼→잔업 컷→물리 최대 4단)과 <b>품목별 수량천장</b>이 2한도로 동시에 걸립니다.</span></div>
         <div class="node"><div class="nh"><span class="mi">view_kanban</span><b>④ 추천 큐</b></div><span>완료일·리드타임·충돌신호(잔업 N시간 / 납기지연 M일)를 붙인 <b>읽기전용</b> 제안.</span></div>
       </div>
     </div>

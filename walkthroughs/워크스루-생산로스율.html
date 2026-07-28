@@ -275,12 +275,12 @@ svg .mono{font-family:'JetBrains Mono',monospace}
     <section id="s3" style="margin-bottom:48px">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
         <div style="width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:#fff;font-size:13px;font-weight:800;background:linear-gradient(135deg,#14B8A6,#0D9488)">3</div>
-        <h2 style="margin:0;font-size:21px;font-weight:800;letter-spacing:-.02em">시각을 쌓는다 — 점심은 일 안 해도 흐른다</h2>
+        <h2 style="margin:0;font-size:21px;font-weight:800;letter-spacing:-.02em">시각을 쌓는다 — 휴게는 일 안 해도 흐른다</h2>
       </div>
-      <p style="margin:0 0 18px 42px;font-size:12.5px;color:var(--cn-faint)">08:00 시작, 품목 두 개 사이에 점심(12–13)이 낍니다. 경과분이 어떻게 쌓이는지.</p>
+      <p style="margin:0 0 18px 42px;font-size:12.5px;color:var(--cn-faint)">시업 시각부터 시작하고, 품목 두 개 사이에 휴게가 낍니다. 경과분이 어떻게 쌓이는지.</p>
       <div style="display:flex;align-items:stretch;gap:0;flex-wrap:wrap;background:var(--cn-card);border:1px solid var(--cn-line);border-radius:14px;padding:20px;margin-left:42px;overflow-x:auto">
         <div style="flex:none;min-width:110px;text-align:center;padding:0 10px">
-          <div style="font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--cn-faint)">08:00 시작</div>
+          <div style="font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--cn-faint)">시업 시각</div>
           <div style="font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:700;margin:5px 0;color:var(--cn-muted)">경과 0</div>
           <div style="font-family:'JetBrains Mono',monospace;font-size:19px;font-weight:800;color:var(--cn-primary)">0</div>
         </div>
@@ -292,7 +292,7 @@ svg .mono{font-family:'JetBrains Mono',monospace}
         </div>
         <div style="flex:none;align-self:center;color:var(--cn-faint);font-size:20px;padding:0 6px">→</div>
         <div style="flex:none;min-width:110px;text-align:center;padding:0 10px">
-          <div style="font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--cn-faint)">점심 12–13</div>
+          <div style="font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--cn-faint)">휴게</div>
           <div style="font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:700;margin:5px 0;color:var(--cn-muted)">+60(작업X)</div>
           <div style="font-family:'JetBrains Mono',monospace;font-size:19px;font-weight:800;color:var(--cn-primary)">260</div>
         </div>
@@ -305,7 +305,7 @@ svg .mono{font-family:'JetBrains Mono',monospace}
       </div>
       <div style="margin-top:14px;margin-left:42px;border-radius:12px;border:1px solid var(--cn-line);border-left:4px solid var(--cn-amber);background:var(--cn-card);padding:14px 17px;box-shadow:var(--cn-shadow-1);display:flex;gap:11px;align-items:flex-start">
         <span class="mi" style="font-size:19px;color:var(--cn-amber);flex:none;margin-top:1px">priority_high</span>
-        <div style="font-size:12.5px;line-height:1.6;color:var(--cn-muted)"><b style="color:var(--cn-ink)">bal = 08:00부터 경과한 벽시계 분.</b> 점심은 <b style="color:var(--cn-ink)">일을 안 해도 +60분</b>이 흘러요(<code style="font-family:'JetBrains Mono',monospace;color:var(--cn-primary-deep)">_advance</code>가 흡수). 정규 만료 = <b style="color:var(--cn-ink)">540분(17:00)</b>, 잔업 한계 = <b style="color:var(--cn-ink)">660분(19:00)</b>. 마지막 <b style="color:var(--cn-rose)">560분 &gt; 540분</b>이라 이 배치는 잔업으로 넘어갑니다(<code style="font-family:'JetBrains Mono',monospace;color:var(--cn-primary-deep)">overtime_exceeded</code>).</div>
+        <div style="font-size:12.5px;line-height:1.6;color:var(--cn-muted)"><b style="color:var(--cn-ink)">bal = 시업부터 경과한 벽시계 분.</b> 휴게는 <b style="color:var(--cn-ink)">일을 안 해도 +60분</b>이 흘러요(<code style="font-family:'JetBrains Mono',monospace;color:var(--cn-primary-deep)">_advance</code>가 흡수). 컷오프는 둘 — <b style="color:var(--cn-ink)">정규 만료선</b>과 <b style="color:var(--cn-ink)">잔업 한계선</b>. 마지막 <b style="color:var(--cn-rose)">누적 560분이 정규 만료선을 넘어</b> 이 배치는 잔업으로 넘어갑니다(<code style="font-family:'JetBrains Mono',monospace;color:var(--cn-primary-deep)">overtime_exceeded</code>).</div>
       </div>
     </section>
 
@@ -423,7 +423,7 @@ class Component extends DCLogic {
     const dark = theme === "dark";
     const { flowStep } = this.state;
     const flowBase = [
-      { icon: "schedule", title: "① 소요시간 자동계산", sub: "calc_speed·calc_minutes", cap: "두께·밀도·길이로 컨베이어 속도를 풀고, 길이×수량÷속도로 소요분을 구해 08:00부터 누적합니다. 점심(12–13)은 일을 안 해도 흐르고, 540분(17:00) 초과분은 잔업으로 넘어갑니다 — 전부 결정적 물리 공식입니다." },
+      { icon: "schedule", title: "① 소요시간 자동계산", sub: "calc_speed·calc_minutes", cap: "두께·밀도·길이로 컨베이어 속도를 풀고, 길이×수량÷속도로 소요분을 구해 시업부터 누적합니다. 휴게는 일을 안 해도 흐르고, 정규 만료선 초과분은 잔업으로 넘어갑니다 — 전부 결정적 물리 공식입니다." },
       { icon: "water_drop", title: "② 유량계 실측 로스", sub: "소모량 = 유량계 그대로", cap: "예전엔 소모량 = 유량계 ÷ (1−로스율)이었지만 이제 ÷를 제거했습니다. 수불부·생산일지·이카운트 세 기준을 실측 하나로 통일합니다(plan 0035)." },
       { icon: "fact_check", title: "③ 귀속 추적", sub: "실사(ADJUST) 감모", cap: "로스는 거래마다 추정율로 녹이지 않고 실사 시점의 장부−실물 차이로 명시 인식합니다. 실측 로스율 = |ADJUST 감모| ÷ Σ|유량계 소모|(직전~이번 실사) — 실사 1회가 데이터 1점입니다." },
       { icon: "filter_alt", title: "④ 생산계획 네팅", sub: "max(0, 발주−가용재고)", cap: "실측이 반영된 가용재고만큼 빼고 부족분(shortfall)만 생산 목표에 편입합니다(plan 0084). 이 결과가 다음 배치의 소요시간 계산(①)과 상수 보정에 다시 들어가 루프가 닫힙니다." },
@@ -476,7 +476,7 @@ class Component extends DCLogic {
         { q: "소요시간을 왜 ML이 아니라 공식으로?", pick: "두께·밀도·길이 → 속도 → 분, 결정적 물리 공식.", drop: "과거 생산시간으로 학습한 회귀/ML 추정.", why: "공정이 물리적으로 결정적(토출·배합비·속도상한)이라 공식이 정확·설명가능·검산가능합니다. ML은 블랙박스에 데이터도 부족합니다. 신호 있는 곳에서만 학습합니다(과적합 회피)." },
         { q: "측정 데이터를 왜 장부와 분리하나?", pick: "일별 탱크 실측·기상은 pp_material_stock_daily/pp_daily_weather 별도 테이블.", drop: "실측을 재고 원장(movements)에 직접 기록.", why: "측정은 노이즈가 많은 분석용 신호입니다. 회계 장부에 섞으면 재고·원가가 오염됩니다. 분석 레이어를 분리해 실험은 자유롭게, 장부는 깨끗하게 유지합니다." },
         { q: "생산량을 왜 네팅(부족분만)으로?", pick: "생산 목표 = max(0, 발주 − 가용재고). 부산물 +2는 소요엔 반영·target 제외.", drop: "발주수량 전부를 생산(재고 무시).", why: "이미 있는 재고를 또 만들면 잉여 적치입니다. 부족분만 만드는 게 demand-driven입니다. 일정문의 판정엔진 가용재고 단계와 동일 식 — 한 곳의 진실입니다." },
-        { q: "점심·잔업을 왜 타임라인에 박나?", pick: "_advance가 점심(12–13) 가로지름 +60 흡수, 19:00 초과 시 overtime_exceeded.", drop: "단순 누적(점심·잔업 무시).", why: "'몇 시에 끝나나'가 현실 일정의 핵심입니다. 점심을 무시하면 종료시각이 1시간 당겨져 틀립니다. 정규/잔업 여부가 배치 판정에 직접 들어갑니다." },
+        { q: "휴게·잔업을 왜 타임라인에 박나?", pick: "_advance가 휴게 구간 가로지름 +60 흡수, 잔업 한계선 초과 시 overtime_exceeded.", drop: "단순 누적(휴게·잔업 무시).", why: "'몇 시에 끝나나'가 현실 일정의 핵심입니다. 휴게를 무시하면 종료시각이 1시간 당겨져 틀립니다. 정규/잔업 여부가 배치 판정에 직접 들어갑니다." },
       ],
     };
   }

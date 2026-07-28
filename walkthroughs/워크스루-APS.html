@@ -327,7 +327,7 @@ svg .mono{font-family:'JetBrains Mono',monospace}
         <div style="width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:#fff;font-size:13px;font-weight:800;background:linear-gradient(135deg,#F59E0B,#D97706)">4</div>
         <h2 style="margin:0;font-size:21px;font-weight:800;letter-spacing:-.02em">발주 하나가 배치되는 과정 — 백로그는 줄고, 완료일이 잡힌다</h2>
       </div>
-      <p style="margin:0 0 18px 42px;font-size:12.5px;color:var(--cn-faint)">2종 100T 발주가 네팅 후 900장 남은 예시. bal은 아직 배치 안 된 잔량 — 매번 파생값입니다.</p>
+      <p style="margin:0 0 18px 42px;font-size:12.5px;color:var(--cn-faint)">발주 1건이 네팅을 거치고 남은 잔량을 100%로 둔 예시. bal은 아직 배치 안 된 잔량 비율 — 매번 파생값입니다.</p>
       <div style="background:var(--cn-card);border:1px solid var(--cn-line);border-radius:14px;padding:22px 24px;box-shadow:var(--cn-shadow-1);margin-left:42px">
         <div style="display:flex;align-items:stretch;gap:10px;overflow-x:auto;padding-bottom:4px">
           <sc-for list="{{ batchSteps }}" as="b" hint-placeholder-count="4">
@@ -488,7 +488,7 @@ class Component extends DCLogic {
     const flowBase = [
       { icon: "list_alt", title: "① 잔량", sub: "발주·수주", cap: "발주서 want_date 기준으로 아직 채워지지 않은 수량을 찾습니다 — pp_order_lines." },
       { icon: "calculate", title: "② 네팅", sub: "EDD 배분", cap: "필요수량 = max(0, 발주수량−가용재고). 같은 품목에 발주가 여럿이면 납기 빠른 순(EDD)으로 재고를 먼저 배분합니다." },
-      { icon: "schedule", title: "③ 시간표 계산", sub: "그리디 스케줄러", cap: "날짜축을 하루씩 채우며 전체 리드타임이 가장 짧아지는 순서를 그리디로 잡습니다. 시간축(16:40~22:00)·수량천장(두꺼운 1종) 2한도가 동시에 걸립니다." },
+      { icon: "schedule", title: "③ 시간표 계산", sub: "그리디 스케줄러", cap: "날짜축을 하루씩 채우며 전체 리드타임이 가장 짧아지는 순서를 그리디로 잡습니다. 시간축(4단 컷오프)·수량천장(품목군별) 2한도가 동시에 걸립니다." },
       { icon: "view_kanban", title: "④ 추천 큐", sub: "읽기전용 제안", cap: "품목별 예상 완료일·리드타임·충돌 신호(잔업 N시간/납기지연 M일)를 붙여 큐 카드로 출력합니다. 매트릭스 큐 칸반·ATP 판정 두 화면이 이 결과를 공유합니다." },
       { icon: "how_to_reg", title: "⑤ 생산지시", sub: "실시간 큐 · 확정은 1클릭", cap: "비충돌분은 버튼 1회로 자동편입, 잔업·displace는 관리부 승인 후 확정됩니다 — 확정된 지시는 문서로 뽑히지 않고 현장 화면의 상시 실시간 큐로 흐릅니다(건당 40분 문서작성 소멸)." },
     ];
@@ -533,14 +533,14 @@ class Component extends DCLogic {
         { zone: "③ 이연(설계 완료)", what: "발주서 want_date 기반 완전 자동 수평선 스케줄 · 품목 라인별 정밀 수량 회계", trait: "컷오버·온보딩 후 개방" },
       ],
       capacityRows: [
-        { axis: "① 시간축(모든 제품)", logic: "정규 마감 16:40(=17:00−정리 20분). 유연버퍼 18:00(flex_cutoff·0146 P2a)까지는 마무리 정상분. 잔업 선호컷 19:00 · 물리 최대 22:00.", note: "일반 제품의 병목" },
+        { axis: "① 시간축(모든 제품)", logic: "컷오프 4단 — 정규 마감(종업−정리시간) → 유연버퍼(flex_cutoff·0146 P2a)까지는 마무리 정상분 → 잔업 선호컷 → 물리 최대. 단계마다 판정이 달라집니다.", note: "일반 제품의 병목" },
         { axis: "② 수량 천장(두꺼운 1종)", logic: "면재가 없어 압착 시 서로 붙음 → 비닐 벗겨 세워서 개별 적재(수작업) → 하루 상한. 아침 첫 슬롯에 세워 식히고, 못 끝낸 잔량은 다음날 이월.", note: "잔업으로 못 늘림(병목=적재 노동)" },
       ],
       batchSteps: [
-        { day: "D0 · D+1", label: "프리즈 배치", delta: "0", deltaColor: "var(--cn-faint)", bal: "900", note: "현장이 이미 움직이는 구간", hasConn: true, flex: "1" },
-        { day: "D+2", label: "배치(첫 삽)", delta: "−300", deltaColor: "var(--cn-rose)", bal: "600", note: "시간축 16:40 한도", hasConn: true, flex: "1" },
-        { day: "D+3", label: "배치", delta: "−300", deltaColor: "var(--cn-rose)", bal: "300", note: "기존 부하 위에 증분", hasConn: true, flex: "1" },
-        { day: "D+4", label: "배치 · 완료", delta: "−300", deltaColor: "var(--cn-rose)", bal: "0", note: "완료일=D+4 · 리드타임 5일", hasConn: false, flex: "none" },
+        { day: "D0 · D+1", label: "프리즈 배치", delta: "0", deltaColor: "var(--cn-faint)", bal: "100%", note: "현장이 이미 움직이는 구간", hasConn: true, flex: "1" },
+        { day: "D+2", label: "배치(첫 삽)", delta: "−33%p", deltaColor: "var(--cn-rose)", bal: "66%", note: "시간축 정규 마감 한도", hasConn: true, flex: "1" },
+        { day: "D+3", label: "배치", delta: "−33%p", deltaColor: "var(--cn-rose)", bal: "33%", note: "기존 부하 위에 증분", hasConn: true, flex: "1" },
+        { day: "D+4", label: "배치 · 완료", delta: "−33%p", deltaColor: "var(--cn-rose)", bal: "0", note: "완료일=D+4 · 리드타임=배치일수+1", hasConn: false, flex: "none" },
       ],
       safetyPins: [
         { name: "생산착수 봉인", what: "completed_qty>0 OR defect_qty>0 행은 재최적화·displace·이월에서 무조건 제외 — 실측이 걸린 행은 못 건드림", who: "누구도 불가(불변)" },
