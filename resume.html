@@ -309,7 +309,7 @@
         <li><b>Approach:</b> <b>645노드 · 2단 택소노미 · 781 typed 엣지</b> 개념그래프 → 렉시컬 + 시맨틱(pgvector) + 그래프부스터 <b>3채널 RRF 검색(LLM 0콜)</b> + <b>LangGraph(StateGraph)</b> 기반 RAG 응답 + <b>HTTP MCP 서버</b>로 에이전트에 노출 · 증분 동기 훅 자동 적재 · 전량 자가호스팅(OCI)·사설망 격리 · 회귀 평가 하니스(<b>Recall@5 0.921</b>)로 검색품질 게이트.</li>
         <li><b>Impact:</b> 에이전트 장기기억을 '노트정리'가 아닌 <b>검색가능 자산</b>으로 전환 — 하네스 엔지니어링을 개인 R&amp;D로 계속 확장.</li>
       </ul>
-      <img src="assets/agent-memory-graph.png" alt="agent-memory-llmops — 개인 지식그래프 뷰어(645노드·1,528엣지, 민감값 마스킹)" style="width:100%;max-width:820px;display:block;margin:12px 0 2px;border:1px solid var(--cn-line);border-radius:12px;" loading="lazy" />
+      <img src="assets/agent-memory-graph.png" alt="agent-memory-llmops — 개인 지식그래프 뷰어(645노드·781 typed 엣지, 민감값 마스킹)" style="width:100%;max-width:820px;display:block;margin:12px 0 2px;border:1px solid var(--cn-line);border-radius:12px;" loading="lazy" />
       <a href="https://github.com/moongioh/agent-memory-llmops" target="_blank" style="display:inline-block;margin-top:8px;color:var(--cn-primary-deep);font-weight:700;text-decoration:none;font-size:11.5px">↳ 아키텍처 쇼케이스: agent-memory-llmops (구조도·방법론·발췌)</a>
     </div>
 
@@ -317,7 +317,7 @@
       <div class="q"><span class="lab">AX · 개인 R&amp;D</span>LLM 게이트웨이 — 멀티프로바이더 라우팅 · 관측 · 예산통제 (LLMOps, 2026.07~)</div>
       <ul>
         <li><b>Problem:</b> 여러 LLM 프로바이더를 한 계층에서 라우팅하고 토큰/비용·트레이스를 <b>관측·통제</b>할 단일 백본이 필요.</li>
-        <li><b>Approach:</b> <b>LiteLLM 게이트웨이 + Phoenix 관측(OTLP 트레이싱)</b>을 자가 인프라(OCI)에 배포 · 스코프 <b>가상키 + 예산캡</b> · 멀티프로바이더(상용 LLM API + Voyage 임베딩) 통합 · 사설망 전용 · <b>$0 유휴</b>.</li>
+        <li><b>Approach:</b> <b>LiteLLM 게이트웨이 + Phoenix 관측(OTLP 트레이싱)</b>을 자가 인프라(OCI)에 배포 · 스코프 <b>가상키 + 예산캡</b> · 멀티프로바이더(상용 LLM API + 임베딩 프로바이더) 통합 · 사설망 전용 · <b>$0 유휴</b>.</li>
         <li><b>Impact:</b> 모든 LLM 호출이 단일 게이트웨이로 <b>계측·과금통제</b>되는 LLMOps 백본 — 위 PKG·문서허브 RAG가 이 위에서 동작. 남의 관측 도구 결함(Arize/Phoenix)을 잡은 감각으로 <b>내 관측 스택도 직접 운영</b>.</li>
       </ul>
       <a href="https://github.com/moongioh/agent-memory-llmops" target="_blank" style="display:inline-block;margin-top:8px;color:var(--cn-primary-deep);font-weight:700;text-decoration:none;font-size:11.5px">↳ 아키텍처 쇼케이스: agent-memory-llmops (PKG+게이트웨이 통합)</a>
@@ -368,7 +368,7 @@
         <li><b>주요 역할:</b> 스마트스토어 <b>약 300 SKU · 월 100~200건</b> 주문의 소싱·주문·물류·CS·정산 전 사이클 1인 운영 — <b>내 돈이 걸린 의사결정 6년</b></li>
         <li>무재고 구매대행의 최대 리스크인 <b>공급처 품절</b>을 배치 크롤러(재고·상품 URL 변경점 추적)로 상시 모니터링 → 품절 판매 경로를 구조적으로 차단</li>
         <li><b>주문번호 키 자동화:</b> 판매자 발송 메일 도착 → Gmail 파싱이 미국 배송 트래킹 번호를 시트에 자동 기입 + 네이버 톡톡으로 고객 배송현황 자동 안내 → 배송대행지 트래킹 연계. <b>메일 수신 이벤트가 기록·안내를 촉발</b>하는 구조로 일일 운영을 <b>하루 10~20분</b>으로 압축</li>
-        <li>이벤트가 기록을 촉발하고 사람 개입 지점을 제거하는 이 설계 원칙은, 이후 18인 제조기업 <b>이벤트소싱 ERP 구축(약 2개월)</b>에서 그대로 반복 — <b>같은 문제를 두 번, 다른 규모에서 시스템화</b></li>
+        <li>이때 쓴 설계 원칙(이벤트가 기록을 촉발하고 사람 개입 지점을 제거)은 이후 18인 제조기업 <b>이벤트소싱 ERP 구축(약 2개월)</b>에도 적용</li>
       </ul>
     </div>
   </section>
